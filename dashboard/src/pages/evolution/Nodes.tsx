@@ -88,10 +88,10 @@ export function Nodes() {
       },
     },
     {
-      key: 'lastHeartbeat',
+      key: 'nodeStatus',
       label: t('nodes.table.status'),
-      render: (v) => {
-        const active = isActive(v as string | null);
+      render: (_, row) => {
+        const active = isActive((row as Record<string, unknown>).lastHeartbeat as string | null);
         return <StatusBadge status={active ? 'Active' : 'Inactive'} />;
       },
     },

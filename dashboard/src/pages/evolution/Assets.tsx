@@ -122,7 +122,7 @@ export function Assets() {
       },
     },
     {
-      key: 'id',
+      key: 'actions',
       label: 'Actions',
       render: (_, row) => {
         const asset = row as unknown as Asset;

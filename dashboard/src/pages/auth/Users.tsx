@@ -59,7 +59,7 @@ export function Users() {
       render: (v) => new Date(String(v)).toLocaleDateString(),
     },
     {
-      key: 'id',
+      key: 'actions',
       label: 'Actions',
       render: (_, row) => {
         const user = row as unknown as User;
