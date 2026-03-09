@@ -50,12 +50,51 @@ const CATEGORY_OPTIONS = [
   { value: 'expense', label: 'Expense' },
 ];
 
+const ASSIGNED_BY_OPTIONS = [
+  { value: '', label: 'All Creators' },
+  { value: 'human-ceo', label: 'CEO' },
+  { value: 'human-cto', label: 'CTO' },
+  { value: 'human-cfo', label: 'CFO' },
+  { value: 'human-marketing', label: 'Marketing' },
+  { value: 'human-sales', label: 'Sales' },
+  { value: 'human-engineering', label: 'Engineering' },
+  { value: 'human-hr', label: 'HR' },
+  { value: 'human-legal', label: 'Legal' },
+  { value: 'human-support', label: 'Support' },
+  { value: 'system', label: 'System' },
+];
+
+const ROLE_DISPLAY: Record<string, string> = {
+  ceo: 'CEO', cto: 'CTO', cfo: 'CFO',
+  marketing: 'Marketing', sales: 'Sales', engineering: 'Engineering',
+  hr: 'HR', legal: 'Legal', support: 'Support',
+};
+
+function resolveCreatorDisplay(assignedBy: string): { name: string; badge: string } {
+  if (!assignedBy) return { name: '—', badge: '' };
+  if (assignedBy.startsWith('human-')) {
+    const role = assignedBy.replace('human-', '');
+    return { name: ROLE_DISPLAY[role] || role, badge: '👤' };
+  }
+  if (assignedBy === 'grc-admin') return { name: 'GRC Admin', badge: '👤' };
+  const agentMatch = assignedBy.match(/^agent:(\w[\w-]*):(.+)$/);
+  if (agentMatch) {
+    return { name: `${ROLE_DISPLAY[agentMatch[1]] || agentMatch[1]} (AI)`, badge: '🤖' };
+  }
+  const sysMatch = assignedBy.match(/^system:(\w+)$/);
+  if (sysMatch) {
+    const sysNames: Record<string, string> = { strategy: 'Strategy Deploy', meeting: 'Meeting', escalation: 'Escalation' };
+    return { name: sysNames[sysMatch[1]] || sysMatch[1], badge: '⚙️' };
+  }
+  return { name: assignedBy, badge: '❓' };
+}
+
 function formatDeadline(deadline: string | null): string {
   if (!deadline) return '—';
   return new Date(deadline).toLocaleDateString();
 }
 
-const COLUMNS: Column[] = [
+const BASE_COLUMNS: Column[] = [
   {
     key: 'taskCode',
     label: 'Code',
@@ -111,22 +150,70 @@ const COLUMNS: Column[] = [
   },
 ];
 
+const CREATOR_COLUMN: Column = {
+  key: 'assignedBy',
+  label: 'Creator',
+  render: (_value, row) => {
+    const assignedBy = (row as unknown as Record<string, string>).assignedBy ?? '';
+    const { name, badge } = resolveCreatorDisplay(assignedBy);
+    return (
+      <span className={assignedBy ? '' : 'text-muted'} style={{ whiteSpace: 'nowrap' }}>
+        {badge ? <span style={{ marginRight: '0.25rem' }}>{badge}</span> : null}
+        {name}
+      </span>
+    );
+  },
+};
+
+const PROGRESS_COLUMN: Column = {
+  key: 'progress',
+  label: 'Progress',
+  render: (_value, row) => {
+    const progress = (row as unknown as Record<string, unknown>).progress;
+    if (!progress) return <span className="text-muted">—</span>;
+    if (Array.isArray(progress) && progress.length > 0) {
+      return (
+        <span className="mono" style={{ fontSize: '0.75rem' }}>
+          {progress.length} entries
+        </span>
+      );
+    }
+    if (typeof progress === 'number') {
+      return (
+        <span className="mono" style={{ fontSize: '0.75rem' }}>
+          {progress}%
+        </span>
+      );
+    }
+    return <span className="text-muted">—</span>;
+  },
+};
+
 export function TaskBoard() {
   const { t } = useTranslation('tasks');
   const [page, setPage] = useState(1);
   const [status, setStatus] = useState('');
   const [priority, setPriority] = useState('');
   const [category, setCategory] = useState('');
+  const [monitoringMode, setMonitoringMode] = useState(false);
+  const [assignedByFilter, setAssignedByFilter] = useState('');
+
+  const effectiveCategory = monitoringMode && category === '' ? undefined : category || undefined;
 
   const { data, isLoading, error } = useAdminTasks({
     page,
     status: status || undefined,
     priority: priority || undefined,
-    category: category || undefined,
+    category: effectiveCategory,
+    assigned_by: monitoringMode && assignedByFilter ? assignedByFilter : undefined,
   });
 
   const tasks = data?.data ?? [];
   const totalPages = data?.pagination?.totalPages ?? 1;
+
+  const columns: Column[] = monitoringMode
+    ? [...BASE_COLUMNS, CREATOR_COLUMN, PROGRESS_COLUMN]
+    : BASE_COLUMNS;
 
   function handleStatusChange(e: React.ChangeEvent<HTMLSelectElement>) {
     setStatus(e.target.value);
@@ -143,6 +230,24 @@ export function TaskBoard() {
     setPage(1);
   }
 
+  function handleAssignedByChange(e: React.ChangeEvent<HTMLSelectElement>) {
+    setAssignedByFilter(e.target.value);
+    setPage(1);
+  }
+
+  function handleToggleMonitoring() {
+    setMonitoringMode((prev) => {
+      if (!prev) {
+        // Entering monitoring mode: default category to exclude administrative
+        // We leave category empty so effectiveCategory skips empty-string logic
+        setCategory('');
+      }
+      return !prev;
+    });
+    setAssignedByFilter('');
+    setPage(1);
+  }
+
   return (
     <div className="page">
       <div className="page-header">
@@ -151,6 +256,13 @@ export function TaskBoard() {
           <p className="page-subtitle">{t('board.subtitle')}</p>
         </div>
         <div className="action-group">
+          <button
+            className={monitoringMode ? 'btn btn-primary' : 'btn btn-default'}
+            type="button"
+            onClick={handleToggleMonitoring}
+          >
+            {monitoringMode ? t('board.monitoringOn', 'Monitoring: ON') : t('board.monitoringOff', 'Monitoring Mode')}
+          </button>
           <Link to="/tasks/create" className="btn btn-primary">
             {t('board.createTask')}
           </Link>
@@ -197,13 +309,28 @@ export function TaskBoard() {
               </option>
             ))}
           </select>
+
+          {monitoringMode && (
+            <select
+              className="select"
+              value={assignedByFilter}
+              onChange={handleAssignedByChange}
+              aria-label="Filter by creator"
+            >
+              {ASSIGNED_BY_OPTIONS.map((opt) => (
+                <option key={opt.value} value={opt.value}>
+                  {opt.label}
+                </option>
+              ))}
+            </select>
+          )}
         </div>
 
         {error ? (
           <ErrorMessage error={error as Error} />
         ) : (
           <DataTable
-            columns={COLUMNS as never}
+            columns={columns as never}
             data={tasks as never}
             loading={isLoading}
             rowKey="id"

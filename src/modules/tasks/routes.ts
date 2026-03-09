@@ -32,6 +32,24 @@ const taskCommentSchema = z.object({
   content: z.string().min(1),
 });
 
+const agentCreateTaskSchema = z.object({
+  creator_role_id: z.string().min(1).max(50),
+  creator_node_id: z.string().min(1).max(255),
+  title: z.string().min(1).max(500),
+  description: z.string().optional(),
+  category: z.enum(["strategic", "operational", "administrative", "expense"]).optional(),
+  priority: z.enum(["critical", "high", "medium", "low"]).optional(),
+  target_role_id: z.string().max(50).optional(),
+  target_node_id: z.string().max(255).optional(),
+  trigger_type: z.enum(["heartbeat", "task_chain", "strategy", "meeting", "escalation"]),
+  trigger_source: z.string().optional(),
+  expense_amount: z.string().max(30).optional(),
+  expense_currency: z.string().max(10).optional(),
+  deadline: z.string().datetime().optional(),
+  deliverables: z.array(z.string()).optional(),
+  notes: z.string().optional(),
+});
+
 // ── Module Registration ─────────────────────────
 
 export async function register(app: Express, config: GrcConfig): Promise<void> {
@@ -124,8 +142,43 @@ export async function register(app: Express, config: GrcConfig): Promise<void> {
     }),
   );
 
+  // ────────────────────────────────────────────
+  // POST /a2a/tasks/create — Agent autonomous task creation
+  // ────────────────────────────────────────────
+  router.post(
+    "/create",
+    authRequired,
+    asyncHandler(async (req: Request, res: Response) => {
+      const body = agentCreateTaskSchema.parse(req.body);
+
+      const result = await service.createAgentTask({
+        creatorRoleId: body.creator_role_id,
+        creatorNodeId: body.creator_node_id,
+        title: body.title,
+        description: body.description,
+        category: body.category,
+        priority: body.priority,
+        targetRoleId: body.target_role_id,
+        targetNodeId: body.target_node_id,
+        triggerType: body.trigger_type,
+        triggerSource: body.trigger_source,
+        expenseAmount: body.expense_amount,
+        expenseCurrency: body.expense_currency,
+        deadline: body.deadline,
+        deliverables: body.deliverables,
+        notes: body.notes,
+      });
+
+      res.status(201).json({
+        ok: true,
+        task: result.task,
+        policy_applied: result.policy_applied,
+      });
+    }),
+  );
+
   // ── Mount router under /a2a/tasks prefix ───
   app.use("/a2a/tasks", router);
 
-  logger.info("Tasks module registered — 3 A2A endpoints active");
+  logger.info("Tasks module registered — 4 A2A endpoints active");
 }

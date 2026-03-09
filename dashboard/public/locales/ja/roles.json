@@ -68,5 +68,20 @@
     "assignButton": "選択項目を割り当て",
     "assigning": "割り当て中..."
   },
-  "newRole": "+ 新しいロール"
+  "newRole": "+ 新しいロール",
+  "wizardTitle": "AI ロールウィザード",
+  "wizardSubtitle": "ロールを説明して AI に設定を生成させる",
+  "wizardRoleDescription": "ロール説明",
+  "wizardRoleDescriptionPlaceholder": "このロールの役割、責任、目標を説明してください...",
+  "wizardCompanyInfo": "会社情報",
+  "wizardCompanyInfoPlaceholder": "会社、業種、規模、文化についての情報を入力...",
+  "wizardGenerate": "AI 生成",
+  "wizardGenerating": "生成中…",
+  "modeAutonomous": "自律モード",
+  "modeCopilot": "コパイロット",
+  "optional": "任意",
+  "cancel": "キャンセル",
+  "saveRole": "ロールを保存",
+  "saving": "保存中…",
+  "roleIdHint": "英小文字、数字、ハイフン、アンダースコア使用可。作成後は変更不可。"
 }

@@ -2,7 +2,9 @@
   "board": {
     "title": "任务看板",
     "subtitle": "管理和跟踪 AI 员工任务",
-    "createTask": "+ 创建任务"
+    "createTask": "+ 创建任务",
+    "monitoringOn": "监控中: ON",
+    "monitoringOff": "监控模式"
   },
   "filters": {
     "searchPlaceholder": "搜索任务…",

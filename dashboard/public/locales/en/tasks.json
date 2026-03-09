@@ -2,7 +2,9 @@
   "board": {
     "title": "Task Board",
     "subtitle": "Manage and track AI employee tasks",
-    "createTask": "+ Create Task"
+    "createTask": "+ Create Task",
+    "monitoringOn": "Monitoring: ON",
+    "monitoringOff": "Monitoring Mode"
   },
   "filters": {
     "searchPlaceholder": "Search tasks…",

@@ -68,5 +68,20 @@
     "assignButton": "선택 항목 배정",
     "assigning": "배정 중..."
   },
-  "newRole": "+ 새 역할"
+  "newRole": "+ 새 역할",
+  "wizardTitle": "AI 역할 마법사",
+  "wizardSubtitle": "역할을 설명하고 AI가 설정을 생성하도록 합니다",
+  "wizardRoleDescription": "역할 설명",
+  "wizardRoleDescriptionPlaceholder": "역할의 책임, 목표 및 기능을 설명하세요...",
+  "wizardCompanyInfo": "회사 정보",
+  "wizardCompanyInfoPlaceholder": "회사, 산업, 규모 및 문화에 대한 정보를 입력하세요...",
+  "wizardGenerate": "AI 생성",
+  "wizardGenerating": "생성 중…",
+  "modeAutonomous": "자율 모드",
+  "modeCopilot": "코파일럿",
+  "optional": "선택사항",
+  "cancel": "취소",
+  "saveRole": "역할 저장",
+  "saving": "저장 중…",
+  "roleIdHint": "소문자, 숫자, 하이픈 및 밑줄만 사용 가능. 생성 후 변경 불가."
 }

@@ -68,5 +68,20 @@
     "assignButton": "分配已选",
     "assigning": "分配中..."
   },
-  "newRole": "+ 新建角色"
+  "newRole": "+ 新建角色",
+  "wizardTitle": "AI 角色向导",
+  "wizardSubtitle": "描述角色并让 AI 生成配置",
+  "wizardRoleDescription": "角色描述",
+  "wizardRoleDescriptionPlaceholder": "描述该角色的职责、目标和能力...",
+  "wizardCompanyInfo": "公司信息",
+  "wizardCompanyInfoPlaceholder": "输入公司、行业、规模和文化等信息...",
+  "wizardGenerate": "AI 生成",
+  "wizardGenerating": "生成中…",
+  "modeAutonomous": "自主模式",
+  "modeCopilot": "协作模式",
+  "optional": "可选",
+  "cancel": "取消",
+  "saveRole": "保存角色",
+  "saving": "保存中…",
+  "roleIdHint": "仅限小写字母、数字、连字符和下划线。创建后不可修改。"
 }

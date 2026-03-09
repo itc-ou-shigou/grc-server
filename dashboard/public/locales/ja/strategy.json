@@ -68,5 +68,23 @@
     "date": "日付",
     "compare": "比較",
     "restore": "復元"
+  },
+  "ai": {
+    "title": "AI 戦略生成",
+    "description": "AIを使って戦略ドラフトを生成します。結果をフォームに適用して編集できます。",
+    "generationMode": "生成モード",
+    "modeNew": "新規生成",
+    "modeUpdate": "既存更新",
+    "industry": "業種",
+    "industryPlaceholder": "例: EC事業、SaaS、製造業…",
+    "companyInfo": "会社情報",
+    "companyInfoPlaceholder": "会社の概要、規模、強みを説明…",
+    "updateInstruction": "更新指示",
+    "updateInstructionPlaceholder": "戦略のどの部分を変更しますか？",
+    "generate": "AIで生成",
+    "generating": "生成中…",
+    "cancel": "キャンセル",
+    "applyResult": "戦略に適用",
+    "previewHint": "プレビューが生成されました。適用前に以下の内容をご確認ください。"
   }
 }

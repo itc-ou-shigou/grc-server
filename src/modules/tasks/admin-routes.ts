@@ -30,6 +30,7 @@ const taskListQuerySchema = paginationSchema.extend({
   category: z.string().optional(),
   assigned_role_id: z.string().optional(),
   assigned_node_id: z.string().optional(),
+  assigned_by: z.string().optional(),
 });
 
 const createTaskSchema = z.object({
@@ -112,6 +113,7 @@ export async function registerAdmin(app: Express, config: GrcConfig) {
         category: query.category,
         assignedRoleId: query.assigned_role_id,
         assignedNodeId: query.assigned_node_id,
+        assignedBy: query.assigned_by,
       });
 
       res.json(result);

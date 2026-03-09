@@ -2,7 +2,9 @@
   "board": {
     "title": "작업 보드",
     "subtitle": "AI 직원 작업 관리 및 추적",
-    "createTask": "+ 작업 생성"
+    "createTask": "+ 작업 생성",
+    "monitoringOn": "모니터링: ON",
+    "monitoringOff": "모니터링 모드"
   },
   "filters": {
     "searchPlaceholder": "작업 검색…",

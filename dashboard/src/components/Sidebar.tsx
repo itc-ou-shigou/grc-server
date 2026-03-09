@@ -86,6 +86,7 @@ const NAV_SECTIONS: NavSection[] = [
     items: [
       { labelKey: 'roleTemplates', path: '/roles' },
       { labelKey: 'createRole', path: '/roles/create' },
+      { labelKey: 'aiWizard', path: '/roles/create-wizard', adminOnly: true },
     ],
   },
   {

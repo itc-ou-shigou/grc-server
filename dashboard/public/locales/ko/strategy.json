@@ -68,5 +68,23 @@
     "date": "날짜",
     "compare": "비교",
     "restore": "복원"
+  },
+  "ai": {
+    "title": "AI 전략 생성",
+    "description": "AI를 사용하여 전략 초안을 생성합니다. 결과를 양식에 적용하여 편집할 수 있습니다.",
+    "generationMode": "생성 모드",
+    "modeNew": "새로 생성",
+    "modeUpdate": "기존 업데이트",
+    "industry": "산업",
+    "industryPlaceholder": "예: 이커머스, SaaS, 제조업…",
+    "companyInfo": "회사 정보",
+    "companyInfoPlaceholder": "회사 개요, 규모 및 강점을 설명하세요…",
+    "updateInstruction": "업데이트 지시",
+    "updateInstructionPlaceholder": "전략에서 변경할 내용을 설명하세요...",
+    "generate": "AI 생성",
+    "generating": "생성 중…",
+    "cancel": "취소",
+    "applyResult": "전략에 적용",
+    "previewHint": "프리뷰가 생성되었습니다. 적용하기 전에 아래 내용을 확인하세요."
   }
 }

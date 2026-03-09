@@ -6,7 +6,7 @@
  */
 
 import { v4 as uuidv4 } from "uuid";
-import { eq, desc, sql, and } from "drizzle-orm";
+import { eq, desc, sql, and, like, gte } from "drizzle-orm";
 import pino from "pino";
 import { getDb } from "../../shared/db/connection.js";
 import {
@@ -19,6 +19,10 @@ import {
   NotFoundError,
   ConflictError,
 } from "../../shared/middleware/error-handler.js";
+import {
+  AGENT_TASK_POLICIES,
+  type AgentTaskPolicy,
+} from "./agent-task-policy.js";
 
 const logger = pino({ name: "module:tasks:service" });
 
@@ -91,6 +95,7 @@ export class TasksService {
     assignedRoleId?: string;
     assignedNodeId?: string;
     category?: string;
+    assignedBy?: string;
   }) {
     const db = getDb();
     const offset = (opts.page - 1) * opts.limit;
@@ -101,6 +106,7 @@ export class TasksService {
     if (opts.assignedRoleId) conditions.push(eq(tasksTable.assignedRoleId, opts.assignedRoleId));
     if (opts.assignedNodeId) conditions.push(eq(tasksTable.assignedNodeId, opts.assignedNodeId));
     if (opts.category) conditions.push(eq(tasksTable.category, opts.category));
+    if (opts.assignedBy) conditions.push(like(tasksTable.assignedBy, `${opts.assignedBy}%`));
     const whereClause = conditions.length > 0 ? and(...conditions) : undefined;
 
     const [rows, totalResult] = await Promise.all([
@@ -699,5 +705,223 @@ export class TasksService {
       .orderBy(desc(tasksTable.createdAt));
 
     return rows;
+  }
+
+  // ── Agent Autonomous Task Creation ────────────────
+
+  /**
+   * Count tasks created by a specific agent today.
+   */
+  async countAgentTasksToday(roleId: string, nodeId: string): Promise<number> {
+    const db = getDb();
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+
+    const rows = await db
+      .select({ count: sql<number>`COUNT(*)` })
+      .from(tasksTable)
+      .where(
+        and(
+          like(tasksTable.assignedBy, `agent:${roleId}:${nodeId}%`),
+          gte(tasksTable.createdAt, today),
+        ),
+      );
+
+    return rows[0]?.count ?? 0;
+  }
+
+  /**
+   * Count tasks created by a specific agent in the last hour.
+   */
+  async countAgentTasksLastHour(roleId: string, nodeId: string): Promise<number> {
+    const db = getDb();
+    const oneHourAgo = new Date(Date.now() - 60 * 60 * 1000);
+
+    const rows = await db
+      .select({ count: sql<number>`COUNT(*)` })
+      .from(tasksTable)
+      .where(
+        and(
+          like(tasksTable.assignedBy, `agent:${roleId}:${nodeId}%`),
+          gte(tasksTable.createdAt, oneHourAgo),
+        ),
+      );
+
+    return rows[0]?.count ?? 0;
+  }
+
+  /**
+   * Find duplicate task (same title + assignee within 24h).
+   */
+  async findDuplicateTask(
+    title: string,
+    assignedRoleId: string,
+  ): Promise<boolean> {
+    const db = getDb();
+    const oneDayAgo = new Date(Date.now() - 24 * 60 * 60 * 1000);
+
+    const rows = await db
+      .select({ id: tasksTable.id })
+      .from(tasksTable)
+      .where(
+        and(
+          eq(tasksTable.title, title),
+          eq(tasksTable.assignedRoleId, assignedRoleId),
+          gte(tasksTable.createdAt, oneDayAgo),
+        ),
+      )
+      .limit(1);
+
+    return rows.length > 0;
+  }
+
+  /**
+   * Create a task autonomously from an agent, enforcing policy limits.
+   *
+   * Flow:
+   * 1. Policy lookup for the creating agent's role
+   * 2. Rate limit check (daily + hourly)
+   * 3. Category validation
+   * 4. Delegation check (can this role create tasks for target role?)
+   * 5. Expense limit check
+   * 6. Duplicate detection
+   * 7. Task creation (with requiresApproval → draft status)
+   * 8. Audit log entry
+   */
+  async createAgentTask(params: {
+    creatorRoleId: string;
+    creatorNodeId: string;
+    title: string;
+    description?: string;
+    category?: string;
+    priority?: string;
+    targetRoleId?: string;
+    targetNodeId?: string;
+    triggerType: string;
+    triggerSource?: string;
+    expenseAmount?: string;
+    expenseCurrency?: string;
+    deadline?: string;
+    deliverables?: string[];
+    notes?: string;
+  }) {
+    const policy: AgentTaskPolicy =
+      AGENT_TASK_POLICIES[params.creatorRoleId] ??
+      AGENT_TASK_POLICIES._default;
+
+    // 1. Can create tasks?
+    if (!policy.canCreateTasks) {
+      throw new BadRequestError(
+        `Role '${params.creatorRoleId}' is not allowed to create tasks`,
+      );
+    }
+
+    // 2. Rate limit: daily
+    const todayCount = await this.countAgentTasksToday(
+      params.creatorRoleId,
+      params.creatorNodeId,
+    );
+    if (todayCount >= policy.maxTasksPerDay) {
+      throw new BadRequestError(
+        `Daily task limit reached (${policy.maxTasksPerDay}/day) for role '${params.creatorRoleId}'`,
+      );
+    }
+
+    // 3. Rate limit: hourly
+    const hourCount = await this.countAgentTasksLastHour(
+      params.creatorRoleId,
+      params.creatorNodeId,
+    );
+    if (hourCount >= policy.maxTasksPerHour) {
+      throw new BadRequestError(
+        `Hourly task limit reached (${policy.maxTasksPerHour}/hr) for role '${params.creatorRoleId}'`,
+      );
+    }
+
+    // 4. Category validation
+    const category = params.category ?? "operational";
+    if (!policy.allowedCategories.includes(category)) {
+      throw new BadRequestError(
+        `Role '${params.creatorRoleId}' cannot create '${category}' tasks. Allowed: ${policy.allowedCategories.join(", ")}`,
+      );
+    }
+
+    // 5. Delegation check
+    const targetRole = params.targetRoleId ?? params.creatorRoleId;
+    if (targetRole !== params.creatorRoleId) {
+      const canDelegate =
+        policy.canDelegateToRoles.includes("*") ||
+        policy.canDelegateToRoles.includes(targetRole);
+      if (!canDelegate) {
+        throw new BadRequestError(
+          `Role '${params.creatorRoleId}' cannot delegate tasks to '${targetRole}'. Allowed: ${policy.canDelegateToRoles.join(", ") || "none"}`,
+        );
+      }
+    }
+
+    // 6. Expense limit check
+    if (params.expenseAmount) {
+      const amount = parseFloat(params.expenseAmount);
+      if (policy.maxExpenseAmount !== null && amount > policy.maxExpenseAmount) {
+        throw new BadRequestError(
+          `Expense amount ${amount} exceeds limit ${policy.maxExpenseAmount} for role '${params.creatorRoleId}'`,
+        );
+      }
+    }
+
+    // 7. Duplicate detection
+    const isDuplicate = await this.findDuplicateTask(
+      params.title,
+      targetRole,
+    );
+    if (isDuplicate) {
+      throw new BadRequestError(
+        `Duplicate task detected: a task with title '${params.title}' was already created for role '${targetRole}' within the last 24h`,
+      );
+    }
+
+    // 8. Create the task
+    const assignedBy = `agent:${params.creatorRoleId}:${params.creatorNodeId}`;
+    const status = policy.requiresApproval ? "draft" : "pending";
+
+    const task = await this.createTask({
+      title: params.title,
+      description: params.description,
+      category,
+      priority: params.priority ?? "medium",
+      status,
+      assignedRoleId: targetRole,
+      assignedNodeId: params.targetNodeId,
+      assignedBy,
+      deadline: params.deadline ? new Date(params.deadline) : undefined,
+      deliverables: params.deliverables,
+      notes: params.notes
+        ? `[trigger:${params.triggerType}] ${params.notes}`
+        : `[trigger:${params.triggerType}]${params.triggerSource ? ` source:${params.triggerSource}` : ""}`,
+      expenseAmount: params.expenseAmount,
+      expenseCurrency: params.expenseCurrency,
+    });
+
+    logger.info(
+      {
+        taskId: task.id,
+        taskCode: task.taskCode,
+        creatorRole: params.creatorRoleId,
+        creatorNode: params.creatorNodeId,
+        targetRole,
+        triggerType: params.triggerType,
+        requiresApproval: policy.requiresApproval,
+      },
+      "Agent task created autonomously",
+    );
+
+    return {
+      task,
+      policy_applied: {
+        requires_approval: policy.requiresApproval,
+        daily_remaining: policy.maxTasksPerDay - todayCount - 1,
+        hourly_remaining: policy.maxTasksPerHour - hourCount - 1,
+      },
+    };
   }
 }

@@ -68,5 +68,20 @@
     "assignButton": "Assign Selected",
     "assigning": "Assigning..."
   },
-  "newRole": "+ New Role"
+  "newRole": "+ New Role",
+  "wizardTitle": "AI Role Wizard",
+  "wizardSubtitle": "Describe your role and let AI generate the configuration",
+  "wizardRoleDescription": "Role Description",
+  "wizardRoleDescriptionPlaceholder": "Describe the role's responsibilities, goals, and capabilities...",
+  "wizardCompanyInfo": "Company Info",
+  "wizardCompanyInfoPlaceholder": "Enter information about your company, industry, scale, and culture...",
+  "wizardGenerate": "AI Generate",
+  "wizardGenerating": "Generating…",
+  "modeAutonomous": "Autonomous",
+  "modeCopilot": "Copilot",
+  "optional": "Optional",
+  "cancel": "Cancel",
+  "saveRole": "Save Role",
+  "saving": "Saving…",
+  "roleIdHint": "Lowercase letters, numbers, hyphens, and underscores only. Cannot be changed after creation."
 }

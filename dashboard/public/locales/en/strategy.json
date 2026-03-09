@@ -68,5 +68,23 @@
     "date": "Date",
     "compare": "Compare",
     "restore": "Restore"
+  },
+  "ai": {
+    "title": "AI Strategy Generation",
+    "description": "Generate a strategy draft using AI. You can apply the result to the form for further editing.",
+    "generationMode": "Generation Mode",
+    "modeNew": "New Generation",
+    "modeUpdate": "Update Existing",
+    "industry": "Industry",
+    "industryPlaceholder": "e.g. E-commerce, SaaS, Manufacturing...",
+    "companyInfo": "Company Info",
+    "companyInfoPlaceholder": "Describe your company, scale, strengths...",
+    "updateInstruction": "Update Instruction",
+    "updateInstructionPlaceholder": "What should change in the updated strategy?",
+    "generate": "Generate with AI",
+    "generating": "Generating…",
+    "cancel": "Cancel",
+    "applyResult": "Apply to Strategy",
+    "previewHint": "Preview generated. Review the output below before applying."
   }
 }

@@ -68,5 +68,23 @@
     "date": "日期",
     "compare": "比较",
     "restore": "恢复"
+  },
+  "ai": {
+    "title": "AI 战略生成",
+    "description": "使用 AI 生成战略草案。您可以将结果应用到表单中进一步编辑。",
+    "generationMode": "生成模式",
+    "modeNew": "全新生成",
+    "modeUpdate": "更新现有",
+    "industry": "行业",
+    "industryPlaceholder": "例如：电商、SaaS、制造业…",
+    "companyInfo": "公司信息",
+    "companyInfoPlaceholder": "描述公司概况、规模和优势…",
+    "updateInstruction": "更新说明",
+    "updateInstructionPlaceholder": "战略中需要变更的内容是什么？",
+    "generate": "AI 生成",
+    "generating": "生成中…",
+    "cancel": "取消",
+    "applyResult": "应用到战略",
+    "previewHint": "预览已生成。请在应用前查看以下内容。"
   }
 }

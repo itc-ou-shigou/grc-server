@@ -27,6 +27,7 @@ import { OrgChart } from './pages/employees/OrgChart';
 import { RoleTemplates } from './pages/roles/RoleTemplates';
 import { RoleEditor } from './pages/roles/RoleEditor';
 import { RoleCreate } from './pages/roles/RoleCreate';
+import { RoleCreateWizard } from './pages/roles/RoleCreateWizard';
 import { RoleAssign } from './pages/roles/RoleAssign';
 // Task Management
 import { TaskBoard } from './pages/tasks/TaskBoard';
@@ -71,6 +72,7 @@ export function App() {
               <Route path="/employees/org" element={<AdminRoute><OrgChart /></AdminRoute>} />
               <Route path="/roles" element={<AdminRoute><RoleTemplates /></AdminRoute>} />
               <Route path="/roles/create" element={<AdminRoute><RoleCreate /></AdminRoute>} />
+              <Route path="/roles/create-wizard" element={<AdminRoute><RoleCreateWizard /></AdminRoute>} />
               <Route path="/roles/:id" element={<AdminRoute><RoleEditor /></AdminRoute>} />
               <Route path="/roles/:id/assign" element={<AdminRoute><RoleAssign /></AdminRoute>} />
               {/* Task Management (admin) */}

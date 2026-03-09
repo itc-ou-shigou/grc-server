@@ -878,11 +878,28 @@ export function useAdminTasks(params?: {
   priority?: string;
   category?: string;
   assigned_role_id?: string;
+  assigned_by?: string;
 }) {
   return useQuery<PaginatedResponse<Task>>({
     queryKey: ['admin', 'tasks', params],
     queryFn: () =>
       apiClient.get<PaginatedResponse<Task>>('/api/v1/admin/tasks', params as Record<string, string | number | boolean | undefined>),
+  });
+}
+
+export function useGenerateRolePreview() {
+  return useMutation({
+    mutationFn: async (data: { company_info?: string; role_description: string; mode: string }) => {
+      return apiClient.post<unknown>('/api/v1/admin/roles/generate-preview', data);
+    },
+  });
+}
+
+export function useGenerateStrategyPreview() {
+  return useMutation({
+    mutationFn: async (data: { industry: string; company_info: string; mode: 'new' | 'update'; update_instruction?: string }) => {
+      return apiClient.post<unknown>('/api/v1/admin/strategy/generate-preview', data);
+    },
   });
 }
 

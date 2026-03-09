@@ -6,6 +6,7 @@ import {
   useStrategyDiff,
   useUpdateStrategy,
   useDeployStrategy,
+  useGenerateStrategyPreview,
   type CompanyStrategy,
   type StrategyHistoryEntry,
 } from '../../api/hooks';
@@ -782,11 +783,15 @@ export function Strategy() {
   const { data: historyData, isLoading: historyLoading } = useStrategyHistory({ page_size: 20 });
   const updateStrategy = useUpdateStrategy();
   const deployStrategy = useDeployStrategy();
+  const generateStrategy = useGenerateStrategyPreview();
 
   const strategy = strategyData?.data ?? null;
 
   // Tab state
   const [activeTab, setActiveTab] = useState<TabIndex>(0);
+
+  // AI Generation modal state
+  const [showAiModal, setShowAiModal] = useState(false);
 
   // Company profile state
   const [mission, setMission] = useState('');
@@ -911,6 +916,13 @@ export function Strategy() {
             onClick={() => setShowHistory(true)}
           >
             {t('actions.history')}
+          </button>
+          <button
+            className="btn btn-default"
+            type="button"
+            onClick={() => setShowAiModal(true)}
+          >
+            {t('actions.aiGenerate', 'AI Generate')}
           </button>
           <button
             className="btn btn-default"
@@ -1052,6 +1064,194 @@ export function Strategy() {
           isPending={updateStrategy.isPending || deployStrategy.isPending}
         />
       )}
+
+      {/* AI Generation modal */}
+      {showAiModal && (
+        <AiGenerateModal
+          onClose={() => setShowAiModal(false)}
+          onApply={(generated) => {
+            if (generated.companyMission != null) setMission(generated.companyMission);
+            if (generated.companyVision != null) setVision(generated.companyVision);
+            if (generated.companyValues != null) setValues(generated.companyValues);
+            if (generated.shortTermObjectives !== undefined) setShortTerm(parseShortTerm(generated.shortTermObjectives));
+            if (generated.midTermObjectives !== undefined) setMidTerm(parseMidTerm(generated.midTermObjectives));
+            if (generated.longTermObjectives !== undefined) setLongTerm(parseLongTerm(generated.longTermObjectives));
+            if (generated.departmentBudgets !== undefined) setBudgets(parseBudgets(generated.departmentBudgets));
+            if (generated.departmentKpis !== undefined) setKpis(parseKpis(generated.departmentKpis));
+            setShowAiModal(false);
+            showStatus('success', 'AI-generated strategy applied to form.');
+          }}
+          generateStrategy={generateStrategy}
+        />
+      )}
     </div>
+  );
+}
+
+// ---------------------------------------------------------------------------
+// AI Generate Modal
+// ---------------------------------------------------------------------------
+
+interface AiGenerateModalProps {
+  onClose: () => void;
+  onApply: (data: Partial<CompanyStrategy>) => void;
+  generateStrategy: ReturnType<typeof useGenerateStrategyPreview>;
+}
+
+function AiGenerateModal({ onClose, onApply, generateStrategy }: AiGenerateModalProps) {
+  const { t } = useTranslation('strategy');
+  const [genMode, setGenMode] = useState<'new' | 'update'>('new');
+  const [industry, setIndustry] = useState('');
+  const [companyInfo, setCompanyInfo] = useState('');
+  const [updateInstruction, setUpdateInstruction] = useState('');
+  const [preview, setPreview] = useState<Partial<CompanyStrategy> | null>(null);
+
+  const isValid = industry.trim() !== '' && companyInfo.trim() !== '';
+
+  async function handleGenerate() {
+    if (!isValid) return;
+    try {
+      const result = await generateStrategy.mutateAsync({
+        industry: industry.trim(),
+        company_info: companyInfo.trim(),
+        mode: genMode,
+        update_instruction: genMode === 'update' && updateInstruction.trim() ? updateInstruction.trim() : undefined,
+      });
+      setPreview(result as Partial<CompanyStrategy>);
+    } catch {
+      // error displayed via generateStrategy.error
+    }
+  }
+
+  return (
+    <Modal open onClose={onClose} title={t('ai.title', 'AI Strategy Generation')} size="lg">
+      <div>
+        <p className="text-muted" style={{ fontSize: '0.875rem', marginBottom: '1.25rem' }}>
+          {t('ai.description', 'Generate a strategy draft using AI. You can apply the result to the form for further editing.')}
+        </p>
+
+        {generateStrategy.error && <ErrorMessage error={generateStrategy.error as Error} />}
+
+        <div className="form-group">
+          <label className="form-label">{t('ai.generationMode', 'Generation Mode')}</label>
+          <div style={{ display: 'flex', gap: '1.5rem', marginTop: '0.375rem' }}>
+            <label style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', cursor: 'pointer' }}>
+              <input
+                type="radio"
+                name="aiGenMode"
+                value="new"
+                checked={genMode === 'new'}
+                onChange={() => setGenMode('new')}
+              />
+              <span>{t('ai.modeNew', 'New Generation')}</span>
+            </label>
+            <label style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', cursor: 'pointer' }}>
+              <input
+                type="radio"
+                name="aiGenMode"
+                value="update"
+                checked={genMode === 'update'}
+                onChange={() => setGenMode('update')}
+              />
+              <span>{t('ai.modeUpdate', 'Update Existing')}</span>
+            </label>
+          </div>
+        </div>
+
+        <div className="form-group">
+          <label className="form-label">
+            {t('ai.industry', 'Industry')} <span style={{ color: 'var(--color-danger, #ef4444)' }}>*</span>
+          </label>
+          <input
+            className="input"
+            type="text"
+            value={industry}
+            onChange={e => setIndustry(e.target.value)}
+            placeholder={t('ai.industryPlaceholder', 'e.g. SaaS, Fintech, Healthcare')}
+          />
+        </div>
+
+        <div className="form-group">
+          <label className="form-label">
+            {t('ai.companyInfo', 'Company Info')} <span style={{ color: 'var(--color-danger, #ef4444)' }}>*</span>
+          </label>
+          <textarea
+            className="textarea"
+            rows={4}
+            value={companyInfo}
+            onChange={e => setCompanyInfo(e.target.value)}
+            placeholder={t('ai.companyInfoPlaceholder', 'Describe your company, size, target market, current situation...')}
+          />
+        </div>
+
+        {genMode === 'update' && (
+          <div className="form-group">
+            <label className="form-label">{t('ai.updateInstruction', 'Update Instruction')}</label>
+            <textarea
+              className="textarea"
+              rows={3}
+              value={updateInstruction}
+              onChange={e => setUpdateInstruction(e.target.value)}
+              placeholder={t('ai.updateInstructionPlaceholder', 'What should change in the updated strategy?')}
+            />
+          </div>
+        )}
+
+        <div style={{ display: 'flex', gap: '0.5rem', marginBottom: '1rem' }}>
+          <button
+            className="btn btn-primary"
+            type="button"
+            onClick={handleGenerate}
+            disabled={!isValid || generateStrategy.isPending}
+          >
+            {generateStrategy.isPending ? t('ai.generating', 'Generating…') : t('ai.generate', 'Generate')}
+          </button>
+          <button className="btn btn-default" type="button" onClick={onClose}>
+            {t('ai.cancel', 'Cancel')}
+          </button>
+        </div>
+
+        {preview && (
+          <div
+            style={{
+              background: 'var(--bg-subtle, #f8f8fc)',
+              border: '1px solid var(--border, #e5e7eb)',
+              borderRadius: 6,
+              padding: '0.875rem',
+              marginTop: '0.5rem',
+            }}
+          >
+            <p className="text-muted" style={{ fontSize: '0.8125rem', marginBottom: '0.75rem' }}>
+              {t('ai.previewHint', 'Preview generated. Review the output below before applying.')}
+            </p>
+            {preview.companyMission && (
+              <div style={{ marginBottom: '0.5rem' }}>
+                <span className="form-label" style={{ display: 'block', fontSize: '0.75rem' }}>Mission</span>
+                <p style={{ fontSize: '0.8125rem', margin: 0 }}>{preview.companyMission}</p>
+              </div>
+            )}
+            {preview.companyVision && (
+              <div style={{ marginBottom: '0.5rem' }}>
+                <span className="form-label" style={{ display: 'block', fontSize: '0.75rem' }}>Vision</span>
+                <p style={{ fontSize: '0.8125rem', margin: 0 }}>{preview.companyVision}</p>
+              </div>
+            )}
+            {preview.companyValues && (
+              <div style={{ marginBottom: '0.75rem' }}>
+                <span className="form-label" style={{ display: 'block', fontSize: '0.75rem' }}>Values</span>
+                <p style={{ fontSize: '0.8125rem', margin: 0 }}>{preview.companyValues}</p>
+              </div>
+            )}
+            <button
+              className="btn btn-primary"
+              type="button"
+              onClick={() => onApply(preview)}
+            >
+              {t('ai.applyResult', 'Apply to Strategy')}
+            </button>
+          </div>
+        )}
+      </div>
+    </Modal>
   );
 }

@@ -2,7 +2,9 @@
   "board": {
     "title": "タスクボード",
     "subtitle": "AIエンプロイーのタスクを管理・追跡",
-    "createTask": "+ タスク作成"
+    "createTask": "+ タスク作成",
+    "monitoringOn": "監視中: ON",
+    "monitoringOff": "監視モード"
   },
   "filters": {
     "searchPlaceholder": "タスクを検索…",
