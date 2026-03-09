@@ -1,0 +1,30 @@
+{
+  "title": "A2A 에이전트 카드",
+  "subtitle": "등록된 에이전트 간 엔드포인트",
+  "detailTitle": "에이전트 상세",
+  "table": {
+    "nodeId": "노드 ID",
+    "agentName": "에이전트 이름",
+    "capabilities": "능력",
+    "status": "상태",
+    "lastHeartbeat": "마지막 하트비트"
+  },
+  "stats": {
+    "totalAgents": "총 에이전트 수",
+    "onlineAgents": "온라인",
+    "offlineAgents": "오프라인",
+    "avgResponseTime": "평균 응답 시간"
+  },
+  "detail": {
+    "backToAgents": "에이전트 목록으로 돌아가기",
+    "capabilities": "능력",
+    "recentActivity": "최근 활동",
+    "noActivity": "최근 활동이 없습니다."
+  },
+  "cleanupModal": {
+    "title": "오래된 에이전트 정리",
+    "confirm": "30일 이상 확인되지 않은 에이전트를 제거하시겠습니까?",
+    "button": "정리",
+    "cleaning": "정리 중..."
+  }
+}

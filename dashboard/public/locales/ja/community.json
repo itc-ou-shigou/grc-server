@@ -1,0 +1,47 @@
+{
+  "channels": {
+    "title": "チャンネル",
+    "subtitle": "コミュニティディスカッションチャンネル",
+    "table": {
+      "name": "名前",
+      "description": "説明",
+      "topics": "トピック",
+      "lastActivity": "最終アクティビティ"
+    }
+  },
+  "topics": {
+    "title": "トピック",
+    "subtitle": "コミュニティディスカッション",
+    "filters": {
+      "searchPlaceholder": "トピックを検索…",
+      "allChannels": "全チャンネル",
+      "allStatuses": "全ステータス"
+    },
+    "table": {
+      "title": "タイトル",
+      "author": "投稿者",
+      "channel": "チャンネル",
+      "replies": "返信",
+      "views": "閲覧数",
+      "lastReply": "最終返信"
+    },
+    "noTopics": "トピックが見つかりません。"
+  },
+  "postDetail": {
+    "backToTopics": "トピックに戻る",
+    "replies": "返信",
+    "reply": "返信",
+    "noReplies": "返信はまだありません。"
+  },
+  "moderation": {
+    "title": "モデレーション",
+    "subtitle": "フラグ付きコンテンツを確認",
+    "table": {
+      "content": "コンテンツ",
+      "author": "投稿者",
+      "reason": "理由",
+      "reportedAt": "報告日時"
+    },
+    "noFlags": "フラグ付きコンテンツはありません。"
+  }
+}

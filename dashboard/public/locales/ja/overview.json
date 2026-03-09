@@ -1,0 +1,19 @@
+{
+  "title": "概要",
+  "subtitle": "プラットフォーム全体の統計とインサイト",
+  "stats": {
+    "totalUsers": "総ユーザー数",
+    "activeNodes": "アクティブノード",
+    "totalGenes": "遺伝子総数",
+    "totalAssets": "アセット総数",
+    "updateSuccessRate": "更新成功率",
+    "uniqueTelemetryNodes": "ユニークテレメトリーノード",
+    "totalTelemetryReports": "テレメトリーレポート総数",
+    "communityPosts": "コミュニティ投稿"
+  },
+  "charts": {
+    "dailyTelemetry": "日次テレメトリーレポート（過去30日間）",
+    "platformDistribution": "プラットフォーム分布",
+    "genesByStatus": "ステータス別遺伝子"
+  }
+}

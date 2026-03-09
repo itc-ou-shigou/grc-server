@@ -1107,3 +1107,189 @@ input, select, textarea {
     grid-template-columns: 1fr;
   }
 }
+
+/* ============================================================
+   i18n: Loading Screen
+   ============================================================ */
+.loading-screen {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 100vh;
+  font-size: 16px;
+  color: var(--color-text-secondary);
+  background: var(--color-bg);
+}
+
+/* ============================================================
+   i18n: Login Language Switcher
+   ============================================================ */
+.login-language-switcher {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.login-lang-icon {
+  font-size: 16px;
+  line-height: 1;
+}
+
+.login-lang-select {
+  appearance: none;
+  background: rgba(255, 255, 255, 0.15);
+  border: 1px solid rgba(255, 255, 255, 0.25);
+  border-radius: var(--radius-sm);
+  color: #fff;
+  font-size: 12px;
+  padding: 4px 8px;
+  cursor: pointer;
+  outline: none;
+  backdrop-filter: blur(4px);
+  transition: background var(--transition);
+}
+
+.login-lang-select:hover {
+  background: rgba(255, 255, 255, 0.25);
+}
+
+.login-lang-select:focus {
+  border-color: rgba(255, 255, 255, 0.5);
+}
+
+.login-lang-select option {
+  background: #1e293b;
+  color: #fff;
+}
+
+/* ============================================================
+   i18n: Sidebar Settings Button
+   ============================================================ */
+.sidebar-settings-btn {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 8px 16px;
+  color: var(--color-sidebar-text);
+  text-decoration: none;
+  font-size: 13px;
+  border-radius: var(--radius-md);
+  transition: all var(--transition);
+  margin-bottom: 4px;
+}
+
+.sidebar-settings-btn:hover {
+  color: var(--color-sidebar-text-active);
+  background: var(--color-sidebar-hover);
+}
+
+.sidebar-settings-btn.active {
+  color: var(--color-sidebar-text-active);
+  background: var(--color-sidebar-active);
+}
+
+/* ============================================================
+   i18n: Settings Page
+   ============================================================ */
+.settings-section {
+  background: var(--color-content-bg);
+  border-radius: var(--radius-lg);
+  padding: 24px;
+  box-shadow: var(--shadow-sm);
+  border: 1px solid var(--color-border);
+}
+
+.settings-section-title {
+  font-size: 16px;
+  font-weight: 700;
+  color: var(--color-text);
+  margin: 0 0 4px;
+}
+
+.settings-section-desc {
+  font-size: 13px;
+  color: var(--color-text-secondary);
+  margin: 0 0 20px;
+}
+
+.language-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
+  gap: 12px;
+}
+
+.language-card {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 14px 16px;
+  background: var(--color-bg);
+  border: 2px solid var(--color-border);
+  border-radius: var(--radius-md);
+  cursor: pointer;
+  transition: all var(--transition);
+  font-size: 14px;
+  color: var(--color-text);
+  position: relative;
+}
+
+.language-card:hover {
+  border-color: var(--color-primary);
+  background: var(--color-primary-light);
+}
+
+.language-card.active {
+  border-color: var(--color-primary);
+  background: var(--color-primary-light);
+  font-weight: 600;
+}
+
+.language-flag {
+  font-size: 22px;
+  line-height: 1;
+}
+
+.language-label {
+  flex: 1;
+}
+
+.language-check {
+  color: var(--color-primary);
+  font-weight: 700;
+  font-size: 16px;
+}
+
+/* ============================================================
+   i18n: CJK Typography
+   ============================================================ */
+html[lang="zh"],
+html[lang="zh"] body {
+  font-family: -apple-system, BlinkMacSystemFont, 'PingFang SC', 'Microsoft YaHei', 'Noto Sans SC', sans-serif;
+}
+
+html[lang="ja"],
+html[lang="ja"] body {
+  font-family: -apple-system, BlinkMacSystemFont, 'Hiragino Kaku Gothic ProN', 'Meiryo', 'Noto Sans JP', sans-serif;
+}
+
+html[lang="ko"],
+html[lang="ko"] body {
+  font-family: -apple-system, BlinkMacSystemFont, 'Apple SD Gothic Neo', 'Malgun Gothic', 'Noto Sans KR', sans-serif;
+}
+
+/* CJK: slightly increase line-height for better readability */
+html[lang="zh"] .page,
+html[lang="ja"] .page,
+html[lang="ko"] .page {
+  line-height: 1.7;
+}
+
+/* CJK: adjust sidebar text spacing */
+html[lang="zh"] .sidebar-nav-item,
+html[lang="ja"] .sidebar-nav-item,
+html[lang="ko"] .sidebar-nav-item,
+html[lang="zh"] .section-label,
+html[lang="ja"] .section-label,
+html[lang="ko"] .section-label {
+  letter-spacing: 0.02em;
+}

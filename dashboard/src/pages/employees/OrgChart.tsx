@@ -1,3 +1,4 @@
+import { useTranslation } from 'react-i18next';
 import { useEmployees, useRoleTemplates } from '../../api/hooks';
 import { StatusBadge } from '../../components/StatusBadge';
 import { ErrorMessage } from '../../components/ErrorMessage';
@@ -20,6 +21,7 @@ function isOnline(lastHeartbeat: string | null): boolean {
 }
 
 export function OrgChart() {
+  const { t } = useTranslation('employees');
   const { data: employeesData, isLoading: empLoading, error: empError } = useEmployees();
   const employees = employeesData?.data ?? [];
   const { data: rolesData, isLoading: rolesLoading, error: rolesError } = useRoleTemplates();
@@ -34,7 +36,7 @@ export function OrgChart() {
     return (
       <div className="page">
         <div className="page-header">
-          <h1 className="page-title">Org Chart</h1>
+          <h1 className="page-title">{t('orgTitle')}</h1>
         </div>
         <p className="text-muted">Loading…</p>
       </div>
@@ -82,8 +84,8 @@ export function OrgChart() {
     <div className="page">
       <div className="page-header">
         <div>
-          <h1 className="page-title">Org Chart</h1>
-          <p className="page-subtitle">Agent hierarchy by role and department</p>
+          <h1 className="page-title">{t('orgTitle')}</h1>
+          <p className="page-subtitle">{t('orgSubtitle')}</p>
         </div>
       </div>
 
@@ -102,7 +104,7 @@ export function OrgChart() {
         </div>
         <div className="stat-card">
           <div className="stat-value text-warning">{unassigned.length}</div>
-          <div className="stat-label">Unassigned</div>
+          <div className="stat-label">{t('noRole')}</div>
         </div>
       </div>
 
@@ -187,7 +189,7 @@ export function OrgChart() {
       {unassigned.length > 0 && (
         <div style={{ marginBottom: '2rem' }}>
           <h2 style={{ fontSize: '1rem', fontWeight: 600, marginBottom: '0.75rem', textTransform: 'uppercase', letterSpacing: '0.05em' }}>
-            <span className="text-muted">Unassigned</span>
+            <span className="text-muted">{t('noRole')}</span>
           </h2>
           <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.5rem' }}>
             {unassigned.map(emp => {

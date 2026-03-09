@@ -1,0 +1,34 @@
+{
+  "title": "ユーザー",
+  "subtitle": "登録ユーザーを管理",
+  "table": {
+    "displayName": "表示名",
+    "email": "メール",
+    "provider": "プロバイダー",
+    "tier": "ティア",
+    "role": "ロール",
+    "assets": "アセット",
+    "joined": "登録日"
+  },
+  "filters": {
+    "searchPlaceholder": "名前またはメールで検索…",
+    "allProviders": "全プロバイダー",
+    "allTiers": "全ティア",
+    "allRoles": "全ロール",
+    "count": "{{count}}人のユーザー",
+    "count_other": "{{count}}人のユーザー"
+  },
+  "tierModal": {
+    "title": "ティア変更 — {{name}}",
+    "label": "ティア",
+    "updating": "更新中..."
+  },
+  "banModal": {
+    "title": "ユーザーをBAN — {{name}}",
+    "confirm": "{{name}}をBANしますか？アクセス権が取り消されます。",
+    "button": "BANする",
+    "banning": "BAN中..."
+  },
+  "unban": "BAN解除",
+  "changeTier": "ティア変更"
+}

@@ -1,0 +1,29 @@
+{
+  "title": "A2A Relay Log",
+  "subtitle": "Agent-to-agent message relay history",
+  "stats": {
+    "totalMessages": "Total Messages",
+    "todayMessages": "Today",
+    "successRate": "Success Rate",
+    "avgLatency": "Avg Latency"
+  },
+  "table": {
+    "from": "From",
+    "to": "To",
+    "method": "Method",
+    "status": "Status",
+    "latency": "Latency",
+    "timestamp": "Timestamp"
+  },
+  "filters": {
+    "searchPlaceholder": "Search messages…",
+    "allStatuses": "All Statuses",
+    "allMethods": "All Methods"
+  },
+  "cleanupModal": {
+    "title": "Cleanup Old Logs",
+    "confirm": "Remove relay logs older than 30 days?",
+    "button": "Cleanup",
+    "cleaning": "Cleaning up..."
+  }
+}

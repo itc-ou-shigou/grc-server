@@ -1,0 +1,30 @@
+{
+  "title": "A2Aエージェントカード",
+  "subtitle": "登録されたエージェント間エンドポイント",
+  "detailTitle": "エージェント詳細",
+  "table": {
+    "nodeId": "ノードID",
+    "agentName": "エージェント名",
+    "capabilities": "能力",
+    "status": "ステータス",
+    "lastHeartbeat": "最終ハートビート"
+  },
+  "stats": {
+    "totalAgents": "総エージェント数",
+    "onlineAgents": "オンライン",
+    "offlineAgents": "オフライン",
+    "avgResponseTime": "平均応答時間"
+  },
+  "detail": {
+    "backToAgents": "エージェント一覧に戻る",
+    "capabilities": "能力",
+    "recentActivity": "最近のアクティビティ",
+    "noActivity": "最近のアクティビティはありません。"
+  },
+  "cleanupModal": {
+    "title": "古いエージェントを整理",
+    "confirm": "30日以上確認されていないエージェントを削除しますか？",
+    "button": "整理",
+    "cleaning": "整理中..."
+  }
+}

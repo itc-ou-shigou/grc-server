@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import { useEmployees, useRoleTemplates, useAssignRole, useUnassignRole } from '../../api/hooks';
 import { DataTable } from '../../components/DataTable';
 import { StatusBadge } from '../../components/StatusBadge';
@@ -30,6 +31,7 @@ interface UnassignModalState {
 }
 
 export function Employees() {
+  const { t } = useTranslation('employees');
   const { data: employeesData, isLoading, error } = useEmployees();
   const employees = employeesData?.data ?? [];
   const { data: rolesData } = useRoleTemplates();
@@ -60,7 +62,7 @@ export function Employees() {
     },
     {
       key: 'employeeName',
-      label: 'Name',
+      label: t('table.name'),
       render: (_v: unknown, row: Record<string, unknown>) => {
         const emp = row as unknown as EmpRow;
         return (
@@ -73,7 +75,7 @@ export function Employees() {
     },
     {
       key: 'nodeId',
-      label: 'Node ID',
+      label: t('table.nodeId'),
       render: (_v: unknown, row: Record<string, unknown>) => {
         const emp = row as unknown as EmpRow;
         const nodeId = emp.nodeId ?? '';
@@ -86,7 +88,7 @@ export function Employees() {
     },
     {
       key: 'roleId',
-      label: 'Role',
+      label: t('table.role'),
       render: (_v: unknown, row: Record<string, unknown>) => {
         const emp = row as unknown as EmpRow;
         return emp.roleId ? (
@@ -110,7 +112,7 @@ export function Employees() {
     },
     {
       key: 'sync',
-      label: 'Config Sync',
+      label: t('table.configSync'),
       render: (_v: unknown, row: Record<string, unknown>) => {
         const emp = row as unknown as EmpRow;
         const synced = emp.configRevision === emp.configAppliedRevision;
@@ -123,7 +125,7 @@ export function Employees() {
     },
     {
       key: 'lastHeartbeat',
-      label: 'Last Seen',
+      label: t('table.lastSync'),
       render: (_v: unknown, row: Record<string, unknown>) => {
         const emp = row as unknown as EmpRow;
         if (!emp.lastHeartbeat) return <span className="text-muted">never</span>;
@@ -148,14 +150,14 @@ export function Employees() {
                 setSelectedMode((emp.roleMode as 'autonomous' | 'copilot') ?? 'autonomous');
               }}
             >
-              Assign Role
+              {t('assignModal.button')}
             </button>
             {emp.roleId && (
               <button
                 className="btn btn-danger btn-sm"
                 onClick={() => setUnassignModal({ open: true, nodeId: emp.nodeId ?? '', employeeName: emp.employeeName ?? '' })}
               >
-                Unassign
+                {t('unassignModal.button')}
               </button>
             )}
           </div>
@@ -181,8 +183,8 @@ export function Employees() {
     <div className="page">
       <div className="page-header">
         <div>
-          <h1 className="page-title">Employees</h1>
-          <p className="page-subtitle">Manage agent nodes and role assignments</p>
+          <h1 className="page-title">{t('title')}</h1>
+          <p className="page-subtitle">{t('subtitle')}</p>
         </div>
       </div>
 
@@ -196,7 +198,7 @@ export function Employees() {
           {roles.map(r => (
             <option key={r.id} value={r.id}>{r.name}</option>
           ))}
-          <option value="__unassigned__">Unassigned</option>
+          <option value="__unassigned__">{t('noRole')}</option>
         </select>
         <span className="text-muted" style={{ fontSize: '0.875rem' }}>
           {filtered.length} employee{filtered.length !== 1 ? 's' : ''}
@@ -213,7 +215,7 @@ export function Employees() {
       <Modal
         open={assignModal.open}
         onClose={() => setAssignModal({ open: false, nodeId: '', employeeName: '' })}
-        title={`Assign Role — ${assignModal.employeeName}`}
+        title={t('assignModal.title', { name: assignModal.employeeName })}
         footer={
           <div className="modal-footer-actions">
             <button className="btn btn-default" onClick={() => setAssignModal({ open: false, nodeId: '', employeeName: '' })}>
@@ -224,7 +226,7 @@ export function Employees() {
               onClick={handleAssign}
               disabled={!selectedRoleId || assignRole.isPending}
             >
-              {assignRole.isPending ? 'Assigning…' : 'Assign'}
+              {assignRole.isPending ? t('assignModal.assigning') : t('assignModal.button')}
             </button>
           </div>
         }
@@ -236,7 +238,7 @@ export function Employees() {
             value={selectedRoleId}
             onChange={e => setSelectedRoleId(e.target.value)}
           >
-            <option value="">Select a role…</option>
+            <option value="">{t('assignModal.selectRole')}</option>
             {roles.map(r => (
               <option key={r.id} value={r.id}>{r.name} ({r.id})</option>
             ))}
@@ -259,7 +261,7 @@ export function Employees() {
       <Modal
         open={unassignModal.open}
         onClose={() => setUnassignModal({ open: false, nodeId: '', employeeName: '' })}
-        title={`Unassign Role — ${unassignModal.employeeName}`}
+        title={t('unassignModal.title', { name: unassignModal.employeeName })}
         footer={
           <div className="modal-footer-actions">
             <button className="btn btn-default" onClick={() => setUnassignModal({ open: false, nodeId: '', employeeName: '' })}>
@@ -270,7 +272,7 @@ export function Employees() {
               onClick={handleUnassign}
               disabled={unassignRole.isPending}
             >
-              {unassignRole.isPending ? 'Unassigning…' : 'Unassign'}
+              {unassignRole.isPending ? t('unassignModal.unassigning') : t('unassignModal.button')}
             </button>
           </div>
         }

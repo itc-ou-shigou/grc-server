@@ -1,0 +1,72 @@
+{
+  "title": "ロールテンプレート",
+  "subtitle": "エージェントのロール、動作、能力を設定",
+  "createTitle": "ロール作成",
+  "createSubtitle": "新しいロールテンプレートを定義",
+  "editTitle": "ロール編集 — {{name}}",
+  "assignTitle": "ロール割り当て — {{name}}",
+  "table": {
+    "id": "ID",
+    "name": "名前",
+    "mode": "モード",
+    "department": "部署",
+    "industry": "業種",
+    "created": "作成日",
+    "builtin": "組み込み"
+  },
+  "filters": {
+    "searchPlaceholder": "名前またはIDで検索…",
+    "allModes": "全モード",
+    "autonomous": "自律",
+    "copilot": "コパイロット",
+    "count": "{{count}}個のロール",
+    "count_other": "{{count}}個のロール"
+  },
+  "editor": {
+    "basicInfo": "基本情報",
+    "roleId": "ロールID",
+    "displayName": "表示名",
+    "description": "説明",
+    "department": "部署",
+    "industry": "業種",
+    "mode": "モード",
+    "emoji": "絵文字",
+    "tabs": {
+      "identity": "アイデンティティ",
+      "soul": "ソウル",
+      "agents": "エージェント",
+      "user": "ユーザー",
+      "tools": "ツール",
+      "heartbeat": "ハートビート",
+      "bootstrap": "ブートストラップ",
+      "tasks": "タスク"
+    },
+    "save": "変更を保存",
+    "saving": "保存中...",
+    "saved": "ロールを保存しました。"
+  },
+  "cloneModal": {
+    "title": "複製 — {{name}}",
+    "newId": "新しいロールID",
+    "newIdPlaceholder": "my-custom-role",
+    "newName": "表示名",
+    "newNamePlaceholder": "マイカスタムロール",
+    "button": "複製",
+    "cloning": "複製中..."
+  },
+  "deleteModal": {
+    "title": "ロールを削除 — {{name}}",
+    "confirm": "{{name}} ({{id}})を完全に削除しますか？このロールが割り当てられている社員は未割り当てになります。",
+    "button": "削除",
+    "deleting": "削除中...",
+    "builtinWarning": "組み込みロールは削除できません"
+  },
+  "assign": {
+    "subtitle": "このロールを割り当てる社員を選択",
+    "unassignedAgents": "未割り当てのエージェント",
+    "noUnassigned": "全てのエージェントにロールが割り当てられています。",
+    "assignButton": "選択項目を割り当て",
+    "assigning": "割り当て中..."
+  },
+  "newRole": "+ 新しいロール"
+}

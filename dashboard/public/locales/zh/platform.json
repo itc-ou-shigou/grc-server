@@ -1,0 +1,11 @@
+{
+  "title": "平台配置值",
+  "subtitle": "核心平台配置值",
+  "table": {
+    "key": "键",
+    "value": "值",
+    "description": "描述",
+    "updated": "更新时间"
+  },
+  "noValues": "未配置平台配置值。"
+}

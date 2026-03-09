@@ -1,0 +1,10 @@
+{
+  "title": "設定",
+  "subtitle": "設定を管理",
+  "language": {
+    "title": "言語",
+    "description": "表示言語を選択してください。インターフェースはすぐに更新されます。",
+    "current": "現在の言語：{{language}}",
+    "browserDetected": "ブラウザから検出：{{language}}"
+  }
+}

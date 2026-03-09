@@ -1,0 +1,19 @@
+{
+  "title": "Overview",
+  "subtitle": "Platform-wide statistics and insights",
+  "stats": {
+    "totalUsers": "Total Users",
+    "activeNodes": "Active Nodes",
+    "totalGenes": "Total Genes",
+    "totalAssets": "Total Assets",
+    "updateSuccessRate": "Update Success Rate",
+    "uniqueTelemetryNodes": "Unique Telemetry Nodes",
+    "totalTelemetryReports": "Total Telemetry Reports",
+    "communityPosts": "Community Posts"
+  },
+  "charts": {
+    "dailyTelemetry": "Daily Telemetry Reports (last 30 days)",
+    "platformDistribution": "Platform Distribution",
+    "genesByStatus": "Genes by Status"
+  }
+}

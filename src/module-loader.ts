@@ -100,6 +100,16 @@ export async function loadModules(
         name: "strategy",
         register: m.register,
       })),
+    "a2a-gateway": () =>
+      import("./modules/a2a-gateway/routes.js").then((m) => ({
+        name: "a2a-gateway",
+        register: m.register,
+      })),
+    meetings: () =>
+      import("./modules/meetings/routes.js").then((m) => ({
+        name: "meetings",
+        register: m.register,
+      })),
   };
 
   const adminModuleMap: Record<
@@ -117,6 +127,8 @@ export async function loadModules(
     tasks: () => import("./modules/tasks/admin-routes.js"),
     relay: () => import("./modules/relay/admin-routes.js"),
     strategy: () => import("./modules/strategy/admin-routes.js"),
+    "a2a-gateway": () => import("./modules/a2a-gateway/admin-routes.js"),
+    meetings: () => import("./modules/meetings/admin-routes.js"),
   };
 
   const loaded: string[] = [];

@@ -1140,6 +1140,286 @@ export function useCleanupRelayMessages() {
 }
 
 // ---------------------------------------------------------------------------
+// A2A Gateway types & hooks
+// ---------------------------------------------------------------------------
+
+export interface AgentCard {
+  nodeId: string;
+  agentCard: Record<string, unknown>;
+  skills: unknown[];
+  capabilities: Record<string, unknown> | null;
+  status: 'online' | 'offline' | 'busy';
+  lastSeenAt: string | null;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface AgentCardStats {
+  stats: {
+    total: number;
+    byStatus: Record<string, number>;
+  };
+}
+
+export function useAgentCards(params?: {
+  page?: number;
+  page_size?: number;
+  status?: string;
+}) {
+  return useQuery<PaginatedResponse<AgentCard>>({
+    queryKey: ['admin', 'a2a', 'agents', params],
+    queryFn: () =>
+      apiClient.get<PaginatedResponse<AgentCard>>('/api/v1/admin/a2a/agents', params as Record<string, string | number | boolean | undefined>),
+  });
+}
+
+export function useAgentCardDetail(nodeId: string) {
+  return useQuery<{ data: AgentCard }>({
+    queryKey: ['admin', 'a2a', 'agent', nodeId],
+    queryFn: () => apiClient.get<{ data: AgentCard }>(`/api/v1/admin/a2a/agents/${nodeId}`),
+    enabled: !!nodeId,
+  });
+}
+
+export function useAgentCardStats() {
+  return useQuery<AgentCardStats>({
+    queryKey: ['admin', 'a2a', 'agents', 'stats'],
+    queryFn: () => apiClient.get<AgentCardStats>('/api/v1/admin/a2a/agents/stats'),
+  });
+}
+
+export function useChangeAgentStatus() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: ({ nodeId, status }: { nodeId: string; status: string }) =>
+      apiClient.put(`/api/v1/admin/a2a/agents/${nodeId}/status`, { status }),
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ['admin', 'a2a'] });
+    },
+  });
+}
+
+export function useDeleteAgent() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: (nodeId: string) => apiClient.del(`/api/v1/admin/a2a/agents/${nodeId}`),
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ['admin', 'a2a'] });
+    },
+  });
+}
+
+export function useCleanupAgents() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: (params?: { stale_minutes?: number }) =>
+      apiClient.post('/api/v1/admin/a2a/agents/cleanup', params ?? {}),
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ['admin', 'a2a'] });
+    },
+  });
+}
+
+// ---------------------------------------------------------------------------
+// Meetings types & hooks
+// ---------------------------------------------------------------------------
+
+export interface Meeting {
+  id: string;
+  title: string;
+  type: 'discussion' | 'review' | 'brainstorm' | 'decision';
+  status: 'scheduled' | 'active' | 'paused' | 'concluded' | 'cancelled';
+  initiatorType: 'human' | 'agent';
+  initiationReason: string | null;
+  facilitatorNodeId: string;
+  contextId: string;
+  sharedContext: string | null;
+  turnPolicy: string;
+  maxDurationMinutes: number;
+  agenda: unknown[] | null;
+  decisions: unknown[] | null;
+  actionItems: unknown[] | null;
+  summary: string | null;
+  scheduledAt: string | null;
+  startedAt: string | null;
+  endedAt: string | null;
+  createdBy: string;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface MeetingParticipant {
+  id: number;
+  sessionId: string;
+  nodeId: string;
+  roleId: string;
+  displayName: string;
+  status: 'invited' | 'joined' | 'speaking' | 'left';
+  invitedAt: string;
+  joinedAt: string | null;
+  leftAt: string | null;
+}
+
+export interface MeetingTranscriptEntry {
+  id: number;
+  sessionId: string;
+  speakerNodeId: string;
+  speakerRole: string;
+  content: string;
+  type: string;
+  replyToId: number | null;
+  agendaItemIndex: number | null;
+  metadata: unknown;
+  createdAt: string;
+}
+
+export interface MeetingDetailResponse {
+  data: Meeting & {
+    participants: MeetingParticipant[];
+    transcript: MeetingTranscriptEntry[];
+  };
+}
+
+export interface MeetingStats {
+  stats: {
+    total: number;
+    byStatus: Record<string, number>;
+    byType: Record<string, number>;
+    byInitiatorType: Record<string, number>;
+  };
+}
+
+export interface MeetingAutoTrigger {
+  id: string;
+  name: string;
+  description: string | null;
+  event: string;
+  enabled: boolean;
+  facilitatorRole: string;
+  meetingTemplate: Record<string, unknown>;
+  lastTriggeredAt: string | null;
+  triggerCount: number;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export function useMeetings(params?: {
+  page?: number;
+  page_size?: number;
+  status?: string;
+  type?: string;
+  initiator_type?: string;
+}) {
+  return useQuery<PaginatedResponse<Meeting>>({
+    queryKey: ['admin', 'meetings', params],
+    queryFn: () =>
+      apiClient.get<PaginatedResponse<Meeting>>('/api/v1/admin/a2a/meetings', params as Record<string, string | number | boolean | undefined>),
+  });
+}
+
+export function useMeetingDetail(id: string) {
+  return useQuery<MeetingDetailResponse>({
+    queryKey: ['admin', 'meeting', id],
+    queryFn: () => apiClient.get<MeetingDetailResponse>(`/api/v1/admin/a2a/meetings/${id}`),
+    enabled: !!id,
+  });
+}
+
+export function useMeetingStats() {
+  return useQuery<MeetingStats>({
+    queryKey: ['admin', 'meetings', 'stats'],
+    queryFn: () => apiClient.get<MeetingStats>('/api/v1/admin/a2a/meetings/stats'),
+  });
+}
+
+export function useCreateMeeting() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: (data: Record<string, unknown>) =>
+      apiClient.post('/api/v1/admin/a2a/meetings', data),
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ['admin', 'meetings'] });
+    },
+  });
+}
+
+export function useChangeMeetingStatus() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: ({ id, status }: { id: string; status: string }) =>
+      apiClient.put(`/api/v1/admin/a2a/meetings/${id}/status`, { status }),
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ['admin', 'meetings'] });
+      qc.invalidateQueries({ queryKey: ['admin', 'meeting'] });
+    },
+  });
+}
+
+export function useSendMeetingMessage() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: ({ id, content }: { id: string; content: string }) =>
+      apiClient.post(`/api/v1/admin/a2a/meetings/${id}/message`, {
+        content,
+        speaker_role: 'admin',
+      }),
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ['admin', 'meeting'] });
+    },
+  });
+}
+
+export function useDeleteMeeting() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: (id: string) => apiClient.del(`/api/v1/admin/a2a/meetings/${id}`),
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ['admin', 'meetings'] });
+    },
+  });
+}
+
+export function useMeetingTriggers(params?: { page?: number; page_size?: number }) {
+  return useQuery<PaginatedResponse<MeetingAutoTrigger>>({
+    queryKey: ['admin', 'meetings', 'triggers', params],
+    queryFn: () =>
+      apiClient.get<PaginatedResponse<MeetingAutoTrigger>>('/api/v1/admin/a2a/triggers', params as Record<string, string | number | boolean | undefined>),
+  });
+}
+
+export function useCreateMeetingTrigger() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: (data: Record<string, unknown>) =>
+      apiClient.post('/api/v1/admin/a2a/triggers', data),
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ['admin', 'meetings', 'triggers'] });
+    },
+  });
+}
+
+export function useUpdateMeetingTrigger() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: ({ id, data }: { id: string; data: Record<string, unknown> }) =>
+      apiClient.put(`/api/v1/admin/a2a/triggers/${id}`, data),
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ['admin', 'meetings', 'triggers'] });
+    },
+  });
+}
+
+export function useDeleteMeetingTrigger() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: (id: string) => apiClient.del(`/api/v1/admin/a2a/triggers/${id}`),
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ['admin', 'meetings', 'triggers'] });
+    },
+  });
+}
+
+// ---------------------------------------------------------------------------
 // Personal Info (Node Profile)
 // ---------------------------------------------------------------------------
 

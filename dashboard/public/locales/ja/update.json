@@ -1,0 +1,21 @@
+{
+  "releases": {
+    "title": "リリース",
+    "subtitle": "更新リリースを管理",
+    "table": {
+      "version": "バージョン",
+      "channel": "チャンネル",
+      "platform": "プラットフォーム",
+      "downloads": "ダウンロード数",
+      "published": "公開日"
+    }
+  },
+  "stats": {
+    "title": "更新統計",
+    "subtitle": "更新デプロイ分析",
+    "totalUpdates": "総更新数",
+    "successRate": "成功率",
+    "avgUpdateTime": "平均更新時間",
+    "updateTrend": "更新トレンド（過去30日間）"
+  }
+}

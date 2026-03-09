@@ -1,0 +1,29 @@
+{
+  "title": "A2A 中继日志",
+  "subtitle": "代理到代理的消息中继历史",
+  "stats": {
+    "totalMessages": "消息总数",
+    "todayMessages": "今日",
+    "successRate": "成功率",
+    "avgLatency": "平均延迟"
+  },
+  "table": {
+    "from": "发送方",
+    "to": "接收方",
+    "method": "方法",
+    "status": "状态",
+    "latency": "延迟",
+    "timestamp": "时间戳"
+  },
+  "filters": {
+    "searchPlaceholder": "搜索消息…",
+    "allStatuses": "所有状态",
+    "allMethods": "所有方法"
+  },
+  "cleanupModal": {
+    "title": "清理旧日志",
+    "confirm": "删除30天以前的中继日志吗？",
+    "button": "清理",
+    "cleaning": "清理中..."
+  }
+}

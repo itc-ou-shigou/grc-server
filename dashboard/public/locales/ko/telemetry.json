@@ -1,0 +1,15 @@
+{
+  "title": "텔레메트리 인사이트",
+  "subtitle": "시스템 텔레메트리 및 상태 분석",
+  "stats": {
+    "uniqueNodes": "고유 노드",
+    "totalReports": "총 보고서 수",
+    "avgCpuUsage": "평균 CPU 사용률",
+    "avgMemoryUsage": "평균 메모리 사용률"
+  },
+  "charts": {
+    "dailyReports": "일별 보고서",
+    "platformBreakdown": "플랫폼별 분류",
+    "healthDistribution": "상태 분포"
+  }
+}

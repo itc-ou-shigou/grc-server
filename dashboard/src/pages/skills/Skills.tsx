@@ -1,4 +1,5 @@
 import { useState, useRef } from 'react';
+import { useTranslation } from 'react-i18next';
 import { DataTable, Column } from '../../components/DataTable';
 import { StatusBadge } from '../../components/StatusBadge';
 import { Modal } from '../../components/Modal';
@@ -8,9 +9,9 @@ import { useUser } from '../../context/UserContext';
 
 const CATEGORIES = ['productivity', 'development', 'data', 'communication', 'finance', 'other'];
 const SORT_OPTIONS = [
-  { value: 'createdAt', label: 'Newest' },
-  { value: 'downloads', label: 'Most Downloads' },
-  { value: 'rating', label: 'Highest Rating' },
+  { value: 'createdAt', labelKey: 'sort.newest' },
+  { value: 'downloads', labelKey: 'sort.downloads' },
+  { value: 'rating', labelKey: 'sort.rating' },
 ];
 
 interface PublishForm {
@@ -47,6 +48,7 @@ function toSlug(name: string): string {
 }
 
 export function Skills() {
+  const { t } = useTranslation('skills');
   const [page, setPage] = useState(1);
   const [category, setCategory] = useState('');
   const [sortBy, setSortBy] = useState('createdAt');
@@ -79,7 +81,7 @@ export function Skills() {
   const columns: Column<Record<string, unknown>>[] = [
     {
       key: 'name',
-      label: 'Name',
+      label: t('table.name'),
       render: (_, row) => {
         const skill = row as unknown as Skill;
         return (
@@ -90,20 +92,20 @@ export function Skills() {
         );
       },
     },
-    { key: 'authorDisplayName', label: 'Author' },
+    { key: 'authorDisplayName', label: t('table.author') },
     {
       key: 'category',
-      label: 'Category',
+      label: t('table.category'),
       render: (v) => v ? <StatusBadge status={String(v)} variant="info" /> : <span className="text-muted">—</span>,
     },
     {
       key: 'downloadCount',
-      label: 'Downloads',
+      label: t('table.downloads'),
       render: (v) => Number(v).toLocaleString(),
     },
     {
       key: 'ratingAvg',
-      label: 'Rating',
+      label: t('table.rating'),
       render: (v) => {
         const rating = Number(v);
         return (
@@ -116,7 +118,7 @@ export function Skills() {
     },
     {
       key: 'status',
-      label: 'Status',
+      label: t('table.status'),
       render: (v) => <StatusBadge status={String(v)} />,
     },
     {
@@ -207,8 +209,8 @@ export function Skills() {
       <div className="page-header">
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
           <div>
-            <h1 className="page-title">Skills</h1>
-            <p className="page-subtitle">Manage published skills in the ClawHub marketplace</p>
+            <h1 className="page-title">{t('title')}</h1>
+            <p className="page-subtitle">{t('subtitle')}</p>
           </div>
           {isAdmin && (
             <button className="btn btn-primary" onClick={() => setPublishOpen(true)}>
@@ -224,17 +226,17 @@ export function Skills() {
         <div className="filter-bar">
           <input
             className="input"
-            placeholder="Search skills…"
+            placeholder={t('filters.searchPlaceholder')}
             value={searchInput}
             onChange={(e) => setSearchInput(e.target.value)}
             onKeyDown={(e) => { if (e.key === 'Enter') { setSearch(searchInput); setPage(1); } }}
           />
           <select className="select" value={category} onChange={(e) => { setCategory(e.target.value); setPage(1); }}>
-            <option value="">All Categories</option>
+            <option value="">{t('filters.allCategories')}</option>
             {CATEGORIES.map((c) => <option key={c} value={c}>{c}</option>)}
           </select>
           <select className="select" value={sortBy} onChange={(e) => setSortBy(e.target.value)}>
-            {SORT_OPTIONS.map((o) => <option key={o.value} value={o.value}>{o.label}</option>)}
+            {SORT_OPTIONS.map((o) => <option key={o.value} value={o.value}>{t(o.labelKey)}</option>)}
           </select>
           <button className="btn btn-primary" onClick={() => { setSearch(searchInput); setPage(1); }}>
             Search
@@ -294,7 +296,7 @@ export function Skills() {
               onClick={handlePublish}
               disabled={publishSkill.isPending}
             >
-              {publishSkill.isPending ? 'Publishing…' : 'Publish Skill'}
+              {publishSkill.isPending ? t('publishModal.publishing') : t('publishModal.button')}
             </button>
           </div>
         }

@@ -1,0 +1,34 @@
+{
+  "title": "사용자",
+  "subtitle": "등록된 사용자 관리",
+  "table": {
+    "displayName": "표시 이름",
+    "email": "이메일",
+    "provider": "제공자",
+    "tier": "티어",
+    "role": "역할",
+    "assets": "에셋",
+    "joined": "가입일"
+  },
+  "filters": {
+    "searchPlaceholder": "이름 또는 이메일로 검색…",
+    "allProviders": "전체 제공자",
+    "allTiers": "전체 티어",
+    "allRoles": "전체 역할",
+    "count": "{{count}}명의 사용자",
+    "count_other": "{{count}}명의 사용자"
+  },
+  "tierModal": {
+    "title": "티어 변경 — {{name}}",
+    "label": "티어",
+    "updating": "업데이트 중..."
+  },
+  "banModal": {
+    "title": "사용자 차단 — {{name}}",
+    "confirm": "{{name}}을(를) 차단하시겠습니까? 해당 사용자의 접근 권한이 취소됩니다.",
+    "button": "사용자 차단",
+    "banning": "차단 중..."
+  },
+  "unban": "차단 해제",
+  "changeTier": "티어 변경"
+}

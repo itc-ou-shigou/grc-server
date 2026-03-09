@@ -1,9 +1,11 @@
 import { useState, useEffect } from 'react';
+import { useTranslation } from 'react-i18next';
 import { ErrorMessage } from '../../components/ErrorMessage';
 import { usePlatformValues, useUpdatePlatformValues } from '../../api/hooks';
 import { useUser } from '../../context/UserContext';
 
 export function PlatformValues() {
+  const { t } = useTranslation('platform');
   const { isAdmin } = useUser();
   const { data, isLoading, error } = usePlatformValues();
   const updateValues = useUpdatePlatformValues();
@@ -44,7 +46,7 @@ export function PlatformValues() {
     return (
       <div className="page">
         <div className="page-header">
-          <h1 className="page-title">Platform Values</h1>
+          <h1 className="page-title">{t('title')}</h1>
         </div>
         <ErrorMessage error={error as Error} />
       </div>
@@ -55,7 +57,7 @@ export function PlatformValues() {
     <div className="page">
       <div className="page-header">
         <div>
-          <h1 className="page-title">Platform Values</h1>
+          <h1 className="page-title">{t('title')}</h1>
           <p className="page-subtitle">
             {isAdmin
               ? 'Define platform-wide values and culture. All connected WinClaw clients will inherit these values.'
@@ -114,7 +116,7 @@ export function PlatformValues() {
                   minHeight: '200px',
                 }}
               >
-                {content || '(No platform values configured yet)'}
+                {content || t('noValues')}
               </div>
             )}
           </div>

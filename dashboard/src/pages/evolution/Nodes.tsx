@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import { DataTable, Column } from '../../components/DataTable';
 import { StatusBadge } from '../../components/StatusBadge';
 import { ErrorMessage } from '../../components/ErrorMessage';
@@ -22,6 +23,7 @@ function formatHeartbeat(lastHeartbeat: string | null): string {
 }
 
 export function Nodes() {
+  const { t } = useTranslation('evolution');
   const [page, setPage] = useState(1);
 
   const { data, isLoading, error } = useAdminNodes({ page, page_size: 20 });
@@ -29,7 +31,7 @@ export function Nodes() {
   const columns: Column<Record<string, unknown>>[] = [
     {
       key: 'nodeId',
-      label: 'Node ID',
+      label: t('nodes.table.nodeId'),
       render: (v) => <span className="mono text-sm">{String(v).slice(0, 12)}…</span>,
     },
     { key: 'displayName', label: 'Display Name' },
@@ -50,7 +52,7 @@ export function Nodes() {
     },
     {
       key: 'platform',
-      label: 'Platform',
+      label: t('nodes.table.platform'),
       render: (v) => {
         if (!v) return <span className="text-muted">—</span>;
         const p = String(v);
@@ -60,7 +62,7 @@ export function Nodes() {
     },
     {
       key: 'winclawVersion',
-      label: 'Version',
+      label: t('nodes.table.version'),
       render: (v) => v ? <span className="mono">{String(v)}</span> : <span className="text-muted">—</span>,
     },
     {
@@ -75,7 +77,7 @@ export function Nodes() {
     },
     {
       key: 'lastHeartbeat',
-      label: 'Last Heartbeat',
+      label: t('nodes.table.lastSeen'),
       render: (v) => {
         const active = isActive(v as string | null);
         return (
@@ -87,7 +89,7 @@ export function Nodes() {
     },
     {
       key: 'lastHeartbeat',
-      label: 'Status',
+      label: t('nodes.table.status'),
       render: (v) => {
         const active = isActive(v as string | null);
         return <StatusBadge status={active ? 'Active' : 'Inactive'} />;
@@ -108,9 +110,9 @@ export function Nodes() {
   return (
     <div className="page">
       <div className="page-header">
-        <h1 className="page-title">Nodes</h1>
+        <h1 className="page-title">{t('nodes.title')}</h1>
         <p className="page-subtitle">
-          Evolution nodes connected to the platform
+          {t('nodes.subtitle')}
           {data && (
             <span className="page-subtitle-extra">
               {' — '}{activeCount} active of {data.pagination.total} total

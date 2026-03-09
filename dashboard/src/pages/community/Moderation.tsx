@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
 import { DataTable, Column } from '../../components/DataTable';
 import { StatusBadge } from '../../components/StatusBadge';
 import { Modal } from '../../components/Modal';
@@ -9,6 +10,7 @@ import { useAdminPosts, useModeratePost, useCommunityStats, Post } from '../../a
 type ModAction = 'hide' | 'lock' | 'unlock' | 'delete' | 'pin' | 'unpin';
 
 export function Moderation() {
+  const { t } = useTranslation('community');
   const navigate = useNavigate();
   const [page, setPage] = useState(1);
   const [channelId, setChannelId] = useState('');
@@ -131,9 +133,9 @@ export function Moderation() {
   return (
     <div className="page">
       <div className="page-header">
-        <h1 className="page-title">Moderation</h1>
+        <h1 className="page-title">{t('moderation.title')}</h1>
         <p className="page-subtitle">
-          Manage community posts
+          {t('moderation.subtitle')}
           {stats && stats.stats.dailyPosts > 0 && (
             <span className="page-subtitle-extra">
               {' — '}{stats.stats.dailyPosts} posts today
@@ -164,7 +166,7 @@ export function Moderation() {
               ? { page, totalPages: data.pagination.totalPages, onPageChange: setPage }
               : undefined
           }
-          emptyMessage="No posts found."
+          emptyMessage={t('moderation.noFlags')}
         />
       </div>
 

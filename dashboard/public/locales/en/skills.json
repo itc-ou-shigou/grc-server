@@ -1,0 +1,51 @@
+{
+  "title": "Skills",
+  "subtitle": "Browse and manage all registered skills",
+  "statsTitle": "Skill Stats",
+  "statsSubtitle": "Download trends and usage analytics",
+  "filters": {
+    "searchPlaceholder": "Search skills…",
+    "allCategories": "All Categories",
+    "allStatuses": "All Statuses",
+    "sortBy": "Sort by",
+    "count": "{{count}} skill",
+    "count_other": "{{count}} skills"
+  },
+  "sort": {
+    "newest": "Newest",
+    "downloads": "Downloads",
+    "rating": "Rating",
+    "name": "Name"
+  },
+  "table": {
+    "name": "Name",
+    "author": "Author",
+    "category": "Category",
+    "version": "Version",
+    "downloads": "Downloads",
+    "rating": "Rating",
+    "status": "Status"
+  },
+  "publishModal": {
+    "title": "Publish — {{name}}",
+    "confirm": "Make this skill publicly available?",
+    "button": "Publish",
+    "publishing": "Publishing..."
+  },
+  "unpublishModal": {
+    "title": "Unpublish — {{name}}",
+    "confirm": "Remove this skill from the public registry?",
+    "button": "Unpublish"
+  },
+  "deleteModal": {
+    "title": "Delete — {{name}}",
+    "confirm": "Permanently delete this skill? This cannot be undone.",
+    "button": "Delete"
+  },
+  "stats": {
+    "totalDownloads": "Total Downloads",
+    "totalSkills": "Total Skills",
+    "avgRating": "Average Rating",
+    "downloadTrend": "Download Trend (last 30 days)"
+  }
+}

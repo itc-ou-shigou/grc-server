@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
 import { useCreateRole } from '../../api/hooks';
 import { ErrorMessage } from '../../components/ErrorMessage';
 
@@ -28,6 +29,7 @@ const EMPTY_MD: Record<MdField, string> = {
 };
 
 export function RoleCreate() {
+  const { t } = useTranslation('roles');
   const navigate = useNavigate();
   const createRole = useCreateRole();
 
@@ -60,8 +62,8 @@ export function RoleCreate() {
     <div className="page">
       <div className="page-header">
         <div>
-          <h1 className="page-title">Create Role</h1>
-          <p className="page-subtitle">Define a new agent role template</p>
+          <h1 className="page-title">{t('createTitle')}</h1>
+          <p className="page-subtitle">{t('createSubtitle')}</p>
         </div>
         <div className="action-group">
           <button className="btn btn-default" onClick={() => navigate('/roles')}>
@@ -72,7 +74,7 @@ export function RoleCreate() {
             onClick={handleCreate}
             disabled={!isValid || createRole.isPending}
           >
-            {createRole.isPending ? 'Creating…' : 'Create Role'}
+            {createRole.isPending ? 'Creating…' : t('createTitle')}
           </button>
         </div>
       </div>
@@ -82,14 +84,14 @@ export function RoleCreate() {
       <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem', marginBottom: '1.5rem' }}>
         <div className="form-group">
           <label className="form-label">
-            Role ID <span style={{ color: 'var(--color-danger, #ef4444)' }}>*</span>
+            {t('editor.roleId')} <span style={{ color: 'var(--color-danger, #ef4444)' }}>*</span>
           </label>
           <input
             className="input"
             type="text"
             value={id}
             onChange={e => setId(e.target.value.toLowerCase().replace(/[^a-z0-9-_]/g, '-'))}
-            placeholder="my-custom-role"
+            placeholder={t('cloneModal.newIdPlaceholder')}
           />
           <p className="text-muted" style={{ fontSize: '0.75rem', marginTop: '0.25rem' }}>
             Lowercase letters, numbers, hyphens, underscores. Cannot be changed after creation.
@@ -97,18 +99,18 @@ export function RoleCreate() {
         </div>
         <div className="form-group">
           <label className="form-label">
-            Display Name <span style={{ color: 'var(--color-danger, #ef4444)' }}>*</span>
+            {t('editor.displayName')} <span style={{ color: 'var(--color-danger, #ef4444)' }}>*</span>
           </label>
           <input
             className="input"
             type="text"
             value={displayName}
             onChange={e => setDisplayName(e.target.value)}
-            placeholder="My Custom Role"
+            placeholder={t('cloneModal.newNamePlaceholder')}
           />
         </div>
         <div className="form-group">
-          <label className="form-label">Mode</label>
+          <label className="form-label">{t('editor.mode')}</label>
           <select
             className="select"
             value={mode}
@@ -119,7 +121,7 @@ export function RoleCreate() {
           </select>
         </div>
         <div className="form-group">
-          <label className="form-label">Department</label>
+          <label className="form-label">{t('editor.department')}</label>
           <input
             className="input"
             type="text"
@@ -129,7 +131,7 @@ export function RoleCreate() {
           />
         </div>
         <div className="form-group">
-          <label className="form-label">Industry</label>
+          <label className="form-label">{t('editor.industry')}</label>
           <input
             className="input"
             type="text"
@@ -206,7 +208,7 @@ export function RoleCreate() {
           onClick={handleCreate}
           disabled={!isValid || createRole.isPending}
         >
-          {createRole.isPending ? 'Creating…' : 'Create Role'}
+          {createRole.isPending ? 'Creating…' : t('createTitle')}
         </button>
       </div>
     </div>

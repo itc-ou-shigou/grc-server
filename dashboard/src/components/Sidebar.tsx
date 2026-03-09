@@ -1,16 +1,19 @@
 import { useState } from 'react';
 import { NavLink, useLocation } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
 import { forceLogout } from '../api/client';
 import { useUser } from '../context/UserContext';
 
 interface NavItem {
-  label: string;
+  /** i18n key for sidebar.items.{labelKey} */
+  labelKey: string;
   path: string;
   adminOnly?: boolean;
 }
 
 interface NavSection {
-  label: string;
+  /** i18n key for sidebar.sections.{sectionKey} */
+  sectionKey: string;
   icon: string;
   items: NavItem[];
   /** If true, the entire section is hidden for non-admin users */
@@ -19,101 +22,120 @@ interface NavSection {
 
 const NAV_SECTIONS: NavSection[] = [
   {
-    label: 'Auth',
+    sectionKey: 'auth',
     icon: '\u{1F464}',
-    adminOnly: true, // Entire section is admin-only (Users, API Keys)
+    adminOnly: true,
     items: [
-      { label: 'Users', path: '/manage/users' },
-      { label: 'API Keys', path: '/manage/apikeys' },
+      { labelKey: 'users', path: '/manage/users' },
+      { labelKey: 'apiKeys', path: '/manage/apikeys' },
     ],
   },
   {
-    label: 'Skills',
+    sectionKey: 'skills',
     icon: '\u{1F527}',
     items: [
-      { label: 'Skill List', path: '/skills' },
-      { label: 'Skill Stats', path: '/skills/stats' },
+      { labelKey: 'skillList', path: '/skills' },
+      { labelKey: 'skillStats', path: '/skills/stats' },
     ],
   },
   {
-    label: 'Evolution',
+    sectionKey: 'evolution',
     icon: '\u{1F9EC}',
     items: [
-      { label: 'Assets', path: '/evolution/assets' },
-      { label: 'Nodes', path: '/evolution/nodes', adminOnly: true },
-      { label: 'Pipeline', path: '/evolution/pipeline', adminOnly: true },
+      { labelKey: 'assets', path: '/evolution/assets' },
+      { labelKey: 'nodes', path: '/evolution/nodes', adminOnly: true },
+      { labelKey: 'pipeline', path: '/evolution/pipeline', adminOnly: true },
     ],
   },
   {
-    label: 'Update',
+    sectionKey: 'update',
     icon: '\u{1F504}',
     items: [
-      { label: 'Releases', path: '/update/releases' },
-      { label: 'Update Stats', path: '/update/stats' },
+      { labelKey: 'releases', path: '/update/releases' },
+      { labelKey: 'updateStats', path: '/update/stats' },
     ],
   },
   {
-    label: 'Telemetry',
+    sectionKey: 'telemetry',
     icon: '\u{1F4CA}',
-    items: [{ label: 'Insights', path: '/telemetry' }],
+    items: [{ labelKey: 'insights', path: '/telemetry' }],
   },
   {
-    label: 'Community',
+    sectionKey: 'community',
     icon: '\u{1F4AC}',
     items: [
-      { label: 'Channels', path: '/community/channels' },
-      { label: 'Topics', path: '/community/topics' },
-      { label: 'Moderation', path: '/community/moderation', adminOnly: true },
+      { labelKey: 'channels', path: '/community/channels' },
+      { labelKey: 'topics', path: '/community/topics' },
+      { labelKey: 'moderation', path: '/community/moderation', adminOnly: true },
     ],
   },
   {
-    label: 'Employees',
+    sectionKey: 'employees',
     icon: '\u{1F465}',
     adminOnly: true,
     items: [
-      { label: 'Employee List', path: '/employees' },
-      { label: 'Org Chart', path: '/employees/org' },
+      { labelKey: 'employeeList', path: '/employees' },
+      { labelKey: 'orgChart', path: '/employees/org' },
     ],
   },
   {
-    label: 'Roles',
+    sectionKey: 'roles',
     icon: '\u{1F3AD}',
     adminOnly: true,
     items: [
-      { label: 'Role Templates', path: '/roles' },
-      { label: 'Create Role', path: '/roles/create' },
+      { labelKey: 'roleTemplates', path: '/roles' },
+      { labelKey: 'createRole', path: '/roles/create' },
     ],
   },
   {
-    label: 'Tasks',
+    sectionKey: 'tasks',
     icon: '\u{1F4CB}',
+    adminOnly: true,
     items: [
-      { label: 'Task Board', path: '/tasks' },
-      { label: 'Task Stats', path: '/tasks/stats' },
-      { label: 'Expenses', path: '/tasks/expenses', adminOnly: true },
+      { labelKey: 'taskBoard', path: '/tasks' },
+      { labelKey: 'taskStats', path: '/tasks/stats' },
+      { labelKey: 'expenses', path: '/tasks/expenses' },
     ],
   },
   {
-    label: 'Strategy',
+    sectionKey: 'strategy',
     icon: '\u{1F3AF}',
     adminOnly: true,
     items: [
-      { label: 'Strategy', path: '/strategy' },
+      { labelKey: 'strategy', path: '/strategy' },
     ],
   },
   {
-    label: 'Relay',
+    sectionKey: 'a2aAgents',
+    icon: '\u{1F916}',
+    adminOnly: true,
+    items: [
+      { labelKey: 'agentCards', path: '/a2a/agents' },
+    ],
+  },
+  {
+    sectionKey: 'meetings',
+    icon: '\u{1F91D}',
+    adminOnly: true,
+    items: [
+      { labelKey: 'allMeetings', path: '/meetings' },
+      { labelKey: 'createMeeting', path: '/meetings/create' },
+      { labelKey: 'autoTriggers', path: '/meetings/triggers' },
+    ],
+  },
+  {
+    sectionKey: 'relay',
     icon: '\u{1F4E8}',
     adminOnly: true,
     items: [
-      { label: 'Relay Log', path: '/relay' },
+      { labelKey: 'relayLog', path: '/relay' },
     ],
   },
   {
-    label: 'Platform',
+    sectionKey: 'platform',
     icon: '\u{2728}',
     items: [
-      { label: 'Values', path: '/platform/values' },
+      { labelKey: 'values', path: '/platform/values' },
     ],
   },
 ];
@@ -126,6 +148,7 @@ export function Sidebar() {
   const location = useLocation();
   const [collapsed, setCollapsed] = useState<Record<string, boolean>>({});
   const { isAdmin } = useUser();
+  const { t } = useTranslation('sidebar');
 
   // Filter sections and items based on role
   const visibleSections = NAV_SECTIONS
@@ -136,13 +159,13 @@ export function Sidebar() {
     }))
     .filter((section) => section.items.length > 0);
 
-  function toggleSection(label: string) {
-    setCollapsed((prev) => ({ ...prev, [label]: !prev[label] }));
+  function toggleSection(key: string) {
+    setCollapsed((prev) => ({ ...prev, [key]: !prev[key] }));
   }
 
   function isSectionOpen(section: NavSection): boolean {
-    if (collapsed[section.label] !== undefined) {
-      return !collapsed[section.label];
+    if (collapsed[section.sectionKey] !== undefined) {
+      return !collapsed[section.sectionKey];
     }
     return isSectionActive(section, location.pathname);
   }
@@ -153,8 +176,8 @@ export function Sidebar() {
         <div className="sidebar-logo">
           <span className="sidebar-logo-icon">G</span>
           <div>
-            <div className="sidebar-title">GRC {isAdmin ? 'Admin' : 'Dashboard'}</div>
-            <div className="sidebar-subtitle">Dashboard</div>
+            <div className="sidebar-title">{isAdmin ? t('header.admin') : t('header.dashboard')}</div>
+            <div className="sidebar-subtitle">{t('header.subtitle')}</div>
           </div>
         </div>
       </div>
@@ -166,20 +189,20 @@ export function Sidebar() {
           className={({ isActive }) => `sidebar-nav-single${isActive ? ' active' : ''}`}
         >
           <span className="nav-icon">🏠</span>
-          <span>Overview</span>
+          <span>{t('nav.overview')}</span>
         </NavLink>
 
         {visibleSections.map((section) => {
           const open = isSectionOpen(section);
           const active = isSectionActive(section, location.pathname);
           return (
-            <div key={section.label} className="sidebar-section">
+            <div key={section.sectionKey} className="sidebar-section">
               <button
                 className={`sidebar-section-btn${active ? ' active' : ''}`}
-                onClick={() => toggleSection(section.label)}
+                onClick={() => toggleSection(section.sectionKey)}
               >
                 <span className="nav-icon">{section.icon}</span>
-                <span className="section-label">{section.label}</span>
+                <span className="section-label">{t(`sections.${section.sectionKey}`)}</span>
                 <span className={`section-chevron${open ? ' open' : ''}`}>›</span>
               </button>
               {open && (
@@ -191,7 +214,7 @@ export function Sidebar() {
                       end={item.path === '/skills'}
                       className={({ isActive }) => `sidebar-nav-item${isActive ? ' active' : ''}`}
                     >
-                      {item.label}
+                      {t(`items.${item.labelKey}`)}
                     </NavLink>
                   ))}
                 </div>
@@ -202,21 +225,35 @@ export function Sidebar() {
       </nav>
 
       <div className="sidebar-footer">
+        {/* Settings link */}
+        <NavLink
+          to="/settings"
+          className={({ isActive }) => `sidebar-settings-btn${isActive ? ' active' : ''}`}
+        >
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+               strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+            <circle cx="12" cy="12" r="3" />
+            <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z" />
+          </svg>
+          <span>{t('footer.settings')}</span>
+        </NavLink>
+
+        {/* Logout button */}
         <button
           className="sidebar-logout-btn"
           onClick={() => {
             forceLogout();
           }}
-          title="Logout"
+          title={t('footer.logout')}
         >
           <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
             <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4" />
             <polyline points="16 17 21 12 16 7" />
             <line x1="21" y1="12" x2="9" y2="12" />
           </svg>
-          <span>Logout</span>
+          <span>{t('footer.logout')}</span>
         </button>
-        <div className="sidebar-footer-text">GRC v0.1.0</div>
+        <div className="sidebar-footer-text">{t('footer.version', { version: '0.1.0' })}</div>
       </div>
     </aside>
   );

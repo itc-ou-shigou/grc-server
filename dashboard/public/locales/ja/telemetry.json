@@ -1,0 +1,15 @@
+{
+  "title": "テレメトリーインサイト",
+  "subtitle": "システムテレメトリーとヘルス分析",
+  "stats": {
+    "uniqueNodes": "ユニークノード",
+    "totalReports": "総レポート数",
+    "avgCpuUsage": "平均CPU使用率",
+    "avgMemoryUsage": "平均メモリ使用率"
+  },
+  "charts": {
+    "dailyReports": "日次レポート",
+    "platformBreakdown": "プラットフォーム別内訳",
+    "healthDistribution": "ヘルス分布"
+  }
+}

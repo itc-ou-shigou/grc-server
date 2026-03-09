@@ -1,0 +1,21 @@
+{
+  "releases": {
+    "title": "Releases",
+    "subtitle": "Manage update releases",
+    "table": {
+      "version": "Version",
+      "channel": "Channel",
+      "platform": "Platform",
+      "downloads": "Downloads",
+      "published": "Published"
+    }
+  },
+  "stats": {
+    "title": "Update Stats",
+    "subtitle": "Update deployment analytics",
+    "totalUpdates": "Total Updates",
+    "successRate": "Success Rate",
+    "avgUpdateTime": "Avg Update Time",
+    "updateTrend": "Update Trend (last 30 days)"
+  }
+}

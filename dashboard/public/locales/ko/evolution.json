@@ -1,0 +1,50 @@
+{
+  "assets": {
+    "title": "에셋",
+    "subtitle": "진화 에셋 (유전자) 탐색",
+    "table": {
+      "name": "이름",
+      "type": "유형",
+      "status": "상태",
+      "version": "버전",
+      "author": "작성자",
+      "promoted": "프로모트됨"
+    },
+    "filters": {
+      "searchPlaceholder": "에셋 검색…",
+      "allTypes": "전체 유형",
+      "allStatuses": "전체 상태"
+    }
+  },
+  "assetDetail": {
+    "backToAssets": "에셋으로 돌아가기",
+    "version": "버전",
+    "type": "유형",
+    "status": "상태",
+    "author": "작성자",
+    "description": "설명",
+    "dependencies": "의존성",
+    "noDependencies": "의존성 없음",
+    "promote": "프로모트",
+    "demote": "강등"
+  },
+  "nodes": {
+    "title": "노드",
+    "subtitle": "WinClaw 클라이언트 노드 관리",
+    "table": {
+      "nodeId": "노드 ID",
+      "hostname": "호스트명",
+      "platform": "플랫폼",
+      "version": "버전",
+      "lastSeen": "마지막 확인",
+      "status": "상태"
+    }
+  },
+  "pipeline": {
+    "title": "파이프라인",
+    "subtitle": "진화 파이프라인 상태",
+    "stages": "단계",
+    "running": "실행 중",
+    "queued": "대기 중"
+  }
+}

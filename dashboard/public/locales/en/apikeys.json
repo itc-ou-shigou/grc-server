@@ -1,0 +1,18 @@
+{
+  "title": "API Keys",
+  "subtitle": "Manage API keys for all users",
+  "table": {
+    "key": "Key",
+    "owner": "Owner",
+    "scopes": "Scopes",
+    "lastUsed": "Last Used",
+    "expires": "Expires"
+  },
+  "revokeModal": {
+    "title": "Revoke API Key",
+    "confirm": "Are you sure you want to revoke key {{prefix}}…? This cannot be undone.",
+    "button": "Revoke",
+    "revoking": "Revoking..."
+  },
+  "noKeys": "No API keys found."
+}

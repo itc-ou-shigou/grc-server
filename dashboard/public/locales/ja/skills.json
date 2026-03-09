@@ -1,0 +1,51 @@
+{
+  "title": "スキル",
+  "subtitle": "登録された全スキルを閲覧・管理",
+  "statsTitle": "スキル統計",
+  "statsSubtitle": "ダウンロードトレンドと使用分析",
+  "filters": {
+    "searchPlaceholder": "スキルを検索…",
+    "allCategories": "全カテゴリー",
+    "allStatuses": "全ステータス",
+    "sortBy": "並び替え",
+    "count": "{{count}}個のスキル",
+    "count_other": "{{count}}個のスキル"
+  },
+  "sort": {
+    "newest": "新着順",
+    "downloads": "ダウンロード数",
+    "rating": "評価",
+    "name": "名前"
+  },
+  "table": {
+    "name": "名前",
+    "author": "作成者",
+    "category": "カテゴリー",
+    "version": "バージョン",
+    "downloads": "ダウンロード数",
+    "rating": "評価",
+    "status": "ステータス"
+  },
+  "publishModal": {
+    "title": "公開 — {{name}}",
+    "confirm": "このスキルを公開しますか？",
+    "button": "公開",
+    "publishing": "公開中..."
+  },
+  "unpublishModal": {
+    "title": "公開取り消し — {{name}}",
+    "confirm": "このスキルを公開レジストリから削除しますか？",
+    "button": "公開取り消し"
+  },
+  "deleteModal": {
+    "title": "削除 — {{name}}",
+    "confirm": "このスキルを完全に削除しますか？この操作は取り消せません。",
+    "button": "削除"
+  },
+  "stats": {
+    "totalDownloads": "総ダウンロード数",
+    "totalSkills": "スキル総数",
+    "avgRating": "平均評価",
+    "downloadTrend": "ダウンロードトレンド（過去30日間）"
+  }
+}

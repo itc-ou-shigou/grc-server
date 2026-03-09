@@ -1,0 +1,11 @@
+{
+  "title": "Platform Values",
+  "subtitle": "Core platform configuration values",
+  "table": {
+    "key": "Key",
+    "value": "Value",
+    "description": "Description",
+    "updated": "Updated"
+  },
+  "noValues": "No platform values configured."
+}

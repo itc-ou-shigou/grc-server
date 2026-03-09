@@ -1,0 +1,21 @@
+{
+  "releases": {
+    "title": "发布",
+    "subtitle": "管理更新发布",
+    "table": {
+      "version": "版本",
+      "channel": "频道",
+      "platform": "平台",
+      "downloads": "下载量",
+      "published": "发布时间"
+    }
+  },
+  "stats": {
+    "title": "更新统计",
+    "subtitle": "更新部署分析",
+    "totalUpdates": "总更新数",
+    "successRate": "成功率",
+    "avgUpdateTime": "平均更新时间",
+    "updateTrend": "更新趋势（近30天）"
+  }
+}

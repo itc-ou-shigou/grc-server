@@ -1,0 +1,50 @@
+{
+  "assets": {
+    "title": "Assets",
+    "subtitle": "Browse evolution assets (genes)",
+    "table": {
+      "name": "Name",
+      "type": "Type",
+      "status": "Status",
+      "version": "Version",
+      "author": "Author",
+      "promoted": "Promoted"
+    },
+    "filters": {
+      "searchPlaceholder": "Search assets…",
+      "allTypes": "All Types",
+      "allStatuses": "All Statuses"
+    }
+  },
+  "assetDetail": {
+    "backToAssets": "Back to Assets",
+    "version": "Version",
+    "type": "Type",
+    "status": "Status",
+    "author": "Author",
+    "description": "Description",
+    "dependencies": "Dependencies",
+    "noDependencies": "No dependencies",
+    "promote": "Promote",
+    "demote": "Demote"
+  },
+  "nodes": {
+    "title": "Nodes",
+    "subtitle": "Manage WinClaw client nodes",
+    "table": {
+      "nodeId": "Node ID",
+      "hostname": "Hostname",
+      "platform": "Platform",
+      "version": "Version",
+      "lastSeen": "Last Seen",
+      "status": "Status"
+    }
+  },
+  "pipeline": {
+    "title": "Pipeline",
+    "subtitle": "Evolution pipeline status",
+    "stages": "Stages",
+    "running": "Running",
+    "queued": "Queued"
+  }
+}

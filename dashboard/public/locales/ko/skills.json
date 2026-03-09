@@ -1,0 +1,51 @@
+{
+  "title": "스킬",
+  "subtitle": "등록된 모든 스킬 탐색 및 관리",
+  "statsTitle": "스킬 통계",
+  "statsSubtitle": "다운로드 트렌드 및 사용 분석",
+  "filters": {
+    "searchPlaceholder": "스킬 검색…",
+    "allCategories": "전체 카테고리",
+    "allStatuses": "전체 상태",
+    "sortBy": "정렬 기준",
+    "count": "{{count}}개의 스킬",
+    "count_other": "{{count}}개의 스킬"
+  },
+  "sort": {
+    "newest": "최신순",
+    "downloads": "다운로드 수",
+    "rating": "평점",
+    "name": "이름"
+  },
+  "table": {
+    "name": "이름",
+    "author": "작성자",
+    "category": "카테고리",
+    "version": "버전",
+    "downloads": "다운로드 수",
+    "rating": "평점",
+    "status": "상태"
+  },
+  "publishModal": {
+    "title": "게시 — {{name}}",
+    "confirm": "이 스킬을 공개적으로 게시하시겠습니까?",
+    "button": "게시",
+    "publishing": "게시 중..."
+  },
+  "unpublishModal": {
+    "title": "게시 취소 — {{name}}",
+    "confirm": "이 스킬을 공개 레지스트리에서 제거하시겠습니까?",
+    "button": "게시 취소"
+  },
+  "deleteModal": {
+    "title": "삭제 — {{name}}",
+    "confirm": "이 스킬을 영구적으로 삭제하시겠습니까? 이 작업은 되돌릴 수 없습니다.",
+    "button": "삭제"
+  },
+  "stats": {
+    "totalDownloads": "총 다운로드 수",
+    "totalSkills": "총 스킬 수",
+    "avgRating": "평균 평점",
+    "downloadTrend": "다운로드 트렌드 (최근 30일)"
+  }
+}

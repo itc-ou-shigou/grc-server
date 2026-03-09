@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
 import { DataTable, Column } from '../../components/DataTable';
 import { StatusBadge } from '../../components/StatusBadge';
 import { Modal } from '../../components/Modal';
@@ -12,6 +13,7 @@ const STATUSES = ['pending', 'approved', 'promoted', 'quarantined', 'rejected'];
 const CATEGORIES = ['reasoning', 'coding', 'data', 'communication', 'research', 'creative', 'other'];
 
 export function Assets() {
+  const { t } = useTranslation('evolution');
   const navigate = useNavigate();
   const [page, setPage] = useState(1);
   const [assetType, setAssetType] = useState('');
@@ -45,7 +47,7 @@ export function Assets() {
     },
     {
       key: 'assetType',
-      label: 'Type',
+      label: t('assets.table.type'),
       render: (v) => (
         <StatusBadge
           status={String(v)}
@@ -77,7 +79,7 @@ export function Assets() {
     },
     {
       key: 'status',
-      label: 'Status',
+      label: t('assets.table.status'),
       render: (v) => <StatusBadge status={String(v)} />,
     },
     {
@@ -156,8 +158,8 @@ export function Assets() {
   return (
     <div className="page">
       <div className="page-header">
-        <h1 className="page-title">Assets</h1>
-        <p className="page-subtitle">Manage genes and capsules in the evolution system</p>
+        <h1 className="page-title">{t('assets.title')}</h1>
+        <p className="page-subtitle">{t('assets.subtitle')}</p>
       </div>
 
       {error && <ErrorMessage error={error as Error} />}
@@ -165,11 +167,11 @@ export function Assets() {
       <div className="card">
         <div className="filter-bar">
           <select className="select" value={assetType} onChange={(e) => { setAssetType(e.target.value); setPage(1); }}>
-            <option value="">All Types</option>
+            <option value="">{t('assets.filters.allTypes')}</option>
             {ASSET_TYPES.map((t) => <option key={t} value={t}>{t}</option>)}
           </select>
           <select className="select" value={status} onChange={(e) => { setStatus(e.target.value); setPage(1); }}>
-            <option value="">All Statuses</option>
+            <option value="">{t('assets.filters.allStatuses')}</option>
             {STATUSES.map((s) => <option key={s} value={s}>{s}</option>)}
           </select>
           <select className="select" value={category} onChange={(e) => { setCategory(e.target.value); setPage(1); }}>

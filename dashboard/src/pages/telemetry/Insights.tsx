@@ -1,9 +1,11 @@
+import { useTranslation } from 'react-i18next';
 import { StatCard } from '../../components/StatCard';
 import { Chart } from '../../components/Chart';
 import { ErrorMessage } from '../../components/ErrorMessage';
 import { useTelemetryDashboard } from '../../api/hooks';
 
 export function Insights() {
+  const { t } = useTranslation('telemetry');
   const { data, isLoading, error } = useTelemetryDashboard();
 
   const platformData = data
@@ -29,22 +31,22 @@ export function Insights() {
   return (
     <div className="page">
       <div className="page-header">
-        <h1 className="page-title">Telemetry Insights</h1>
-        <p className="page-subtitle">Aggregated anonymized usage data from opted-in nodes</p>
+        <h1 className="page-title">{t('title')}</h1>
+        <p className="page-subtitle">{t('subtitle')}</p>
       </div>
 
       {error && <ErrorMessage error={error as Error} />}
 
       <div className="stat-grid stat-grid-3">
         <StatCard
-          title="Unique Nodes"
+          title={t('stats.uniqueNodes')}
           value={data?.stats.uniqueNodes ?? 0}
           icon="🖥️"
           color="#4361ee"
           loading={isLoading}
         />
         <StatCard
-          title="Total Reports"
+          title={t('stats.totalReports')}
           value={data?.stats.totalReports ?? 0}
           icon="📋"
           color="#3a86ff"
@@ -65,7 +67,7 @@ export function Insights() {
           data={dailyData}
           xKey="date"
           yKey="count"
-          title="Daily Report Count (last 30 days)"
+          title={t('charts.dailyReports')}
           height={260}
         />
       </div>
@@ -77,7 +79,7 @@ export function Insights() {
             data={platformData}
             nameKey="name"
             valueKey="value"
-            title="Platform Distribution"
+            title={t('charts.platformBreakdown')}
             height={260}
           />
         </div>

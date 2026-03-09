@@ -1,0 +1,42 @@
+{
+  "title": "직원",
+  "subtitle": "AI 직원 및 역할 배정 관리",
+  "orgTitle": "조직도",
+  "orgSubtitle": "회사 계층 구조 보기",
+  "table": {
+    "name": "이름",
+    "nodeId": "노드 ID",
+    "role": "배정된 역할",
+    "department": "부서",
+    "status": "상태",
+    "configSync": "설정 동기화",
+    "lastSync": "마지막 동기화"
+  },
+  "filters": {
+    "searchPlaceholder": "직원 검색…",
+    "allDepartments": "전체 부서",
+    "allStatuses": "전체 상태",
+    "count": "{{count}}명의 직원",
+    "count_other": "{{count}}명의 직원"
+  },
+  "assignModal": {
+    "title": "역할 배정 — {{name}}",
+    "selectRole": "역할 선택",
+    "noRoles": "사용 가능한 역할 없음",
+    "button": "역할 배정",
+    "assigning": "배정 중..."
+  },
+  "unassignModal": {
+    "title": "역할 배정 해제 — {{name}}",
+    "confirm": "{{name}}에서 {{role}} 배정을 해제하시겠습니까?",
+    "button": "배정 해제",
+    "unassigning": "배정 해제 중..."
+  },
+  "configSync": {
+    "synced": "동기화됨",
+    "pending": "대기 중",
+    "outdated": "만료됨",
+    "never": "동기화 없음"
+  },
+  "noRole": "미배정"
+}

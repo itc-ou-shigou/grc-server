@@ -1,0 +1,10 @@
+{
+  "title": "Settings",
+  "subtitle": "Manage your preferences",
+  "language": {
+    "title": "Language",
+    "description": "Select your preferred display language. The interface will update immediately.",
+    "current": "Current language: {{language}}",
+    "browserDetected": "Detected from browser: {{language}}"
+  }
+}

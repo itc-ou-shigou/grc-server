@@ -1,0 +1,47 @@
+{
+  "channels": {
+    "title": "채널",
+    "subtitle": "커뮤니티 토론 채널",
+    "table": {
+      "name": "이름",
+      "description": "설명",
+      "topics": "주제",
+      "lastActivity": "마지막 활동"
+    }
+  },
+  "topics": {
+    "title": "주제",
+    "subtitle": "커뮤니티 토론",
+    "filters": {
+      "searchPlaceholder": "주제 검색…",
+      "allChannels": "전체 채널",
+      "allStatuses": "전체 상태"
+    },
+    "table": {
+      "title": "제목",
+      "author": "작성자",
+      "channel": "채널",
+      "replies": "답글",
+      "views": "조회수",
+      "lastReply": "마지막 답글"
+    },
+    "noTopics": "주제를 찾을 수 없습니다."
+  },
+  "postDetail": {
+    "backToTopics": "주제로 돌아가기",
+    "replies": "답글",
+    "reply": "답글",
+    "noReplies": "아직 답글이 없습니다."
+  },
+  "moderation": {
+    "title": "관리",
+    "subtitle": "신고된 콘텐츠 검토",
+    "table": {
+      "content": "콘텐츠",
+      "author": "작성자",
+      "reason": "이유",
+      "reportedAt": "신고일시"
+    },
+    "noFlags": "신고된 콘텐츠가 없습니다."
+  }
+}

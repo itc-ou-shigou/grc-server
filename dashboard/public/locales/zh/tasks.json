@@ -1,0 +1,87 @@
+{
+  "board": {
+    "title": "任务看板",
+    "subtitle": "管理和跟踪 AI 员工任务",
+    "createTask": "+ 创建任务"
+  },
+  "filters": {
+    "searchPlaceholder": "搜索任务…",
+    "allStatuses": "所有状态",
+    "allPriorities": "所有优先级",
+    "allCategories": "所有类别",
+    "allAssignees": "所有被分配人",
+    "count": "{{count}} 个任务",
+    "count_other": "{{count}} 个任务"
+  },
+  "table": {
+    "title": "标题",
+    "priority": "优先级",
+    "category": "类别",
+    "assignee": "被分配人",
+    "status": "状态",
+    "deadline": "截止日期",
+    "created": "创建时间"
+  },
+  "priority": {
+    "critical": "紧急",
+    "high": "高",
+    "medium": "中",
+    "low": "低"
+  },
+  "create": {
+    "title": "创建任务",
+    "subtitle": "为 AI 员工分配新任务",
+    "form": {
+      "title": "标题",
+      "titlePlaceholder": "任务标题…",
+      "description": "描述",
+      "descriptionPlaceholder": "任务描述…",
+      "assignee": "分配给",
+      "selectAssignee": "选择被分配人",
+      "priority": "优先级",
+      "category": "类别",
+      "deadline": "截止日期",
+      "submit": "创建任务",
+      "creating": "创建中..."
+    }
+  },
+  "detail": {
+    "backToBoard": "返回任务看板",
+    "description": "描述",
+    "comments": "评论",
+    "activity": "活动",
+    "noComments": "暂无评论。",
+    "addComment": "添加评论…",
+    "submitComment": "提交"
+  },
+  "stats": {
+    "title": "任务统计",
+    "subtitle": "任务完成情况和绩效分析",
+    "totalTasks": "任务总数",
+    "completionRate": "完成率",
+    "avgCompletionTime": "平均完成时间",
+    "overdueRate": "逾期率"
+  },
+  "expenses": {
+    "title": "费用",
+    "subtitle": "审核和批准与任务相关的费用",
+    "table": {
+      "task": "任务",
+      "amount": "金额",
+      "category": "类别",
+      "requestedBy": "申请人",
+      "status": "状态",
+      "requestedAt": "申请时间"
+    },
+    "approveModal": {
+      "title": "批准费用",
+      "confirm": "批准 {{task}} 的 {{amount}} 费用吗？",
+      "button": "批准"
+    },
+    "rejectModal": {
+      "title": "拒绝费用",
+      "reason": "拒绝原因",
+      "button": "拒绝"
+    }
+  }
+}

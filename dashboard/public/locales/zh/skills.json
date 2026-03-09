@@ -1,0 +1,51 @@
+{
+  "title": "技能",
+  "subtitle": "浏览和管理所有已注册的技能",
+  "statsTitle": "技能统计",
+  "statsSubtitle": "下载趋势和使用分析",
+  "filters": {
+    "searchPlaceholder": "搜索技能…",
+    "allCategories": "所有类别",
+    "allStatuses": "所有状态",
+    "sortBy": "排序方式",
+    "count": "{{count}} 个技能",
+    "count_other": "{{count}} 个技能"
+  },
+  "sort": {
+    "newest": "最新",
+    "downloads": "下载量",
+    "rating": "评分",
+    "name": "名称"
+  },
+  "table": {
+    "name": "名称",
+    "author": "作者",
+    "category": "类别",
+    "version": "版本",
+    "downloads": "下载量",
+    "rating": "评分",
+    "status": "状态"
+  },
+  "publishModal": {
+    "title": "发布 — {{name}}",
+    "confirm": "将此技能公开发布？",
+    "button": "发布",
+    "publishing": "发布中..."
+  },
+  "unpublishModal": {
+    "title": "取消发布 — {{name}}",
+    "confirm": "从公开注册表中移除此技能？",
+    "button": "取消发布"
+  },
+  "deleteModal": {
+    "title": "删除 — {{name}}",
+    "confirm": "永久删除此技能？此操作无法撤销。",
+    "button": "删除"
+  },
+  "stats": {
+    "totalDownloads": "总下载量",
+    "totalSkills": "技能总数",
+    "avgRating": "平均评分",
+    "downloadTrend": "下载趋势（近30天）"
+  }
+}

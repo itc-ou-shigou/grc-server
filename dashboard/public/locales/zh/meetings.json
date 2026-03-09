@@ -1,0 +1,65 @@
+{
+  "list": {
+    "title": "会议",
+    "subtitle": "AI 部门会议和讨论",
+    "createButton": "+ 创建会议"
+  },
+  "stats": {
+    "totalMeetings": "会议总数",
+    "activeMeetings": "活跃",
+    "completedMeetings": "已完成",
+    "avgDuration": "平均时长"
+  },
+  "table": {
+    "title": "标题",
+    "type": "类型",
+    "participants": "参与者",
+    "status": "状态",
+    "scheduled": "计划时间",
+    "duration": "时长"
+  },
+  "create": {
+    "title": "创建会议",
+    "subtitle": "安排新的 AI 部门会议",
+    "form": {
+      "title": "会议标题",
+      "titlePlaceholder": "输入会议标题…",
+      "type": "会议类型",
+      "agenda": "议程",
+      "agendaPlaceholder": "会议议程项目…",
+      "participants": "参与者",
+      "selectParticipants": "选择参与者",
+      "scheduleTime": "计划时间",
+      "submit": "创建会议",
+      "creating": "创建中..."
+    }
+  },
+  "detail": {
+    "backToMeetings": "返回会议列表",
+    "agenda": "议程",
+    "participants": "参与者",
+    "transcript": "记录",
+    "decisions": "决策",
+    "actionItems": "行动项目"
+  },
+  "live": {
+    "title": "直播会议",
+    "speaking": "发言中",
+    "muted": "已静音",
+    "endMeeting": "结束会议",
+    "pause": "暂停",
+    "resume": "恢复"
+  },
+  "triggers": {
+    "title": "自动触发器",
+    "subtitle": "配置自动会议触发器",
+    "table": {
+      "name": "触发器名称",
+      "condition": "条件",
+      "meetingType": "会议类型",
+      "status": "状态",
+      "lastTriggered": "最后触发"
+    },
+    "createTrigger": "+ 创建触发器"
+  }
+}

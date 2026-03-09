@@ -1,0 +1,60 @@
+{
+  "header": {
+    "admin": "GRC Admin",
+    "dashboard": "GRC Dashboard",
+    "subtitle": "Dashboard"
+  },
+  "nav": {
+    "overview": "Overview"
+  },
+  "sections": {
+    "auth": "Auth",
+    "skills": "Skills",
+    "evolution": "Evolution",
+    "update": "Update",
+    "telemetry": "Telemetry",
+    "community": "Community",
+    "employees": "Employees",
+    "roles": "Roles",
+    "tasks": "Tasks",
+    "strategy": "Strategy",
+    "a2aAgents": "A2A Agents",
+    "meetings": "Meetings",
+    "relay": "Relay",
+    "platform": "Platform"
+  },
+  "items": {
+    "users": "Users",
+    "apiKeys": "API Keys",
+    "skillList": "Skill List",
+    "skillStats": "Skill Stats",
+    "assets": "Assets",
+    "nodes": "Nodes",
+    "pipeline": "Pipeline",
+    "releases": "Releases",
+    "updateStats": "Update Stats",
+    "insights": "Insights",
+    "channels": "Channels",
+    "topics": "Topics",
+    "moderation": "Moderation",
+    "employeeList": "Employee List",
+    "orgChart": "Org Chart",
+    "roleTemplates": "Role Templates",
+    "createRole": "Create Role",
+    "taskBoard": "Task Board",
+    "taskStats": "Task Stats",
+    "expenses": "Expenses",
+    "strategy": "Strategy",
+    "agentCards": "Agent Cards",
+    "allMeetings": "All Meetings",
+    "createMeeting": "Create Meeting",
+    "autoTriggers": "Auto Triggers",
+    "relayLog": "Relay Log",
+    "values": "Values"
+  },
+  "footer": {
+    "settings": "Settings",
+    "logout": "Logout",
+    "version": "GRC v{{version}}"
+  }
+}

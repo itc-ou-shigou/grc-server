@@ -1,0 +1,18 @@
+{
+  "title": "API 키",
+  "subtitle": "모든 사용자의 API 키 관리",
+  "table": {
+    "key": "키",
+    "owner": "소유자",
+    "scopes": "범위",
+    "lastUsed": "마지막 사용",
+    "expires": "만료일"
+  },
+  "revokeModal": {
+    "title": "API 키 철회",
+    "confirm": "키 {{prefix}}…을(를) 철회하시겠습니까? 이 작업은 되돌릴 수 없습니다.",
+    "button": "철회",
+    "revoking": "철회 중..."
+  },
+  "noKeys": "API 키를 찾을 수 없습니다."
+}

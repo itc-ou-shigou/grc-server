@@ -1,0 +1,47 @@
+{
+  "channels": {
+    "title": "频道",
+    "subtitle": "社区讨论频道",
+    "table": {
+      "name": "名称",
+      "description": "描述",
+      "topics": "话题",
+      "lastActivity": "最后活动"
+    }
+  },
+  "topics": {
+    "title": "话题",
+    "subtitle": "社区讨论",
+    "filters": {
+      "searchPlaceholder": "搜索话题…",
+      "allChannels": "所有频道",
+      "allStatuses": "所有状态"
+    },
+    "table": {
+      "title": "标题",
+      "author": "作者",
+      "channel": "频道",
+      "replies": "回复",
+      "views": "浏览量",
+      "lastReply": "最后回复"
+    },
+    "noTopics": "未找到话题。"
+  },
+  "postDetail": {
+    "backToTopics": "返回话题",
+    "replies": "回复",
+    "reply": "回复",
+    "noReplies": "暂无回复。"
+  },
+  "moderation": {
+    "title": "审核",
+    "subtitle": "审查标记内容",
+    "table": {
+      "content": "内容",
+      "author": "作者",
+      "reason": "原因",
+      "reportedAt": "举报时间"
+    },
+    "noFlags": "无标记内容。"
+  }
+}

@@ -1,10 +1,12 @@
 import { useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import { DataTable, Column } from '../../components/DataTable';
 import { Modal } from '../../components/Modal';
 import { ErrorMessage } from '../../components/ErrorMessage';
 import { useApiKeys, useRevokeApiKey, ApiKey } from '../../api/hooks';
 
 export function ApiKeys() {
+  const { t } = useTranslation('apikeys');
   const [page, setPage] = useState(1);
   const [revokeTarget, setRevokeTarget] = useState<ApiKey | null>(null);
 
@@ -19,14 +21,14 @@ export function ApiKeys() {
     },
     {
       key: 'keyPrefix',
-      label: 'Key Prefix',
+      label: t('table.key'),
       render: (v) => <span className="mono">{String(v)}…</span>,
     },
-    { key: 'userEmail', label: 'User' },
+    { key: 'userEmail', label: t('table.owner') },
     { key: 'name', label: 'Name' },
     {
       key: 'scopes',
-      label: 'Scopes',
+      label: t('table.scopes'),
       render: (v) => {
         const scopes = (v as string[] | null) ?? [];
         return (
@@ -41,12 +43,12 @@ export function ApiKeys() {
     },
     {
       key: 'lastUsedAt',
-      label: 'Last Used',
+      label: t('table.lastUsed'),
       render: (v) => v ? new Date(String(v)).toLocaleDateString() : <span className="text-muted">Never</span>,
     },
     {
       key: 'expiresAt',
-      label: 'Expires',
+      label: t('table.expires'),
       render: (v) => {
         if (!v) return <span className="text-muted">Never</span>;
         const d = new Date(String(v));
@@ -64,7 +66,7 @@ export function ApiKeys() {
             className="btn btn-danger btn-sm"
             onClick={() => setRevokeTarget(key)}
           >
-            Revoke
+            {t('revokeModal.button')}
           </button>
         );
       },
@@ -80,8 +82,8 @@ export function ApiKeys() {
   return (
     <div className="page">
       <div className="page-header">
-        <h1 className="page-title">API Keys</h1>
-        <p className="page-subtitle">Manage API keys issued to platform users</p>
+        <h1 className="page-title">{t('title')}</h1>
+        <p className="page-subtitle">{t('subtitle')}</p>
       </div>
 
       {error && <ErrorMessage error={error as Error} />}
@@ -103,7 +105,7 @@ export function ApiKeys() {
       <Modal
         open={!!revokeTarget}
         onClose={() => setRevokeTarget(null)}
-        title="Revoke API Key"
+        title={t('revokeModal.title')}
         footer={
           <div className="modal-footer-actions">
             <button className="btn btn-default" onClick={() => setRevokeTarget(null)}>Cancel</button>
@@ -112,15 +114,15 @@ export function ApiKeys() {
               onClick={handleRevoke}
               disabled={revokeKey.isPending}
             >
-              {revokeKey.isPending ? 'Revoking…' : 'Revoke Key'}
+              {revokeKey.isPending ? t('revokeModal.revoking') : t('revokeModal.button')}
             </button>
           </div>
         }
       >
         {revokeTarget && (
           <p>
-            Revoke API key <strong>{revokeTarget.keyPrefix}…</strong>
-            {revokeTarget.name ? ` (${revokeTarget.name})` : ''}? This action cannot be undone.
+            {t('revokeModal.confirm', { prefix: revokeTarget.keyPrefix })}
+            {revokeTarget.name ? ` (${revokeTarget.name})` : ''}
           </p>
         )}
       </Modal>

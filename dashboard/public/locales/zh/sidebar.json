@@ -1,0 +1,60 @@
+{
+  "header": {
+    "admin": "GRC 管理",
+    "dashboard": "GRC 控制台",
+    "subtitle": "控制台"
+  },
+  "nav": {
+    "overview": "概览"
+  },
+  "sections": {
+    "auth": "认证",
+    "skills": "技能",
+    "evolution": "演进",
+    "update": "更新",
+    "telemetry": "遥测",
+    "community": "社区",
+    "employees": "员工",
+    "roles": "角色",
+    "tasks": "任务",
+    "strategy": "战略",
+    "a2aAgents": "A2A 代理",
+    "meetings": "会议",
+    "relay": "中继",
+    "platform": "平台"
+  },
+  "items": {
+    "users": "用户",
+    "apiKeys": "API 密钥",
+    "skillList": "技能列表",
+    "skillStats": "技能统计",
+    "assets": "资产",
+    "nodes": "节点",
+    "pipeline": "流水线",
+    "releases": "发布",
+    "updateStats": "更新统计",
+    "insights": "洞察",
+    "channels": "频道",
+    "topics": "话题",
+    "moderation": "审核",
+    "employeeList": "员工列表",
+    "orgChart": "组织结构图",
+    "roleTemplates": "角色模板",
+    "createRole": "创建角色",
+    "taskBoard": "任务看板",
+    "taskStats": "任务统计",
+    "expenses": "费用",
+    "strategy": "战略",
+    "agentCards": "代理卡片",
+    "allMeetings": "所有会议",
+    "createMeeting": "创建会议",
+    "autoTriggers": "自动触发",
+    "relayLog": "中继日志",
+    "values": "配置值"
+  },
+  "footer": {
+    "settings": "设置",
+    "logout": "退出登录",
+    "version": "GRC v{{version}}"
+  }
+}

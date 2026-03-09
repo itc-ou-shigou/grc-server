@@ -1,0 +1,30 @@
+{
+  "title": "A2A Agent Cards",
+  "subtitle": "Registered agent-to-agent endpoints",
+  "detailTitle": "Agent Detail",
+  "table": {
+    "nodeId": "Node ID",
+    "agentName": "Agent Name",
+    "capabilities": "Capabilities",
+    "status": "Status",
+    "lastHeartbeat": "Last Heartbeat"
+  },
+  "stats": {
+    "totalAgents": "Total Agents",
+    "onlineAgents": "Online",
+    "offlineAgents": "Offline",
+    "avgResponseTime": "Avg Response Time"
+  },
+  "detail": {
+    "backToAgents": "Back to Agents",
+    "capabilities": "Capabilities",
+    "recentActivity": "Recent Activity",
+    "noActivity": "No recent activity."
+  },
+  "cleanupModal": {
+    "title": "Cleanup Stale Agents",
+    "confirm": "Remove agents that haven't been seen for more than 30 days?",
+    "button": "Cleanup",
+    "cleaning": "Cleaning up..."
+  }
+}

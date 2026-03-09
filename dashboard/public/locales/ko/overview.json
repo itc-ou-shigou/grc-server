@@ -1,0 +1,19 @@
+{
+  "title": "개요",
+  "subtitle": "플랫폼 전체 통계 및 인사이트",
+  "stats": {
+    "totalUsers": "총 사용자 수",
+    "activeNodes": "활성 노드",
+    "totalGenes": "총 유전자 수",
+    "totalAssets": "총 에셋 수",
+    "updateSuccessRate": "업데이트 성공률",
+    "uniqueTelemetryNodes": "고유 텔레메트리 노드",
+    "totalTelemetryReports": "총 텔레메트리 보고서",
+    "communityPosts": "커뮤니티 게시물"
+  },
+  "charts": {
+    "dailyTelemetry": "일별 텔레메트리 보고서 (최근 30일)",
+    "platformDistribution": "플랫폼 분포",
+    "genesByStatus": "상태별 유전자"
+  }
+}

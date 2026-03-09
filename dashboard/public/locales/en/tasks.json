@@ -1,0 +1,87 @@
+{
+  "board": {
+    "title": "Task Board",
+    "subtitle": "Manage and track AI employee tasks",
+    "createTask": "+ Create Task"
+  },
+  "filters": {
+    "searchPlaceholder": "Search tasks…",
+    "allStatuses": "All Statuses",
+    "allPriorities": "All Priorities",
+    "allCategories": "All Categories",
+    "allAssignees": "All Assignees",
+    "count": "{{count}} task",
+    "count_other": "{{count}} tasks"
+  },
+  "table": {
+    "title": "Title",
+    "priority": "Priority",
+    "category": "Category",
+    "assignee": "Assignee",
+    "status": "Status",
+    "deadline": "Deadline",
+    "created": "Created"
+  },
+  "priority": {
+    "critical": "Critical",
+    "high": "High",
+    "medium": "Medium",
+    "low": "Low"
+  },
+  "create": {
+    "title": "Create Task",
+    "subtitle": "Assign a new task to an AI employee",
+    "form": {
+      "title": "Title",
+      "titlePlaceholder": "Task title…",
+      "description": "Description",
+      "descriptionPlaceholder": "Task description…",
+      "assignee": "Assign to",
+      "selectAssignee": "Select assignee",
+      "priority": "Priority",
+      "category": "Category",
+      "deadline": "Deadline",
+      "submit": "Create Task",
+      "creating": "Creating..."
+    }
+  },
+  "detail": {
+    "backToBoard": "Back to Task Board",
+    "description": "Description",
+    "comments": "Comments",
+    "activity": "Activity",
+    "noComments": "No comments yet.",
+    "addComment": "Add a comment…",
+    "submitComment": "Submit"
+  },
+  "stats": {
+    "title": "Task Stats",
+    "subtitle": "Task completion and performance analytics",
+    "totalTasks": "Total Tasks",
+    "completionRate": "Completion Rate",
+    "avgCompletionTime": "Avg Completion Time",
+    "overdueRate": "Overdue Rate"
+  },
+  "expenses": {
+    "title": "Expenses",
+    "subtitle": "Review and approve task-related expenses",
+    "table": {
+      "task": "Task",
+      "amount": "Amount",
+      "category": "Category",
+      "requestedBy": "Requested By",
+      "status": "Status",
+      "requestedAt": "Requested At"
+    },
+    "approveModal": {
+      "title": "Approve Expense",
+      "confirm": "Approve expense of {{amount}} for {{task}}?",
+      "button": "Approve"
+    },
+    "rejectModal": {
+      "title": "Reject Expense",
+      "reason": "Reason for rejection",
+      "button": "Reject"
+    }
+  }
+}

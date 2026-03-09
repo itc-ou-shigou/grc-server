@@ -1,0 +1,72 @@
+{
+  "title": "角色模板",
+  "subtitle": "配置代理角色、行为和能力",
+  "createTitle": "创建角色",
+  "createSubtitle": "定义新角色模板",
+  "editTitle": "编辑角色 — {{name}}",
+  "assignTitle": "分配角色 — {{name}}",
+  "table": {
+    "id": "ID",
+    "name": "名称",
+    "mode": "模式",
+    "department": "部门",
+    "industry": "行业",
+    "created": "创建时间",
+    "builtin": "内置"
+  },
+  "filters": {
+    "searchPlaceholder": "按名称或 ID 搜索…",
+    "allModes": "所有模式",
+    "autonomous": "自主",
+    "copilot": "协作",
+    "count": "{{count}} 个角色",
+    "count_other": "{{count}} 个角色"
+  },
+  "editor": {
+    "basicInfo": "基本信息",
+    "roleId": "角色 ID",
+    "displayName": "显示名称",
+    "description": "描述",
+    "department": "部门",
+    "industry": "行业",
+    "mode": "模式",
+    "emoji": "表情符号",
+    "tabs": {
+      "identity": "身份",
+      "soul": "灵魂",
+      "agents": "代理",
+      "user": "用户",
+      "tools": "工具",
+      "heartbeat": "心跳",
+      "bootstrap": "启动",
+      "tasks": "任务"
+    },
+    "save": "保存更改",
+    "saving": "保存中...",
+    "saved": "角色保存成功。"
+  },
+  "cloneModal": {
+    "title": "克隆 — {{name}}",
+    "newId": "新角色 ID",
+    "newIdPlaceholder": "my-custom-role",
+    "newName": "显示名称",
+    "newNamePlaceholder": "我的自定义角色",
+    "button": "克隆",
+    "cloning": "克隆中..."
+  },
+  "deleteModal": {
+    "title": "删除角色 — {{name}}",
+    "confirm": "永久删除 {{name}} ({{id}})？当前分配此角色的员工将变为未分配。",
+    "button": "删除",
+    "deleting": "删除中...",
+    "builtinWarning": "内置角色无法删除"
+  },
+  "assign": {
+    "subtitle": "选择要分配此角色的员工",
+    "unassignedAgents": "未分配的代理",
+    "noUnassigned": "所有代理当前均已分配角色。",
+    "assignButton": "分配已选",
+    "assigning": "分配中..."
+  },
+  "newRole": "+ 新建角色"
+}

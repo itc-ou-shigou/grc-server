@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
 import { useCreateTask } from '../../api/hooks';
 
 const CATEGORY_OPTIONS = [
@@ -10,12 +11,12 @@ const CATEGORY_OPTIONS = [
   { value: 'expense', label: 'Expense' },
 ];
 
-const PRIORITY_OPTIONS = [
+const PRIORITY_OPTIONS_KEYS = [
   { value: '', label: 'Select priority...' },
-  { value: 'critical', label: 'Critical' },
-  { value: 'high', label: 'High' },
-  { value: 'medium', label: 'Medium' },
-  { value: 'low', label: 'Low' },
+  { value: 'critical', tKey: 'priority.critical' },
+  { value: 'high', tKey: 'priority.high' },
+  { value: 'medium', tKey: 'priority.medium' },
+  { value: 'low', tKey: 'priority.low' },
 ];
 
 const CURRENCY_OPTIONS = [
@@ -62,6 +63,7 @@ function validate(form: FormState): FieldErrors {
 }
 
 export function TaskCreate() {
+  const { t } = useTranslation('tasks');
   const navigate = useNavigate();
   const createTask = useCreateTask();
 
@@ -140,8 +142,8 @@ export function TaskCreate() {
     <div className="page">
       <div className="page-header">
         <div>
-          <h1 className="page-title">Create Task</h1>
-          <p className="page-subtitle">Define a new GRC task</p>
+          <h1 className="page-title">{t('create.title')}</h1>
+          <p className="page-subtitle">{t('create.subtitle')}</p>
         </div>
         <div className="action-group">
           <Link to="/tasks" className="btn btn-default">
@@ -183,7 +185,7 @@ export function TaskCreate() {
 
             <div className="form-group">
               <label className="form-label" htmlFor="title">
-                Title <span className="text-danger">*</span>
+                {t('create.form.title')} <span className="text-danger">*</span>
               </label>
               <input
                 id="title"
@@ -192,7 +194,7 @@ export function TaskCreate() {
                 type="text"
                 value={form.title}
                 onChange={handleChange}
-                placeholder="Short task title"
+                placeholder={t('create.form.titlePlaceholder')}
               />
               {fieldErrors.title && (
                 <p className="text-danger" style={{ fontSize: '0.8rem', marginTop: '0.25rem' }}>
@@ -203,7 +205,7 @@ export function TaskCreate() {
 
             <div className="form-group">
               <label className="form-label" htmlFor="category">
-                Category
+                {t('create.form.category')}
               </label>
               <select
                 id="category"
@@ -222,7 +224,7 @@ export function TaskCreate() {
 
             <div className="form-group">
               <label className="form-label" htmlFor="priority">
-                Priority <span className="text-danger">*</span>
+                {t('create.form.priority')} <span className="text-danger">*</span>
               </label>
               <select
                 id="priority"
@@ -231,9 +233,9 @@ export function TaskCreate() {
                 value={form.priority}
                 onChange={handleChange}
               >
-                {PRIORITY_OPTIONS.map((opt) => (
+                {PRIORITY_OPTIONS_KEYS.map((opt) => (
                   <option key={opt.value} value={opt.value}>
-                    {opt.label}
+                    {opt.tKey ? t(opt.tKey) : opt.label}
                   </option>
                 ))}
               </select>
@@ -261,7 +263,7 @@ export function TaskCreate() {
 
             <div className="form-group">
               <label className="form-label" htmlFor="deadline">
-                Deadline
+                {t('create.form.deadline')}
               </label>
               <input
                 id="deadline"
@@ -277,7 +279,7 @@ export function TaskCreate() {
           {/* Description */}
           <div className="form-group" style={{ marginBottom: '1rem' }}>
             <label className="form-label" htmlFor="description">
-              Description
+              {t('create.form.description')}
             </label>
             <textarea
               id="description"
@@ -286,7 +288,7 @@ export function TaskCreate() {
               rows={4}
               value={form.description}
               onChange={handleChange}
-              placeholder="Detailed description of the task..."
+              placeholder={t('create.form.descriptionPlaceholder')}
             />
           </div>
 
@@ -413,7 +415,7 @@ export function TaskCreate() {
               className="btn btn-primary"
               disabled={createTask.isPending}
             >
-              {createTask.isPending ? 'Creating...' : 'Create Task'}
+              {createTask.isPending ? t('create.form.creating') : t('create.form.submit')}
             </button>
           </div>
         </form>

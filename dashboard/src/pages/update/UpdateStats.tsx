@@ -1,9 +1,11 @@
+import { useTranslation } from 'react-i18next';
 import { StatCard } from '../../components/StatCard';
 import { Chart } from '../../components/Chart';
 import { ErrorMessage } from '../../components/ErrorMessage';
 import { useUpdateStats } from '../../api/hooks';
 
 export function UpdateStats() {
+  const { t } = useTranslation('update');
   const { data, isLoading, error } = useUpdateStats();
 
   const platformData = data
@@ -24,22 +26,22 @@ export function UpdateStats() {
   return (
     <div className="page">
       <div className="page-header">
-        <h1 className="page-title">Update Statistics</h1>
-        <p className="page-subtitle">Platform update performance and adoption metrics</p>
+        <h1 className="page-title">{t('stats.title')}</h1>
+        <p className="page-subtitle">{t('stats.subtitle')}</p>
       </div>
 
       {error && <ErrorMessage error={error as Error} />}
 
       <div className="stat-grid stat-grid-4">
         <StatCard
-          title="Total Reports"
+          title={t('stats.totalUpdates')}
           value={data?.stats.totalReports ?? 0}
           icon="🔄"
           color="#4361ee"
           loading={isLoading}
         />
         <StatCard
-          title="Success Rate"
+          title={t('stats.successRate')}
           value={`${(data?.stats.successRate ?? 0).toFixed(1)}%`}
           icon="✅"
           color="#06d6a0"
@@ -53,7 +55,7 @@ export function UpdateStats() {
           loading={isLoading}
         />
         <StatCard
-          title="Avg Duration"
+          title={t('stats.avgUpdateTime')}
           value={`${avgDurationSec}s`}
           icon="⏱️"
           color="#ffbe0b"
@@ -78,7 +80,7 @@ export function UpdateStats() {
             data={versionData}
             xKey="version"
             yKey="count"
-            title="Version Adoption"
+            title={t('stats.updateTrend')}
             height={240}
           />
         </div>

@@ -1,0 +1,50 @@
+{
+  "assets": {
+    "title": "资产",
+    "subtitle": "浏览演进资产（基因）",
+    "table": {
+      "name": "名称",
+      "type": "类型",
+      "status": "状态",
+      "version": "版本",
+      "author": "作者",
+      "promoted": "已推广"
+    },
+    "filters": {
+      "searchPlaceholder": "搜索资产…",
+      "allTypes": "所有类型",
+      "allStatuses": "所有状态"
+    }
+  },
+  "assetDetail": {
+    "backToAssets": "返回资产",
+    "version": "版本",
+    "type": "类型",
+    "status": "状态",
+    "author": "作者",
+    "description": "描述",
+    "dependencies": "依赖项",
+    "noDependencies": "无依赖项",
+    "promote": "推广",
+    "demote": "降级"
+  },
+  "nodes": {
+    "title": "节点",
+    "subtitle": "管理 WinClaw 客户端节点",
+    "table": {
+      "nodeId": "节点 ID",
+      "hostname": "主机名",
+      "platform": "平台",
+      "version": "版本",
+      "lastSeen": "最后在线",
+      "status": "状态"
+    }
+  },
+  "pipeline": {
+    "title": "流水线",
+    "subtitle": "演进流水线状态",
+    "stages": "阶段",
+    "running": "运行中",
+    "queued": "排队中"
+  }
+}

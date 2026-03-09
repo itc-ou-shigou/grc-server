@@ -1,0 +1,42 @@
+{
+  "title": "员工",
+  "subtitle": "管理 AI 员工及角色分配",
+  "orgTitle": "组织结构图",
+  "orgSubtitle": "查看公司层级",
+  "table": {
+    "name": "名称",
+    "nodeId": "节点 ID",
+    "role": "分配角色",
+    "department": "部门",
+    "status": "状态",
+    "configSync": "配置同步",
+    "lastSync": "最后同步"
+  },
+  "filters": {
+    "searchPlaceholder": "搜索员工…",
+    "allDepartments": "所有部门",
+    "allStatuses": "所有状态",
+    "count": "{{count}} 名员工",
+    "count_other": "{{count}} 名员工"
+  },
+  "assignModal": {
+    "title": "分配角色 — {{name}}",
+    "selectRole": "选择角色",
+    "noRoles": "没有可用角色",
+    "button": "分配角色",
+    "assigning": "分配中..."
+  },
+  "unassignModal": {
+    "title": "取消分配角色 — {{name}}",
+    "confirm": "从 {{name}} 移除 {{role}} 的分配吗？",
+    "button": "取消分配",
+    "unassigning": "取消分配中..."
+  },
+  "configSync": {
+    "synced": "已同步",
+    "pending": "待同步",
+    "outdated": "已过期",
+    "never": "从未同步"
+  },
+  "noRole": "未分配"
+}

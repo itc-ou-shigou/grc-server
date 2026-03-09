@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import { Link } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
 import { useAdminTasks } from '../../api/hooks';
 import { DataTable } from '../../components/DataTable';
 import { StatusBadge } from '../../components/StatusBadge';
@@ -22,7 +23,7 @@ const PRIORITY_VARIANT: Record<string, Variant> = {
 };
 
 const STATUS_OPTIONS = [
-  { value: '', label: 'All Statuses' },
+  { value: '', labelKey: 'filters.allStatuses' },
   { value: 'draft', label: 'Draft' },
   { value: 'pending', label: 'Pending' },
   { value: 'in_progress', label: 'In Progress' },
@@ -34,15 +35,15 @@ const STATUS_OPTIONS = [
 ];
 
 const PRIORITY_OPTIONS = [
-  { value: '', label: 'All Priorities' },
-  { value: 'critical', label: 'Critical' },
-  { value: 'high', label: 'High' },
-  { value: 'medium', label: 'Medium' },
-  { value: 'low', label: 'Low' },
+  { value: '', labelKey: 'filters.allPriorities' },
+  { value: 'critical', labelKey: 'priority.critical' },
+  { value: 'high', labelKey: 'priority.high' },
+  { value: 'medium', labelKey: 'priority.medium' },
+  { value: 'low', labelKey: 'priority.low' },
 ];
 
 const CATEGORY_OPTIONS = [
-  { value: '', label: 'All Categories' },
+  { value: '', labelKey: 'filters.allCategories' },
   { value: 'strategic', label: 'Strategic' },
   { value: 'operational', label: 'Operational' },
   { value: 'administrative', label: 'Administrative' },
@@ -111,6 +112,7 @@ const COLUMNS: Column[] = [
 ];
 
 export function TaskBoard() {
+  const { t } = useTranslation('tasks');
   const [page, setPage] = useState(1);
   const [status, setStatus] = useState('');
   const [priority, setPriority] = useState('');
@@ -145,12 +147,12 @@ export function TaskBoard() {
     <div className="page">
       <div className="page-header">
         <div>
-          <h1 className="page-title">Task Board</h1>
-          <p className="page-subtitle">Manage and track all GRC tasks</p>
+          <h1 className="page-title">{t('board.title')}</h1>
+          <p className="page-subtitle">{t('board.subtitle')}</p>
         </div>
         <div className="action-group">
           <Link to="/tasks/create" className="btn btn-primary">
-            Create Task
+            {t('board.createTask')}
           </Link>
         </div>
       </div>
@@ -165,7 +167,7 @@ export function TaskBoard() {
           >
             {STATUS_OPTIONS.map((opt) => (
               <option key={opt.value} value={opt.value}>
-                {opt.label}
+                {opt.labelKey ? t(opt.labelKey) : opt.label}
               </option>
             ))}
           </select>
@@ -178,7 +180,7 @@ export function TaskBoard() {
           >
             {PRIORITY_OPTIONS.map((opt) => (
               <option key={opt.value} value={opt.value}>
-                {opt.label}
+                {t(opt.labelKey)}
               </option>
             ))}
           </select>
@@ -191,7 +193,7 @@ export function TaskBoard() {
           >
             {CATEGORY_OPTIONS.map((opt) => (
               <option key={opt.value} value={opt.value}>
-                {opt.label}
+                {opt.labelKey ? t(opt.labelKey) : opt.label}
               </option>
             ))}
           </select>

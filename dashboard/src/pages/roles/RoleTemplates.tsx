@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
 import { useRoleTemplates, useCloneRole, useDeleteRole } from '../../api/hooks';
 import { DataTable } from '../../components/DataTable';
 import { StatusBadge } from '../../components/StatusBadge';
@@ -31,6 +32,7 @@ interface DeleteModalState {
 }
 
 export function RoleTemplates() {
+  const { t } = useTranslation('roles');
   const navigate = useNavigate();
   const { isAdmin } = useUser();
   const { data: rolesData, isLoading, error } = useRoleTemplates();
@@ -56,7 +58,7 @@ export function RoleTemplates() {
   const columns = [
     {
       key: 'id',
-      label: 'ID',
+      label: t('table.id'),
       render: (_v: unknown, row: Record<string, unknown>) => {
         const r = row as unknown as RoleRow;
         return <span className="mono">{r.id}</span>;
@@ -64,20 +66,20 @@ export function RoleTemplates() {
     },
     {
       key: 'name',
-      label: 'Name',
+      label: t('table.name'),
       render: (_v: unknown, row: Record<string, unknown>) => {
         const r = row as unknown as RoleRow;
         return (
           <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
             <span>{r.name}</span>
-            {r.isBuiltin && <span className="tag">builtin</span>}
+            {r.isBuiltin ? <span className="tag">{t('table.builtin')}</span> : null}
           </div>
         );
       },
     },
     {
       key: 'mode',
-      label: 'Mode',
+      label: t('table.mode'),
       render: (_v: unknown, row: Record<string, unknown>) => {
         const r = row as unknown as RoleRow;
         return (
@@ -87,7 +89,7 @@ export function RoleTemplates() {
     },
     {
       key: 'department',
-      label: 'Department',
+      label: t('table.department'),
       render: (_v: unknown, row: Record<string, unknown>) => {
         const r = row as unknown as RoleRow;
         return r.department || <span className="text-muted">—</span>;
@@ -95,7 +97,7 @@ export function RoleTemplates() {
     },
     {
       key: 'industry',
-      label: 'Industry',
+      label: t('table.industry'),
       render: (_v: unknown, row: Record<string, unknown>) => {
         const r = row as unknown as RoleRow;
         return r.industry || <span className="text-muted">—</span>;
@@ -103,7 +105,7 @@ export function RoleTemplates() {
     },
     {
       key: 'createdAt',
-      label: 'Created',
+      label: t('table.created'),
       render: (_v: unknown, row: Record<string, unknown>) => {
         const r = row as unknown as RoleRow;
         return (
@@ -118,6 +120,12 @@ export function RoleTemplates() {
         const r = row as unknown as RoleRow;
         return (
           <div className="action-group">
+            <button
+              className="btn btn-primary btn-sm"
+              onClick={() => navigate(`/roles/${r.id}/assign`)}
+            >
+              Assign
+            </button>
             <button
               className="btn btn-default btn-sm"
               onClick={() => navigate(`/roles/${r.id}`)}
@@ -138,7 +146,7 @@ export function RoleTemplates() {
               <button
                 className="btn btn-danger btn-sm"
                 disabled={r.isBuiltin}
-                title={r.isBuiltin ? 'Built-in roles cannot be deleted' : undefined}
+                title={r.isBuiltin ? t('deleteModal.builtinWarning') : undefined}
                 onClick={() => setDeleteModal({ open: true, id: r.id, name: r.name })}
               >
                 Delete
@@ -167,12 +175,12 @@ export function RoleTemplates() {
     <div className="page">
       <div className="page-header">
         <div>
-          <h1 className="page-title">Role Templates</h1>
-          <p className="page-subtitle">Configure agent roles, behaviors, and capabilities</p>
+          <h1 className="page-title">{t('title')}</h1>
+          <p className="page-subtitle">{t('subtitle')}</p>
         </div>
         <div className="action-group">
           <button className="btn btn-primary" onClick={() => navigate('/roles/create')}>
-            + New Role
+            {t('newRole')}
           </button>
         </div>
       </div>
@@ -181,15 +189,15 @@ export function RoleTemplates() {
         <input
           className="input"
           type="text"
-          placeholder="Search by name or ID…"
+          placeholder={t('filters.searchPlaceholder')}
           value={search}
           onChange={e => setSearch(e.target.value)}
           style={{ minWidth: '200px' }}
         />
         <select className="select" value={modeFilter} onChange={e => setModeFilter(e.target.value)}>
-          <option value="">All Modes</option>
-          <option value="autonomous">Autonomous</option>
-          <option value="copilot">Copilot</option>
+          <option value="">{t('filters.allModes')}</option>
+          <option value="autonomous">{t('filters.autonomous')}</option>
+          <option value="copilot">{t('filters.copilot')}</option>
         </select>
         <span className="text-muted" style={{ fontSize: '0.875rem' }}>
           {filtered.length} role{filtered.length !== 1 ? 's' : ''}
@@ -207,7 +215,7 @@ export function RoleTemplates() {
       <Modal
         open={cloneModal.open}
         onClose={() => setCloneModal({ open: false, sourceId: '', sourceName: '' })}
-        title={`Clone — ${cloneModal.sourceName}`}
+        title={t('cloneModal.title', { name: cloneModal.sourceName })}
         footer={
           <div className="modal-footer-actions">
             <button
@@ -221,29 +229,29 @@ export function RoleTemplates() {
               onClick={handleClone}
               disabled={!newId.trim() || !newDisplayName.trim() || cloneRole.isPending}
             >
-              {cloneRole.isPending ? 'Cloning…' : 'Clone'}
+              {cloneRole.isPending ? t('cloneModal.cloning') : t('cloneModal.button')}
             </button>
           </div>
         }
       >
         <div className="form-group">
-          <label className="form-label">New Role ID</label>
+          <label className="form-label">{t('cloneModal.newId')}</label>
           <input
             className="input"
             type="text"
             value={newId}
             onChange={e => setNewId(e.target.value)}
-            placeholder="my-custom-role"
+            placeholder={t('cloneModal.newIdPlaceholder')}
           />
         </div>
         <div className="form-group">
-          <label className="form-label">Display Name</label>
+          <label className="form-label">{t('cloneModal.newName')}</label>
           <input
             className="input"
             type="text"
             value={newDisplayName}
             onChange={e => setNewDisplayName(e.target.value)}
-            placeholder="My Custom Role"
+            placeholder={t('cloneModal.newNamePlaceholder')}
           />
         </div>
         {cloneRole.error && <ErrorMessage error={cloneRole.error as Error} />}
@@ -253,7 +261,7 @@ export function RoleTemplates() {
       <Modal
         open={deleteModal.open}
         onClose={() => setDeleteModal({ open: false, id: '', name: '' })}
-        title={`Delete Role — ${deleteModal.name}`}
+        title={t('deleteModal.title', { name: deleteModal.name })}
         footer={
           <div className="modal-footer-actions">
             <button
@@ -267,7 +275,7 @@ export function RoleTemplates() {
               onClick={handleDelete}
               disabled={deleteRole.isPending}
             >
-              {deleteRole.isPending ? 'Deleting…' : 'Delete'}
+              {deleteRole.isPending ? t('deleteModal.deleting') : t('deleteModal.button')}
             </button>
           </div>
         }

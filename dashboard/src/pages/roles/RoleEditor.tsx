@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
 import { useRoleTemplate, useUpdateRole } from '../../api/hooks';
 import { ErrorMessage } from '../../components/ErrorMessage';
 
@@ -17,6 +18,7 @@ const MD_TABS: { key: MdField; label: string; description: string }[] = [
 ];
 
 export function RoleEditor() {
+  const { t } = useTranslation('roles');
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
   const { data, isLoading, error } = useRoleTemplate(id ?? '');
@@ -92,10 +94,10 @@ export function RoleEditor() {
     <div className="page">
       <div className="page-header">
         <div>
-          <h1 className="page-title">Edit Role</h1>
+          <h1 className="page-title">{t('editTitle', { name: role.name })}</h1>
           <p className="page-subtitle">
             <span className="mono">{id}</span>
-            {role.isBuiltin && <span className="tag" style={{ marginLeft: '0.5rem' }}>builtin</span>}
+            {role.isBuiltin && <span className="tag" style={{ marginLeft: '0.5rem' }}>{t('table.builtin')}</span>}
           </p>
         </div>
         <div className="action-group">
@@ -107,7 +109,7 @@ export function RoleEditor() {
             onClick={handleSave}
             disabled={updateRole.isPending}
           >
-            {updateRole.isPending ? 'Saving…' : saved ? '✓ Saved' : 'Save'}
+            {updateRole.isPending ? t('editor.saving') : saved ? '✓ Saved' : t('editor.save')}
           </button>
         </div>
       </div>
@@ -116,11 +118,11 @@ export function RoleEditor() {
 
       <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem', marginBottom: '1.5rem' }}>
         <div className="form-group">
-          <label className="form-label">Role ID (readonly)</label>
+          <label className="form-label">{t('editor.roleId')} (readonly)</label>
           <input className="input" type="text" value={id ?? ''} readOnly style={{ opacity: 0.6, cursor: 'not-allowed' }} />
         </div>
         <div className="form-group">
-          <label className="form-label">Display Name</label>
+          <label className="form-label">{t('editor.displayName')}</label>
           <input
             className="input"
             type="text"
@@ -130,7 +132,7 @@ export function RoleEditor() {
           />
         </div>
         <div className="form-group">
-          <label className="form-label">Mode</label>
+          <label className="form-label">{t('editor.mode')}</label>
           <select
             className="select"
             value={mode}
@@ -141,7 +143,7 @@ export function RoleEditor() {
           </select>
         </div>
         <div className="form-group">
-          <label className="form-label">Department</label>
+          <label className="form-label">{t('editor.department')}</label>
           <input
             className="input"
             type="text"
@@ -151,7 +153,7 @@ export function RoleEditor() {
           />
         </div>
         <div className="form-group">
-          <label className="form-label">Industry</label>
+          <label className="form-label">{t('editor.industry')}</label>
           <input
             className="input"
             type="text"
@@ -215,7 +217,7 @@ export function RoleEditor() {
           onClick={handleSave}
           disabled={updateRole.isPending}
         >
-          {updateRole.isPending ? 'Saving…' : saved ? '✓ Saved' : 'Save Changes'}
+          {updateRole.isPending ? t('editor.saving') : saved ? '✓ Saved' : t('editor.save')}
         </button>
       </div>
     </div>

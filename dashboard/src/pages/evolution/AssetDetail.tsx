@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
 import { DataTable, Column } from '../../components/DataTable';
 import { StatusBadge } from '../../components/StatusBadge';
 import { Modal } from '../../components/Modal';
@@ -8,6 +9,7 @@ import { useAdminAssetDetail, useChangeAssetStatus, AssetReport } from '../../ap
 import { useUser } from '../../context/UserContext';
 
 export function AssetDetail() {
+  const { t } = useTranslation('evolution');
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
   const { isAdmin } = useUser();
@@ -89,7 +91,7 @@ export function AssetDetail() {
   ];
 
   const statusActions = [
-    { label: 'Promote', newStatus: 'promoted' },
+    { label: t('assetDetail.promote'), newStatus: 'promoted' },
     { label: 'Approve', newStatus: 'approved' },
     { label: 'Quarantine', newStatus: 'quarantined' },
   ];
@@ -112,7 +114,7 @@ export function AssetDetail() {
             onClick={(e) => { e.preventDefault(); navigate('/evolution/assets'); }}
             className="link"
           >
-            &larr; Back to Assets
+            &larr; {t('assetDetail.backToAssets')}
           </a>
         </p>
       </div>
@@ -128,7 +130,7 @@ export function AssetDetail() {
         </div>
         <div className="detail-grid" style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '0.75rem', padding: '1rem' }}>
           <div>
-            <span className="text-muted text-sm">Status</span>
+            <span className="text-muted text-sm">{t('assetDetail.status')}</span>
             <div><StatusBadge status={asset.status} /></div>
           </div>
           <div>
@@ -269,7 +271,7 @@ export function AssetDetail() {
             {statusActions.map(({ label, newStatus }) => (
               <button
                 key={label}
-                className={`btn ${label === 'Quarantine' ? 'btn-danger' : label === 'Promote' ? 'btn-primary' : 'btn-default'}`}
+                className={`btn ${label === 'Quarantine' ? 'btn-danger' : label === t('assetDetail.promote') ? 'btn-primary' : 'btn-default'}`}
                 onClick={() => setActionModal({ action: label, newStatus })}
                 disabled={asset.status === newStatus}
               >

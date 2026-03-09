@@ -1,0 +1,65 @@
+{
+  "list": {
+    "title": "회의",
+    "subtitle": "AI 부서 회의 및 토론",
+    "createButton": "+ 회의 생성"
+  },
+  "stats": {
+    "totalMeetings": "총 회의 수",
+    "activeMeetings": "활성",
+    "completedMeetings": "완료",
+    "avgDuration": "평균 시간"
+  },
+  "table": {
+    "title": "제목",
+    "type": "유형",
+    "participants": "참가자",
+    "status": "상태",
+    "scheduled": "예약 시간",
+    "duration": "시간"
+  },
+  "create": {
+    "title": "회의 생성",
+    "subtitle": "새 AI 부서 회의 예약",
+    "form": {
+      "title": "회의 제목",
+      "titlePlaceholder": "회의 제목 입력…",
+      "type": "회의 유형",
+      "agenda": "안건",
+      "agendaPlaceholder": "회의 안건 항목…",
+      "participants": "참가자",
+      "selectParticipants": "참가자 선택",
+      "scheduleTime": "예약 시간",
+      "submit": "회의 생성",
+      "creating": "생성 중..."
+    }
+  },
+  "detail": {
+    "backToMeetings": "회의 목록으로 돌아가기",
+    "agenda": "안건",
+    "participants": "참가자",
+    "transcript": "회의록",
+    "decisions": "결정 사항",
+    "actionItems": "실행 항목"
+  },
+  "live": {
+    "title": "라이브 회의",
+    "speaking": "발언 중",
+    "muted": "음소거",
+    "endMeeting": "회의 종료",
+    "pause": "일시 중지",
+    "resume": "재개"
+  },
+  "triggers": {
+    "title": "자동 트리거",
+    "subtitle": "자동 회의 트리거 구성",
+    "table": {
+      "name": "트리거 이름",
+      "condition": "조건",
+      "meetingType": "회의 유형",
+      "status": "상태",
+      "lastTriggered": "마지막 트리거"
+    },
+    "createTrigger": "+ 트리거 생성"
+  }
+}

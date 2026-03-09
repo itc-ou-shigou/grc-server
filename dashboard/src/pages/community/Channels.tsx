@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import { DataTable, Column } from '../../components/DataTable';
 import { StatusBadge } from '../../components/StatusBadge';
 import { Modal } from '../../components/Modal';
@@ -15,6 +16,7 @@ interface ChannelFormData {
 const defaultForm: ChannelFormData = { name: '', display_name: '', description: '' };
 
 export function Channels() {
+  const { t } = useTranslation('community');
   const [page, setPage] = useState(1);
   const [createOpen, setCreateOpen] = useState(false);
   const [deleteTarget, setDeleteTarget] = useState<Channel | null>(null);
@@ -28,13 +30,13 @@ export function Channels() {
   const columns: Column<Record<string, unknown>>[] = [
     {
       key: 'name',
-      label: 'Name',
+      label: t('channels.table.name'),
       render: (v) => <span className="mono">{String(v)}</span>,
     },
     { key: 'displayName', label: 'Display Name' },
     {
       key: 'description',
-      label: 'Description',
+      label: t('channels.table.description'),
       render: (v) => v ? <span className="text-sm">{String(v).slice(0, 60)}</span> : <span className="text-muted">—</span>,
     },
     {
@@ -85,8 +87,8 @@ export function Channels() {
   return (
     <div className="page">
       <div className="page-header">
-        <h1 className="page-title">Channels</h1>
-        <p className="page-subtitle">Manage community discussion channels</p>
+        <h1 className="page-title">{t('channels.title')}</h1>
+        <p className="page-subtitle">{t('channels.subtitle')}</p>
         {isAdmin && (
           <div className="page-header-actions">
             <button className="btn btn-primary" onClick={() => setCreateOpen(true)}>

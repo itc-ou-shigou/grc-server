@@ -67,6 +67,8 @@ export interface GrcConfig {
     tasks: boolean;
     relay: boolean;
     strategy: boolean;
+    "a2a-gateway": boolean;
+    meetings: boolean;
   };
 
   smtp: {
@@ -218,6 +220,8 @@ export function loadConfig(): GrcConfig {
       tasks: envBool("GRC_MODULE_TASKS", true),
       relay: envBool("GRC_MODULE_RELAY", true),
       strategy: envBool("GRC_MODULE_STRATEGY", true),
+      "a2a-gateway": envBool("GRC_MODULE_A2A_GATEWAY", true),
+      meetings: envBool("GRC_MODULE_MEETINGS", true),
     },
 
     admin: {

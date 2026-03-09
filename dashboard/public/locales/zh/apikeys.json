@@ -1,0 +1,18 @@
+{
+  "title": "API 密钥",
+  "subtitle": "管理所有用户的 API 密钥",
+  "table": {
+    "key": "密钥",
+    "owner": "所有者",
+    "scopes": "作用域",
+    "lastUsed": "最后使用",
+    "expires": "过期时间"
+  },
+  "revokeModal": {
+    "title": "撤销 API 密钥",
+    "confirm": "确定要撤销密钥 {{prefix}}… 吗？此操作无法撤销。",
+    "button": "撤销",
+    "revoking": "撤销中..."
+  },
+  "noKeys": "未找到 API 密钥。"
+}

@@ -1,0 +1,29 @@
+{
+  "title": "A2A 릴레이 로그",
+  "subtitle": "에이전트 간 메시지 릴레이 기록",
+  "stats": {
+    "totalMessages": "총 메시지 수",
+    "todayMessages": "오늘",
+    "successRate": "성공률",
+    "avgLatency": "평균 지연 시간"
+  },
+  "table": {
+    "from": "송신자",
+    "to": "수신자",
+    "method": "메서드",
+    "status": "상태",
+    "latency": "지연 시간",
+    "timestamp": "타임스탬프"
+  },
+  "filters": {
+    "searchPlaceholder": "메시지 검색…",
+    "allStatuses": "모든 상태",
+    "allMethods": "모든 메서드"
+  },
+  "cleanupModal": {
+    "title": "오래된 로그 정리",
+    "confirm": "30일 이상 된 릴레이 로그를 삭제하시겠습니까?",
+    "button": "정리",
+    "cleaning": "정리 중..."
+  }
+}

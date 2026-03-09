@@ -1,4 +1,6 @@
 import { ReactNode, useState, useRef, useEffect, useCallback } from 'react';
+import { useTranslation } from 'react-i18next';
+import { LoginLanguageSwitcher } from '../i18n/LoginLanguageSwitcher';
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
@@ -126,7 +128,7 @@ function PasswordInput({ id, value, onChange, placeholder, disabled, autoComplet
           display: 'flex',
           alignItems: 'center',
         }}
-        aria-label={show ? 'Hide password' : 'Show password'}
+        aria-label={show ? 'hide password' : 'show password'}
       >
         <EyeIcon visible={show} />
       </button>
@@ -220,6 +222,7 @@ function OtpInput({ value, onChange, disabled }: OtpInputProps) {
 // ─── Main AuthGuard ───────────────────────────────────────────────────────────
 
 export function AuthGuard({ children }: { children: ReactNode }) {
+  const { t: t_auth } = useTranslation('auth');
   const [token, setToken] = useState(() => localStorage.getItem('grc_admin_token'));
 
   // ── Tab state ──
@@ -271,7 +274,7 @@ export function AuthGuard({ children }: { children: ReactNode }) {
     e.preventDefault();
     setLoginError('');
     if (!loginEmail.trim() || !loginPassword) {
-      setLoginError('Please enter your email and password.');
+      setLoginError(t_auth('login.enterEmailPassword'));
       return;
     }
     setLoginLoading(true);
@@ -283,7 +286,7 @@ export function AuthGuard({ children }: { children: ReactNode }) {
       localStorage.setItem('grc_admin_token', res.token);
       setToken(res.token);
     } catch (err: unknown) {
-      setLoginError((err as ApiError).message || 'Login failed. Please try again.');
+      setLoginError((err as ApiError).message || t_auth('login.loginFailed'));
     } finally {
       setLoginLoading(false);
     }
@@ -292,12 +295,12 @@ export function AuthGuard({ children }: { children: ReactNode }) {
   const handleSendCode = async () => {
     setRegError('');
     if (!regEmail.trim()) {
-      setRegError('Please enter your email address.');
+      setRegError(t_auth('register.step1.enterEmail'));
       return;
     }
     const emailRe = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
     if (!emailRe.test(regEmail.trim())) {
-      setRegError('Please enter a valid email address.');
+      setRegError(t_auth('register.step1.invalidEmail'));
       return;
     }
     setRegLoading(true);
@@ -306,11 +309,11 @@ export function AuthGuard({ children }: { children: ReactNode }) {
         '/auth/email/send-code',
         { email: regEmail.trim() },
       );
-      setRegSuccess('Verification code sent. Check your inbox.');
+      setRegSuccess(t_auth('register.step2.codeSentCheck'));
       startCooldown();
       setStep(2);
     } catch (err: unknown) {
-      setRegError((err as ApiError).message || 'Failed to send code. Please try again.');
+      setRegError((err as ApiError).message || t_auth('register.step1.sendFailed'));
     } finally {
       setRegLoading(false);
     }
@@ -323,10 +326,10 @@ export function AuthGuard({ children }: { children: ReactNode }) {
     setRegLoading(true);
     try {
       await apiPost<{ ok: boolean }>('/auth/email/send-code', { email: regEmail.trim() });
-      setRegSuccess('Code resent. Check your inbox.');
+      setRegSuccess(t_auth('register.step2.codeResent'));
       startCooldown();
     } catch (err: unknown) {
-      setRegError((err as ApiError).message || 'Failed to resend code.');
+      setRegError((err as ApiError).message || t_auth('register.step2.resendFailed'));
     } finally {
       setRegLoading(false);
     }
@@ -336,7 +339,7 @@ export function AuthGuard({ children }: { children: ReactNode }) {
     setRegError('');
     const code = otpValue.join('');
     if (code.length < 6) {
-      setRegError('Please enter the full 6-digit code.');
+      setRegError(t_auth('register.step2.enterFullCode'));
       return;
     }
     setRegLoading(true);
@@ -345,10 +348,10 @@ export function AuthGuard({ children }: { children: ReactNode }) {
         '/auth/email/verify-code',
         { email: regEmail.trim(), code },
       );
-      setRegSuccess('Email verified. Set your password below.');
+      setRegSuccess(t_auth('register.step3.emailVerified'));
       setStep(3);
     } catch (err: unknown) {
-      setRegError((err as ApiError).message || 'Invalid or expired code.');
+      setRegError((err as ApiError).message || t_auth('register.step2.invalidCode'));
     } finally {
       setRegLoading(false);
     }
@@ -358,11 +361,11 @@ export function AuthGuard({ children }: { children: ReactNode }) {
     e.preventDefault();
     setRegError('');
     if (regPassword.length < 8) {
-      setRegError('Password must be at least 8 characters.');
+      setRegError(t_auth('register.step3.minLengthError'));
       return;
     }
     if (regPassword !== regConfirm) {
-      setRegError('Passwords do not match.');
+      setRegError(t_auth('register.step3.mismatchError'));
       return;
     }
     setRegLoading(true);
@@ -374,7 +377,7 @@ export function AuthGuard({ children }: { children: ReactNode }) {
       localStorage.setItem('grc_admin_token', res.token);
       setToken(res.token);
     } catch (err: unknown) {
-      setRegError((err as ApiError).message || 'Registration failed. Please try again.');
+      setRegError((err as ApiError).message || t_auth('register.step3.registerFailed'));
     } finally {
       setRegLoading(false);
     }
@@ -433,8 +436,13 @@ export function AuthGuard({ children }: { children: ReactNode }) {
               background: 'linear-gradient(135deg, var(--color-primary) 0%, #2563eb 100%)',
               padding: '28px 32px 24px',
               textAlign: 'center',
+              position: 'relative',
             }}
           >
+            {/* Language switcher in top-right */}
+            <div style={{ position: 'absolute', top: 12, right: 12 }}>
+              <LoginLanguageSwitcher />
+            </div>
             <div
               style={{
                 width: 48,
@@ -463,7 +471,7 @@ export function AuthGuard({ children }: { children: ReactNode }) {
                 letterSpacing: '-0.01em',
               }}
             >
-              GRC Admin Dashboard
+              {t_auth('login.title')}
             </h1>
             <p
               style={{
@@ -472,7 +480,7 @@ export function AuthGuard({ children }: { children: ReactNode }) {
                 margin: '6px 0 0',
               }}
             >
-              Sign in to access your admin panel
+              {t_auth('login.subtitle')}
             </p>
           </div>
 
@@ -504,7 +512,7 @@ export function AuthGuard({ children }: { children: ReactNode }) {
                   textTransform: 'capitalize',
                 }}
               >
-                {t === 'login' ? 'Sign In' : 'Create Account'}
+                {t === 'login' ? t_auth('login.tabSignIn') : t_auth('login.tabCreateAccount')}
               </button>
             ))}
           </div>
@@ -536,13 +544,13 @@ export function AuthGuard({ children }: { children: ReactNode }) {
                 )}
 
                 <div style={{ marginBottom: 16 }}>
-                  <label className="label" htmlFor="login-email">Email address</label>
+                  <label className="label" htmlFor="login-email">{t_auth('login.emailLabel')}</label>
                   <input
                     id="login-email"
                     type="email"
                     value={loginEmail}
                     onChange={e => setLoginEmail(e.target.value)}
-                    placeholder="you@example.com"
+                    placeholder={t_auth('login.emailPlaceholder')}
                     disabled={loginLoading}
                     autoComplete="email"
                     className="input"
@@ -550,12 +558,12 @@ export function AuthGuard({ children }: { children: ReactNode }) {
                 </div>
 
                 <div style={{ marginBottom: 20 }}>
-                  <label className="label" htmlFor="login-password">Password</label>
+                  <label className="label" htmlFor="login-password">{t_auth('login.passwordLabel')}</label>
                   <PasswordInput
                     id="login-password"
                     value={loginPassword}
                     onChange={setLoginPassword}
-                    placeholder="Enter your password"
+                    placeholder={t_auth('login.passwordPlaceholder')}
                     disabled={loginLoading}
                     autoComplete="current-password"
                   />
@@ -568,7 +576,7 @@ export function AuthGuard({ children }: { children: ReactNode }) {
                   style={{ width: '100%', height: 42, fontSize: 14, gap: 8 }}
                 >
                   {loginLoading && <Spinner />}
-                  {loginLoading ? 'Signing in...' : 'Sign In'}
+                  {loginLoading ? t_auth('login.signingIn') : t_auth('login.signInButton')}
                 </button>
 
                 <OAuthDivider />
@@ -627,16 +635,16 @@ export function AuthGuard({ children }: { children: ReactNode }) {
                 {step === 1 && (
                   <div>
                     <p style={{ fontSize: 13, color: 'var(--color-text-secondary)', marginBottom: 20 }}>
-                      Enter your email address to receive a verification code.
+                      {t_auth('register.step1.description')}
                     </p>
                     <div style={{ marginBottom: 20 }}>
-                      <label className="label" htmlFor="reg-email">Email address</label>
+                      <label className="label" htmlFor="reg-email">{t_auth('register.step1.emailLabel')}</label>
                       <input
                         id="reg-email"
                         type="email"
                         value={regEmail}
                         onChange={e => setRegEmail(e.target.value)}
-                        placeholder="you@example.com"
+                        placeholder={t_auth('login.emailPlaceholder')}
                         disabled={regLoading}
                         autoComplete="email"
                         className="input"
@@ -651,7 +659,7 @@ export function AuthGuard({ children }: { children: ReactNode }) {
                       style={{ width: '100%', height: 42, fontSize: 14, gap: 8 }}
                     >
                       {regLoading && <Spinner />}
-                      {regLoading ? 'Sending...' : 'Send Verification Code'}
+                      {regLoading ? t_auth('register.step1.sending') : t_auth('register.step1.sendCode')}
                     </button>
 
                     <OAuthDivider />
@@ -663,7 +671,7 @@ export function AuthGuard({ children }: { children: ReactNode }) {
                 {step === 2 && (
                   <div>
                     <p style={{ fontSize: 13, color: 'var(--color-text-secondary)', marginBottom: 4 }}>
-                      We sent a 6-digit code to
+                      {t_auth('register.step2.codeSent')}
                     </p>
                     <p style={{ fontSize: 14, fontWeight: 600, color: 'var(--color-text)', marginBottom: 20 }}>
                       {regEmail}
@@ -671,7 +679,7 @@ export function AuthGuard({ children }: { children: ReactNode }) {
 
                     <div style={{ marginBottom: 24 }}>
                       <label className="label" style={{ textAlign: 'center', display: 'block', marginBottom: 12 }}>
-                        Verification code
+                        {t_auth('register.step2.codePlaceholder')}
                       </label>
                       <OtpInput value={otpValue} onChange={setOtpValue} disabled={regLoading} />
                     </div>
@@ -684,14 +692,14 @@ export function AuthGuard({ children }: { children: ReactNode }) {
                       style={{ width: '100%', height: 42, fontSize: 14, gap: 8, marginBottom: 16 }}
                     >
                       {regLoading && <Spinner />}
-                      {regLoading ? 'Verifying...' : 'Verify Code'}
+                      {regLoading ? t_auth('register.step2.verifying') : t_auth('register.step2.verifyButton')}
                     </button>
 
                     <div style={{ textAlign: 'center', fontSize: 13, color: 'var(--color-text-secondary)' }}>
-                      {"Didn't receive the code? "}
+                      {t_auth('register.step2.didntReceive')}{' '}
                       {cooldown > 0 ? (
                         <span style={{ color: 'var(--color-text-muted)' }}>
-                          Resend in {cooldown}s
+                          {t_auth('register.step2.resendIn', { cooldown })}
                         </span>
                       ) : (
                         <button
@@ -708,7 +716,7 @@ export function AuthGuard({ children }: { children: ReactNode }) {
                             padding: 0,
                           }}
                         >
-                          Resend Code
+                          {t_auth('register.step2.resendCode')}
                         </button>
                       )}
                     </div>
@@ -726,7 +734,7 @@ export function AuthGuard({ children }: { children: ReactNode }) {
                           padding: 0,
                         }}
                       >
-                        Change email address
+                        {t_auth('register.step2.changeEmail')}
                       </button>
                     </div>
                   </div>
@@ -736,46 +744,46 @@ export function AuthGuard({ children }: { children: ReactNode }) {
                 {step === 3 && (
                   <form onSubmit={handleCreateAccount} noValidate>
                     <p style={{ fontSize: 13, color: 'var(--color-text-secondary)', marginBottom: 20 }}>
-                      Set a password for <strong style={{ color: 'var(--color-text)' }}>{regEmail}</strong>
+                      {t_auth('register.step3.setPassword')} <strong style={{ color: 'var(--color-text)' }}>{regEmail}</strong>
                     </p>
 
                     <div style={{ marginBottom: 16 }}>
                       <label className="label" htmlFor="reg-password">
-                        Password <span style={{ color: 'var(--color-text-muted)', fontWeight: 400, textTransform: 'none' }}>(min. 8 characters)</span>
+                        {t_auth('register.step3.passwordLabel')} <span style={{ color: 'var(--color-text-muted)', fontWeight: 400, textTransform: 'none' }}>{t_auth('register.step3.passwordHint')}</span>
                       </label>
                       <PasswordInput
                         id="reg-password"
                         value={regPassword}
                         onChange={setRegPassword}
-                        placeholder="Create a password"
+                        placeholder={t_auth('register.step3.passwordPlaceholder')}
                         disabled={regLoading}
                         autoComplete="new-password"
                       />
                       {regPassword.length > 0 && regPassword.length < 8 && (
                         <p style={{ fontSize: 11, color: '#dc2626', marginTop: 4 }}>
-                          Must be at least 8 characters
+                          {t_auth('register.step3.minLength')}
                         </p>
                       )}
                     </div>
 
                     <div style={{ marginBottom: 24 }}>
-                      <label className="label" htmlFor="reg-confirm">Confirm password</label>
+                      <label className="label" htmlFor="reg-confirm">{t_auth('register.step3.confirmLabel')}</label>
                       <PasswordInput
                         id="reg-confirm"
                         value={regConfirm}
                         onChange={setRegConfirm}
-                        placeholder="Repeat your password"
+                        placeholder={t_auth('register.step3.confirmPlaceholder')}
                         disabled={regLoading}
                         autoComplete="new-password"
                       />
                       {regConfirm.length > 0 && regConfirm !== regPassword && (
                         <p style={{ fontSize: 11, color: '#dc2626', marginTop: 4 }}>
-                          Passwords do not match
+                          {t_auth('register.step3.mismatch')}
                         </p>
                       )}
                       {regConfirm.length > 0 && regConfirm === regPassword && regPassword.length >= 8 && (
                         <p style={{ fontSize: 11, color: '#059669', marginTop: 4 }}>
-                          Passwords match
+                          {t_auth('register.step3.match')}
                         </p>
                       )}
                     </div>
@@ -787,7 +795,7 @@ export function AuthGuard({ children }: { children: ReactNode }) {
                       style={{ width: '100%', height: 42, fontSize: 14, gap: 8 }}
                     >
                       {regLoading && <Spinner />}
-                      {regLoading ? 'Creating account...' : 'Create Account'}
+                      {regLoading ? t_auth('register.step3.creating') : t_auth('register.step3.createButton')}
                     </button>
                   </form>
                 )}
@@ -803,10 +811,11 @@ export function AuthGuard({ children }: { children: ReactNode }) {
 // ─── Sub-components ───────────────────────────────────────────────────────────
 
 function StepIndicator({ current }: { current: RegisterStep }) {
+  const { t } = useTranslation('auth');
   const steps = [
-    { n: 1, label: 'Email' },
-    { n: 2, label: 'Verify' },
-    { n: 3, label: 'Password' },
+    { n: 1, label: t('register.steps.email') },
+    { n: 2, label: t('register.steps.verify') },
+    { n: 3, label: t('register.steps.password') },
   ];
 
   return (
@@ -877,6 +886,7 @@ function StepIndicator({ current }: { current: RegisterStep }) {
 }
 
 function OAuthDivider() {
+  const { t } = useTranslation('auth');
   return (
     <div
       style={{
@@ -889,13 +899,14 @@ function OAuthDivider() {
       }}
     >
       <div style={{ flex: 1, height: 1, background: 'var(--color-border)' }} />
-      <span style={{ whiteSpace: 'nowrap', fontWeight: 500 }}>Or continue with</span>
+      <span style={{ whiteSpace: 'nowrap', fontWeight: 500 }}>{t('login.orContinueWith')}</span>
       <div style={{ flex: 1, height: 1, background: 'var(--color-border)' }} />
     </div>
   );
 }
 
 function OAuthButtons() {
+  const { t } = useTranslation('auth');
   return (
     <div style={{ display: 'flex', gap: 10 }}>
       <a
@@ -911,7 +922,7 @@ function OAuthButtons() {
         }}
       >
         <GitHubIcon />
-        GitHub
+        {t('login.github')}
       </a>
       <a
         href="/auth/google"
@@ -926,7 +937,7 @@ function OAuthButtons() {
         }}
       >
         <GoogleIcon />
-        Google
+        {t('login.google')}
       </a>
     </div>
   );

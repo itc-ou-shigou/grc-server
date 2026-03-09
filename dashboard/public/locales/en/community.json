@@ -1,0 +1,47 @@
+{
+  "channels": {
+    "title": "Channels",
+    "subtitle": "Community discussion channels",
+    "table": {
+      "name": "Name",
+      "description": "Description",
+      "topics": "Topics",
+      "lastActivity": "Last Activity"
+    }
+  },
+  "topics": {
+    "title": "Topics",
+    "subtitle": "Community discussions",
+    "filters": {
+      "searchPlaceholder": "Search topics…",
+      "allChannels": "All Channels",
+      "allStatuses": "All Statuses"
+    },
+    "table": {
+      "title": "Title",
+      "author": "Author",
+      "channel": "Channel",
+      "replies": "Replies",
+      "views": "Views",
+      "lastReply": "Last Reply"
+    },
+    "noTopics": "No topics found."
+  },
+  "postDetail": {
+    "backToTopics": "Back to Topics",
+    "replies": "Replies",
+    "reply": "Reply",
+    "noReplies": "No replies yet."
+  },
+  "moderation": {
+    "title": "Moderation",
+    "subtitle": "Review flagged content",
+    "table": {
+      "content": "Content",
+      "author": "Author",
+      "reason": "Reason",
+      "reportedAt": "Reported At"
+    },
+    "noFlags": "No flagged content."
+  }
+}

@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import { DataTable, Column } from '../../components/DataTable';
 import { StatusBadge } from '../../components/StatusBadge';
 import { Chart } from '../../components/Chart';
@@ -10,6 +11,7 @@ const TIERS = ['free', 'contributor', 'pro'];
 const PROVIDERS = ['local', 'google', 'github', 'microsoft'];
 
 export function Users() {
+  const { t } = useTranslation('users');
   const [page, setPage] = useState(1);
   const [provider, setProvider] = useState('');
   const [tier, setTier] = useState('');
@@ -29,16 +31,16 @@ export function Users() {
 
   const columns: Column<Record<string, unknown>>[] = [
     { key: 'id', label: 'ID', render: (v) => <span className="mono text-sm">{String(v).slice(0, 8)}…</span> },
-    { key: 'displayName', label: 'Name' },
-    { key: 'email', label: 'Email' },
+    { key: 'displayName', label: t('table.displayName') },
+    { key: 'email', label: t('table.email') },
     {
       key: 'provider',
-      label: 'Provider',
+      label: t('table.provider'),
       render: (v) => <StatusBadge status={String(v)} variant="info" />,
     },
     {
       key: 'tier',
-      label: 'Tier',
+      label: t('table.tier'),
       render: (v) => (
         <StatusBadge
           status={String(v)}
@@ -48,12 +50,12 @@ export function Users() {
     },
     {
       key: 'role',
-      label: 'Status',
+      label: t('table.role'),
       render: (v) => <StatusBadge status={v === 'banned' ? 'Banned' : 'Active'} />,
     },
     {
       key: 'createdAt',
-      label: 'Created',
+      label: t('table.joined'),
       render: (v) => new Date(String(v)).toLocaleDateString(),
     },
     {
@@ -77,7 +79,7 @@ export function Users() {
               className={`btn btn-sm ${isBanned ? 'btn-default' : 'btn-danger'}`}
               onClick={() => setBanModal(user)}
             >
-              {isBanned ? 'Unban' : 'Ban'}
+              {isBanned ? t('unban') : 'Ban'}
             </button>
           </div>
         );
@@ -101,8 +103,8 @@ export function Users() {
   return (
     <div className="page">
       <div className="page-header">
-        <h1 className="page-title">Users</h1>
-        <p className="page-subtitle">Manage registered platform users</p>
+        <h1 className="page-title">{t('title')}</h1>
+        <p className="page-subtitle">{t('subtitle')}</p>
       </div>
 
       {tierDistData.length > 0 && (
@@ -124,7 +126,7 @@ export function Users() {
         <div className="filter-bar">
           <input
             className="input"
-            placeholder="Search by name or email…"
+            placeholder={t('filters.searchPlaceholder')}
             value={searchInput}
             onChange={(e) => setSearchInput(e.target.value)}
             onKeyDown={(e) => {
@@ -135,11 +137,11 @@ export function Users() {
             }}
           />
           <select className="select" value={provider} onChange={(e) => { setProvider(e.target.value); setPage(1); }}>
-            <option value="">All Providers</option>
+            <option value="">{t('filters.allProviders')}</option>
             {PROVIDERS.map((p) => <option key={p} value={p}>{p}</option>)}
           </select>
           <select className="select" value={tier} onChange={(e) => { setTier(e.target.value); setPage(1); }}>
-            <option value="">All Tiers</option>
+            <option value="">{t('filters.allTiers')}</option>
             {TIERS.map((t) => <option key={t} value={t}>{t}</option>)}
           </select>
           <button className="btn btn-primary" onClick={() => { setSearch(searchInput); setPage(1); }}>
@@ -163,7 +165,7 @@ export function Users() {
       <Modal
         open={!!tierModal}
         onClose={() => setTierModal(null)}
-        title="Change User Tier"
+        title={t('tierModal.title', { name: tierModal?.user.email ?? '' })}
         footer={
           <div className="modal-footer-actions">
             <button className="btn btn-default" onClick={() => setTierModal(null)}>Cancel</button>
@@ -172,7 +174,7 @@ export function Users() {
               onClick={handleTierChange}
               disabled={changeTier.isPending}
             >
-              {changeTier.isPending ? 'Saving…' : 'Confirm'}
+              {changeTier.isPending ? t('tierModal.updating') : 'Confirm'}
             </button>
           </div>
         }
@@ -188,7 +190,7 @@ export function Users() {
       <Modal
         open={!!banModal}
         onClose={() => setBanModal(null)}
-        title={banModal?.role === 'banned' ? 'Unban User' : 'Ban User'}
+        title={banModal?.role === 'banned' ? t('unban') : t('banModal.title', { name: banModal?.email ?? '' })}
         footer={
           <div className="modal-footer-actions">
             <button className="btn btn-default" onClick={() => setBanModal(null)}>Cancel</button>
@@ -197,14 +199,14 @@ export function Users() {
               onClick={handleBanToggle}
               disabled={banUser.isPending}
             >
-              {banUser.isPending ? 'Processing…' : banModal?.role === 'banned' ? 'Unban' : 'Ban'}
+              {banUser.isPending ? t('banModal.banning') : banModal?.role === 'banned' ? t('unban') : t('banModal.button')}
             </button>
           </div>
         }
       >
         {banModal && (
           <p>
-            {banModal.role === 'banned' ? 'Unban' : 'Ban'} user <strong>{banModal.email}</strong>?
+            {banModal.role === 'banned' ? t('unban') : 'Ban'} user <strong>{banModal.email}</strong>?
             {banModal.role !== 'banned' && (
               <span> This will prevent them from accessing the platform.</span>
             )}

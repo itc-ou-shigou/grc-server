@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import { DataTable, Column } from '../../components/DataTable';
 import { StatusBadge } from '../../components/StatusBadge';
 import { Modal } from '../../components/Modal';
@@ -33,6 +34,7 @@ const defaultForm: ReleaseFormData = {
 };
 
 export function Releases() {
+  const { t } = useTranslation('update');
   const [page, setPage] = useState(1);
   const [platform, setPlatform] = useState('');
   const [channel, setChannel] = useState('');
@@ -56,17 +58,17 @@ export function Releases() {
   const columns: Column<Record<string, unknown>>[] = [
     {
       key: 'version',
-      label: 'Version',
+      label: t('releases.table.version'),
       render: (v) => <span className="mono font-medium">{String(v)}</span>,
     },
     {
       key: 'platform',
-      label: 'Platform',
+      label: t('releases.table.platform'),
       render: (v) => <StatusBadge status={String(v)} variant="info" />,
     },
     {
       key: 'channel',
-      label: 'Channel',
+      label: t('releases.table.channel'),
       render: (v) => (
         <StatusBadge
           status={String(v)}
@@ -86,7 +88,7 @@ export function Releases() {
     },
     {
       key: 'publishedAt',
-      label: 'Published',
+      label: t('releases.table.published'),
       render: (v) => v ? new Date(String(v)).toLocaleDateString() : <span className="text-muted">Draft</span>,
     },
     {
@@ -136,8 +138,8 @@ export function Releases() {
   return (
     <div className="page">
       <div className="page-header">
-        <h1 className="page-title">Releases</h1>
-        <p className="page-subtitle">Manage platform release versions and channels</p>
+        <h1 className="page-title">{t('releases.title')}</h1>
+        <p className="page-subtitle">{t('releases.subtitle')}</p>
         {isAdmin && (
           <div className="page-header-actions">
             <button className="btn btn-primary" onClick={() => setCreateOpen(true)}>

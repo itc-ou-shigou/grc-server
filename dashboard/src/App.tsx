@@ -35,8 +35,19 @@ import { ExpenseQueue } from './pages/tasks/ExpenseQueue';
 import { TaskStatsPage } from './pages/tasks/TaskStatsPage';
 // Strategy Management
 import { Strategy } from './pages/strategy/Strategy';
+// A2A Gateway
+import { AgentList } from './pages/a2a-agents/AgentList';
+import { AgentDetail } from './pages/a2a-agents/AgentDetail';
+// Meetings
+import { MeetingList } from './pages/meetings/MeetingList';
+import { MeetingDetail } from './pages/meetings/MeetingDetail';
+import { MeetingCreate } from './pages/meetings/MeetingCreate';
+import { MeetingLive } from './pages/meetings/MeetingLive';
+import { AutoTriggers } from './pages/meetings/AutoTriggers';
 // A2A Relay
 import { RelayLog } from './pages/relay/RelayLog';
+// Settings
+import { Settings } from './pages/settings/Settings';
 
 export function App() {
   return (
@@ -60,14 +71,23 @@ export function App() {
               <Route path="/roles/create" element={<AdminRoute><RoleCreate /></AdminRoute>} />
               <Route path="/roles/:id" element={<AdminRoute><RoleEditor /></AdminRoute>} />
               <Route path="/roles/:id/assign" element={<AdminRoute><RoleAssign /></AdminRoute>} />
-              {/* Task Management */}
-              <Route path="/tasks" element={<TaskBoard />} />
-              <Route path="/tasks/create" element={<TaskCreate />} />
-              <Route path="/tasks/stats" element={<TaskStatsPage />} />
+              {/* Task Management (admin) */}
+              <Route path="/tasks" element={<AdminRoute><TaskBoard /></AdminRoute>} />
+              <Route path="/tasks/create" element={<AdminRoute><TaskCreate /></AdminRoute>} />
+              <Route path="/tasks/stats" element={<AdminRoute><TaskStatsPage /></AdminRoute>} />
               <Route path="/tasks/expenses" element={<AdminRoute><ExpenseQueue /></AdminRoute>} />
-              <Route path="/tasks/:id" element={<TaskDetail />} />
+              <Route path="/tasks/:id" element={<AdminRoute><TaskDetail /></AdminRoute>} />
               {/* Strategy Management (admin) */}
               <Route path="/strategy" element={<AdminRoute><Strategy /></AdminRoute>} />
+              {/* A2A Gateway (admin) */}
+              <Route path="/a2a/agents" element={<AdminRoute><AgentList /></AdminRoute>} />
+              <Route path="/a2a/agents/:nodeId" element={<AdminRoute><AgentDetail /></AdminRoute>} />
+              {/* Meetings (admin) */}
+              <Route path="/meetings" element={<AdminRoute><MeetingList /></AdminRoute>} />
+              <Route path="/meetings/create" element={<AdminRoute><MeetingCreate /></AdminRoute>} />
+              <Route path="/meetings/triggers" element={<AdminRoute><AutoTriggers /></AdminRoute>} />
+              <Route path="/meetings/:id/live" element={<AdminRoute><MeetingLive /></AdminRoute>} />
+              <Route path="/meetings/:id" element={<AdminRoute><MeetingDetail /></AdminRoute>} />
               {/* A2A Relay (admin) */}
               <Route path="/relay" element={<AdminRoute><RelayLog /></AdminRoute>} />
               {/* Regular authenticated routes */}
@@ -82,6 +102,8 @@ export function App() {
               <Route path="/community/topics" element={<Topics />} />
               <Route path="/community/topics/:id" element={<PostDetail />} />
               <Route path="/platform/values" element={<PlatformValues />} />
+              {/* Settings (any authenticated user) */}
+              <Route path="/settings" element={<Settings />} />
               <Route path="*" element={<Navigate to="/" replace />} />
             </Routes>
           </main>

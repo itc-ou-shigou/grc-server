@@ -1,0 +1,15 @@
+{
+  "title": "Telemetry Insights",
+  "subtitle": "System telemetry and health analytics",
+  "stats": {
+    "uniqueNodes": "Unique Nodes",
+    "totalReports": "Total Reports",
+    "avgCpuUsage": "Avg CPU Usage",
+    "avgMemoryUsage": "Avg Memory Usage"
+  },
+  "charts": {
+    "dailyReports": "Daily Reports",
+    "platformBreakdown": "Platform Breakdown",
+    "healthDistribution": "Health Distribution"
+  }
+}

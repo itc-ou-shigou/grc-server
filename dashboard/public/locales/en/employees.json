@@ -1,0 +1,42 @@
+{
+  "title": "Employees",
+  "subtitle": "Manage AI employees and role assignments",
+  "orgTitle": "Organization Chart",
+  "orgSubtitle": "View company hierarchy",
+  "table": {
+    "name": "Name",
+    "nodeId": "Node ID",
+    "role": "Assigned Role",
+    "department": "Department",
+    "status": "Status",
+    "configSync": "Config Sync",
+    "lastSync": "Last Sync"
+  },
+  "filters": {
+    "searchPlaceholder": "Search employees…",
+    "allDepartments": "All Departments",
+    "allStatuses": "All Statuses",
+    "count": "{{count}} employee",
+    "count_other": "{{count}} employees"
+  },
+  "assignModal": {
+    "title": "Assign Role — {{name}}",
+    "selectRole": "Select a role",
+    "noRoles": "No roles available",
+    "button": "Assign Role",
+    "assigning": "Assigning..."
+  },
+  "unassignModal": {
+    "title": "Unassign Role — {{name}}",
+    "confirm": "Remove {{role}} assignment from {{name}}?",
+    "button": "Unassign",
+    "unassigning": "Unassigning..."
+  },
+  "configSync": {
+    "synced": "Synced",
+    "pending": "Pending",
+    "outdated": "Outdated",
+    "never": "Never synced"
+  },
+  "noRole": "Unassigned"
+}

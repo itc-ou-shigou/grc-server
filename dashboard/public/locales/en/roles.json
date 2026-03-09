@@ -1,0 +1,72 @@
+{
+  "title": "Role Templates",
+  "subtitle": "Configure agent roles, behaviors, and capabilities",
+  "createTitle": "Create Role",
+  "createSubtitle": "Define a new role template",
+  "editTitle": "Edit Role — {{name}}",
+  "assignTitle": "Assign Role — {{name}}",
+  "table": {
+    "id": "ID",
+    "name": "Name",
+    "mode": "Mode",
+    "department": "Department",
+    "industry": "Industry",
+    "created": "Created",
+    "builtin": "builtin"
+  },
+  "filters": {
+    "searchPlaceholder": "Search by name or ID…",
+    "allModes": "All Modes",
+    "autonomous": "Autonomous",
+    "copilot": "Copilot",
+    "count": "{{count}} role",
+    "count_other": "{{count}} roles"
+  },
+  "editor": {
+    "basicInfo": "Basic Info",
+    "roleId": "Role ID",
+    "displayName": "Display Name",
+    "description": "Description",
+    "department": "Department",
+    "industry": "Industry",
+    "mode": "Mode",
+    "emoji": "Emoji",
+    "tabs": {
+      "identity": "Identity",
+      "soul": "Soul",
+      "agents": "Agents",
+      "user": "User",
+      "tools": "Tools",
+      "heartbeat": "Heartbeat",
+      "bootstrap": "Bootstrap",
+      "tasks": "Tasks"
+    },
+    "save": "Save Changes",
+    "saving": "Saving...",
+    "saved": "Role saved successfully."
+  },
+  "cloneModal": {
+    "title": "Clone — {{name}}",
+    "newId": "New Role ID",
+    "newIdPlaceholder": "my-custom-role",
+    "newName": "Display Name",
+    "newNamePlaceholder": "My Custom Role",
+    "button": "Clone",
+    "cloning": "Cloning..."
+  },
+  "deleteModal": {
+    "title": "Delete Role — {{name}}",
+    "confirm": "Permanently delete {{name}} ({{id}})? Employees currently assigned this role will become unassigned.",
+    "button": "Delete",
+    "deleting": "Deleting...",
+    "builtinWarning": "Built-in roles cannot be deleted"
+  },
+  "assign": {
+    "subtitle": "Select employees to assign this role",
+    "unassignedAgents": "Unassigned Agents",
+    "noUnassigned": "All agents are currently assigned to roles.",
+    "assignButton": "Assign Selected",
+    "assigning": "Assigning..."
+  },
+  "newRole": "+ New Role"
+}

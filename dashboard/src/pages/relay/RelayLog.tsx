@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import { DataTable, Column } from '../../components/DataTable';
 import { StatusBadge } from '../../components/StatusBadge';
 import { Modal } from '../../components/Modal';
@@ -102,6 +103,8 @@ const STATUS_OPTIONS = ['queued', 'delivered', 'acknowledged', 'expired', 'faile
 const PRIORITY_OPTIONS = ['critical', 'high', 'normal', 'low'];
 
 export function RelayLog() {
+  const { t } = useTranslation('relay');
+
   // Filter state
   const [filterStatus, setFilterStatus] = useState('');
   const [filterPriority, setFilterPriority] = useState('');
@@ -155,7 +158,7 @@ export function RelayLog() {
     },
     {
       key: 'fromNodeId',
-      label: 'From',
+      label: t('table.from'),
       width: '130px',
       render: (_v, row) => (
         <span className="mono" title={row.fromNodeId as string}>
@@ -165,7 +168,7 @@ export function RelayLog() {
     },
     {
       key: 'toNodeId',
-      label: 'To',
+      label: t('table.to'),
       width: '130px',
       render: (_v, row) => (
         <span className="mono" title={row.toNodeId as string}>
@@ -175,7 +178,7 @@ export function RelayLog() {
     },
     {
       key: 'messageType',
-      label: 'Type',
+      label: t('table.method'),
       width: '130px',
       render: (_v, row) => (
         <StatusBadge status={row.messageType as string} />
@@ -203,7 +206,7 @@ export function RelayLog() {
     },
     {
       key: 'status',
-      label: 'Status',
+      label: t('table.status'),
       width: '110px',
       render: (_v, row) => (
         <StatusBadge
@@ -214,7 +217,7 @@ export function RelayLog() {
     },
     {
       key: 'createdAt',
-      label: 'Created',
+      label: t('table.timestamp'),
       width: '130px',
       render: (_v, row) => (
         <span title={formatDate(row.createdAt as string)} className="text-muted">
@@ -279,9 +282,9 @@ export function RelayLog() {
     <div className="page">
       <div className="page-header">
         <div>
-          <h1 className="page-title">A2A Relay Log</h1>
+          <h1 className="page-title">{t('title')}</h1>
           <p className="page-subtitle">
-            Inspect inter-node messages relayed through the A2A relay queue.
+            {t('subtitle')}
           </p>
         </div>
         <div className="action-group">
@@ -289,7 +292,7 @@ export function RelayLog() {
             className="btn btn-default btn-sm"
             onClick={() => { setCleanupOpen(true); setCleanupForm(defaultCleanupForm); }}
           >
-            Cleanup
+            {t('cleanupModal.title')}
           </button>
         </div>
       </div>
@@ -297,7 +300,7 @@ export function RelayLog() {
       {/* Stats */}
       {stats && (
         <div className="stat-grid" style={{ marginBottom: '1.5rem' }}>
-          <StatItem label="Total Messages" value={stats.total} />
+          <StatItem label={t('stats.totalMessages')} value={stats.total} />
           <StatItem
             label="Queued"
             value={stats.byStatus?.queued ?? 0}
@@ -348,7 +351,7 @@ export function RelayLog() {
           value={filterStatus}
           onChange={(e) => { setFilterStatus(e.target.value); handleFilterChange(); }}
         >
-          <option value="">All statuses</option>
+          <option value="">{t('filters.allStatuses')}</option>
           {STATUS_OPTIONS.map((s) => (
             <option key={s} value={s}>{s}</option>
           ))}
@@ -409,13 +412,13 @@ export function RelayLog() {
         {detailMsg && (
           <div>
             <dl style={{ display: 'grid', gridTemplateColumns: 'max-content 1fr', gap: '0.4rem 1rem', marginBottom: '1rem' }}>
-              <dt className="form-label">From</dt>
+              <dt className="form-label">{t('table.from')}</dt>
               <dd className="mono">{detailMsg.fromNodeId}</dd>
 
-              <dt className="form-label">To</dt>
+              <dt className="form-label">{t('table.to')}</dt>
               <dd className="mono">{detailMsg.toNodeId}</dd>
 
-              <dt className="form-label">Type</dt>
+              <dt className="form-label">{t('table.method')}</dt>
               <dd><StatusBadge status={detailMsg.messageType} /></dd>
 
               <dt className="form-label">Subject</dt>
@@ -429,7 +432,7 @@ export function RelayLog() {
                 />
               </dd>
 
-              <dt className="form-label">Status</dt>
+              <dt className="form-label">{t('table.status')}</dt>
               <dd>
                 <StatusBadge
                   status={detailMsg.status}
@@ -437,7 +440,7 @@ export function RelayLog() {
                 />
               </dd>
 
-              <dt className="form-label">Created</dt>
+              <dt className="form-label">{t('table.timestamp')}</dt>
               <dd className="text-muted">{formatDate(detailMsg.createdAt)}</dd>
 
               {detailMsg.deliveredAt && (
@@ -515,7 +518,7 @@ export function RelayLog() {
       <Modal
         open={cleanupOpen}
         onClose={() => setCleanupOpen(false)}
-        title="Cleanup Relay Messages"
+        title={t('cleanupModal.title')}
         footer={
           <div className="modal-footer-actions">
             <button
@@ -530,14 +533,13 @@ export function RelayLog() {
               onClick={handleCleanup}
               disabled={cleanup.isPending}
             >
-              {cleanup.isPending ? 'Running…' : 'Run Cleanup'}
+              {cleanup.isPending ? t('cleanupModal.cleaning') : t('cleanupModal.button')}
             </button>
           </div>
         }
       >
         <p className="text-muted" style={{ marginBottom: '1rem' }}>
-          Permanently remove relay messages matching the criteria below.
-          Leave both fields empty to clean up all expired and failed messages.
+          {t('cleanupModal.confirm')}
         </p>
 
         <div className="form-group">
@@ -558,7 +560,7 @@ export function RelayLog() {
 
         <div className="form-group">
           <label className="form-label" htmlFor="cleanup-status">
-            Status
+            {t('table.status')}
           </label>
           <select
             id="cleanup-status"
@@ -566,7 +568,7 @@ export function RelayLog() {
             value={cleanupForm.status}
             onChange={(e) => setCleanupForm((f) => ({ ...f, status: e.target.value }))}
           >
-            <option value="">All statuses</option>
+            <option value="">{t('filters.allStatuses')}</option>
             {STATUS_OPTIONS.map((s) => (
               <option key={s} value={s}>{s}</option>
             ))}

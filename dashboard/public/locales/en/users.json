@@ -1,0 +1,34 @@
+{
+  "title": "Users",
+  "subtitle": "Manage registered users",
+  "table": {
+    "displayName": "Display Name",
+    "email": "Email",
+    "provider": "Provider",
+    "tier": "Tier",
+    "role": "Role",
+    "assets": "Assets",
+    "joined": "Joined"
+  },
+  "filters": {
+    "searchPlaceholder": "Search by name or email…",
+    "allProviders": "All Providers",
+    "allTiers": "All Tiers",
+    "allRoles": "All Roles",
+    "count": "{{count}} user",
+    "count_other": "{{count}} users"
+  },
+  "tierModal": {
+    "title": "Change Tier — {{name}}",
+    "label": "Tier",
+    "updating": "Updating..."
+  },
+  "banModal": {
+    "title": "Ban User — {{name}}",
+    "confirm": "Are you sure you want to ban {{name}}? This will revoke their access.",
+    "button": "Ban User",
+    "banning": "Banning..."
+  },
+  "unban": "Unban",
+  "changeTier": "Change Tier"
+}

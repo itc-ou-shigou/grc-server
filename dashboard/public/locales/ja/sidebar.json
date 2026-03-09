@@ -1,0 +1,60 @@
+{
+  "header": {
+    "admin": "GRC 管理",
+    "dashboard": "GRC ダッシュボード",
+    "subtitle": "ダッシュボード"
+  },
+  "nav": {
+    "overview": "概要"
+  },
+  "sections": {
+    "auth": "認証",
+    "skills": "スキル",
+    "evolution": "進化",
+    "update": "アップデート",
+    "telemetry": "テレメトリー",
+    "community": "コミュニティ",
+    "employees": "社員",
+    "roles": "ロール",
+    "tasks": "タスク",
+    "strategy": "戦略",
+    "a2aAgents": "A2A エージェント",
+    "meetings": "会議",
+    "relay": "リレー",
+    "platform": "プラットフォーム"
+  },
+  "items": {
+    "users": "ユーザー",
+    "apiKeys": "APIキー",
+    "skillList": "スキル一覧",
+    "skillStats": "スキル統計",
+    "assets": "アセット",
+    "nodes": "ノード",
+    "pipeline": "パイプライン",
+    "releases": "リリース",
+    "updateStats": "更新統計",
+    "insights": "インサイト",
+    "channels": "チャンネル",
+    "topics": "トピック",
+    "moderation": "モデレーション",
+    "employeeList": "社員一覧",
+    "orgChart": "組織図",
+    "roleTemplates": "ロールテンプレート",
+    "createRole": "ロール作成",
+    "taskBoard": "タスクボード",
+    "taskStats": "タスク統計",
+    "expenses": "経費",
+    "strategy": "戦略",
+    "agentCards": "エージェントカード",
+    "allMeetings": "全会議",
+    "createMeeting": "会議作成",
+    "autoTriggers": "自動トリガー",
+    "relayLog": "リレーログ",
+    "values": "設定値"
+  },
+  "footer": {
+    "settings": "設定",
+    "logout": "ログアウト",
+    "version": "GRC v{{version}}"
+  }
+}

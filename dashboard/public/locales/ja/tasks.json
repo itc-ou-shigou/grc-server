@@ -1,0 +1,87 @@
+{
+  "board": {
+    "title": "タスクボード",
+    "subtitle": "AIエンプロイーのタスクを管理・追跡",
+    "createTask": "+ タスク作成"
+  },
+  "filters": {
+    "searchPlaceholder": "タスクを検索…",
+    "allStatuses": "全ステータス",
+    "allPriorities": "全優先度",
+    "allCategories": "全カテゴリー",
+    "allAssignees": "全担当者",
+    "count": "{{count}}個のタスク",
+    "count_other": "{{count}}個のタスク"
+  },
+  "table": {
+    "title": "タイトル",
+    "priority": "優先度",
+    "category": "カテゴリー",
+    "assignee": "担当者",
+    "status": "ステータス",
+    "deadline": "期限",
+    "created": "作成日"
+  },
+  "priority": {
+    "critical": "緊急",
+    "high": "高",
+    "medium": "中",
+    "low": "低"
+  },
+  "create": {
+    "title": "タスク作成",
+    "subtitle": "AIエンプロイーに新しいタスクを割り当て",
+    "form": {
+      "title": "タイトル",
+      "titlePlaceholder": "タスクタイトル…",
+      "description": "説明",
+      "descriptionPlaceholder": "タスクの説明…",
+      "assignee": "担当者",
+      "selectAssignee": "担当者を選択",
+      "priority": "優先度",
+      "category": "カテゴリー",
+      "deadline": "期限",
+      "submit": "タスク作成",
+      "creating": "作成中..."
+    }
+  },
+  "detail": {
+    "backToBoard": "タスクボードに戻る",
+    "description": "説明",
+    "comments": "コメント",
+    "activity": "アクティビティ",
+    "noComments": "コメントはまだありません。",
+    "addComment": "コメントを追加…",
+    "submitComment": "送信"
+  },
+  "stats": {
+    "title": "タスク統計",
+    "subtitle": "タスクの完了状況とパフォーマンス分析",
+    "totalTasks": "タスク総数",
+    "completionRate": "完了率",
+    "avgCompletionTime": "平均完了時間",
+    "overdueRate": "遅延率"
+  },
+  "expenses": {
+    "title": "経費",
+    "subtitle": "タスク関連の経費を確認・承認",
+    "table": {
+      "task": "タスク",
+      "amount": "金額",
+      "category": "カテゴリー",
+      "requestedBy": "申請者",
+      "status": "ステータス",
+      "requestedAt": "申請日時"
+    },
+    "approveModal": {
+      "title": "経費を承認",
+      "confirm": "{{task}}の{{amount}}の経費を承認しますか？",
+      "button": "承認"
+    },
+    "rejectModal": {
+      "title": "経費を却下",
+      "reason": "却下理由",
+      "button": "却下"
+    }
+  }
+}

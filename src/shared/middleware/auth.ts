@@ -43,12 +43,18 @@ export function registerApiKeyResolver(resolver: ApiKeyResolverFn): void {
  */
 export function createAuthMiddleware(config: GrcConfig, required = true) {
   return async (req: Request, res: Response, next: NextFunction) => {
-    // 1. Try Bearer token (JWT)
+    // 1. Try Bearer token (JWT) — from Authorization header or ?token= query param
+    //    (EventSource / SSE connections cannot send custom headers, so we also accept
+    //     the token as a query parameter.)
     const authHeader = req.headers.authorization;
-    if (authHeader?.startsWith("Bearer ")) {
-      const token = authHeader.slice(7);
+    const queryToken = req.query.token as string | undefined;
+    const bearerToken = authHeader?.startsWith("Bearer ")
+      ? authHeader.slice(7)
+      : queryToken || undefined;
+
+    if (bearerToken) {
       try {
-        req.auth = verifyToken(token, config.jwt);
+        req.auth = verifyToken(bearerToken, config.jwt);
         req.authMode = "jwt";
         return next();
       } catch {

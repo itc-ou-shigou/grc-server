@@ -1,0 +1,21 @@
+{
+  "releases": {
+    "title": "릴리스",
+    "subtitle": "업데이트 릴리스 관리",
+    "table": {
+      "version": "버전",
+      "channel": "채널",
+      "platform": "플랫폼",
+      "downloads": "다운로드 수",
+      "published": "게시일"
+    }
+  },
+  "stats": {
+    "title": "업데이트 통계",
+    "subtitle": "업데이트 배포 분석",
+    "totalUpdates": "총 업데이트 수",
+    "successRate": "성공률",
+    "avgUpdateTime": "평균 업데이트 시간",
+    "updateTrend": "업데이트 트렌드 (최근 30일)"
+  }
+}

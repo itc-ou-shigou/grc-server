@@ -1,0 +1,42 @@
+{
+  "title": "社員",
+  "subtitle": "AIエンプロイーとロール割り当てを管理",
+  "orgTitle": "組織図",
+  "orgSubtitle": "会社の階層を表示",
+  "table": {
+    "name": "名前",
+    "nodeId": "ノードID",
+    "role": "割り当てロール",
+    "department": "部署",
+    "status": "ステータス",
+    "configSync": "設定同期",
+    "lastSync": "最終同期"
+  },
+  "filters": {
+    "searchPlaceholder": "社員を検索…",
+    "allDepartments": "全部署",
+    "allStatuses": "全ステータス",
+    "count": "{{count}}名の社員",
+    "count_other": "{{count}}名の社員"
+  },
+  "assignModal": {
+    "title": "ロール割り当て — {{name}}",
+    "selectRole": "ロールを選択",
+    "noRoles": "利用可能なロールなし",
+    "button": "ロールを割り当て",
+    "assigning": "割り当て中..."
+  },
+  "unassignModal": {
+    "title": "ロール割り当て解除 — {{name}}",
+    "confirm": "{{name}}から{{role}}の割り当てを解除しますか？",
+    "button": "割り当て解除",
+    "unassigning": "割り当て解除中..."
+  },
+  "configSync": {
+    "synced": "同期済み",
+    "pending": "保留中",
+    "outdated": "期限切れ",
+    "never": "未同期"
+  },
+  "noRole": "未割り当て"
+}

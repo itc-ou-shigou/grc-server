@@ -1,4 +1,5 @@
 import { useState, useEffect, useCallback, type ReactNode } from 'react';
+import { useTranslation } from 'react-i18next';
 import {
   useStrategy,
   useStrategyHistory,
@@ -51,6 +52,15 @@ interface DepartmentKpiEntry {
 
 const DEPARTMENTS = ['marketing', 'sales', 'engineering', 'finance', 'hr', 'support', 'strategy'] as const;
 type Department = typeof DEPARTMENTS[number];
+
+const TAB_KEYS = [
+  'profile',
+  'shortTerm',
+  'midTerm',
+  'longTerm',
+  'budgets',
+  'kpis',
+] as const;
 
 const TAB_LABELS = [
   'Company Profile',
@@ -767,6 +777,7 @@ function DeployModal({ onConfirm, onCancel, isPending }: DeployModalProps) {
 // ---------------------------------------------------------------------------
 
 export function Strategy() {
+  const { t } = useTranslation('strategy');
   const { data: strategyData, isLoading, error } = useStrategy();
   const { data: historyData, isLoading: historyLoading } = useStrategyHistory({ page_size: 20 });
   const updateStrategy = useUpdateStrategy();
@@ -855,7 +866,7 @@ export function Strategy() {
     return (
       <div className="page">
         <div className="page-header">
-          <h1 className="page-title">Strategy Management</h1>
+          <h1 className="page-title">{t('title')}</h1>
         </div>
         <p className="text-muted">Loading strategy...</p>
       </div>
@@ -866,7 +877,7 @@ export function Strategy() {
     return (
       <div className="page">
         <div className="page-header">
-          <h1 className="page-title">Strategy Management</h1>
+          <h1 className="page-title">{t('title')}</h1>
         </div>
         <ErrorMessage error={error as Error} />
       </div>
@@ -880,9 +891,9 @@ export function Strategy() {
       {/* Page header */}
       <div className="page-header" style={{ marginBottom: 0 }}>
         <div>
-          <h1 className="page-title">Strategy Management</h1>
+          <h1 className="page-title">{t('title')}</h1>
           <p className="page-subtitle">
-            Define company mission, objectives, and budgets — deployed to all AI agents.
+            {t('subtitle')}
             {strategy && (
               <span className="text-muted" style={{ marginLeft: 10 }}>
                 <span className="mono tag" style={{ fontSize: 12 }}>rev {strategy.revision}</span>
@@ -899,14 +910,14 @@ export function Strategy() {
             type="button"
             onClick={() => setShowHistory(true)}
           >
-            History
+            {t('actions.history')}
           </button>
           <button
             className="btn btn-default"
             type="button"
             onClick={handleSaveDraft}
           >
-            Save Draft
+            {t('actions.saveDraft')}
           </button>
           <button
             className="btn btn-primary"
@@ -915,8 +926,8 @@ export function Strategy() {
             disabled={updateStrategy.isPending || deployStrategy.isPending}
           >
             {(updateStrategy.isPending || deployStrategy.isPending)
-              ? 'Saving...'
-              : 'Save & Deploy to All Agents'}
+              ? t('actions.deploying')
+              : t('actions.deploy')}
           </button>
         </div>
       </div>
@@ -982,7 +993,7 @@ export function Strategy() {
             }}
             onClick={() => setActiveTab(idx as TabIndex)}
           >
-            {label}
+            {t(`tabs.${TAB_KEYS[idx]}`)}
           </button>
         ))}
       </div>

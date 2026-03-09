@@ -1,0 +1,18 @@
+{
+  "title": "APIキー",
+  "subtitle": "全ユーザーのAPIキーを管理",
+  "table": {
+    "key": "キー",
+    "owner": "オーナー",
+    "scopes": "スコープ",
+    "lastUsed": "最終使用",
+    "expires": "有効期限"
+  },
+  "revokeModal": {
+    "title": "APIキーを取り消す",
+    "confirm": "キー {{prefix}}… を取り消しますか？この操作は取り消せません。",
+    "button": "取り消す",
+    "revoking": "取り消し中..."
+  },
+  "noKeys": "APIキーが見つかりません。"
+}

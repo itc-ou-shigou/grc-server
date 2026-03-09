@@ -1,9 +1,11 @@
+import { useTranslation } from 'react-i18next';
 import { StatCard } from '../../components/StatCard';
 import { Chart } from '../../components/Chart';
 import { ErrorMessage } from '../../components/ErrorMessage';
 import { useSkillDownloadStats } from '../../api/hooks';
 
 export function SkillStats() {
+  const { t } = useTranslation('skills');
   const { data, isLoading, error } = useSkillDownloadStats();
 
   const dailyData = (data?.stats.byDay ?? []).map((d) => ({
@@ -19,15 +21,15 @@ export function SkillStats() {
   return (
     <div className="page">
       <div className="page-header">
-        <h1 className="page-title">Skill Statistics</h1>
-        <p className="page-subtitle">Download trends and skill performance metrics</p>
+        <h1 className="page-title">{t('statsTitle')}</h1>
+        <p className="page-subtitle">{t('statsSubtitle')}</p>
       </div>
 
       {error && <ErrorMessage error={error as Error} />}
 
       <div className="stat-grid stat-grid-3">
         <StatCard
-          title="Total Downloads"
+          title={t('stats.totalDownloads')}
           value={data?.stats.totalDownloads ?? 0}
           icon="⬇️"
           color="#4361ee"
@@ -56,7 +58,7 @@ export function SkillStats() {
           data={dailyData}
           xKey="date"
           yKey="count"
-          title="Daily Downloads (Last 30 Days)"
+          title={t('stats.downloadTrend')}
           height={260}
         />
       </div>

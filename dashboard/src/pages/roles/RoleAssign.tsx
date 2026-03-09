@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
 import { useRoleTemplate, useEmployees, useAssignRole } from '../../api/hooks';
 import { StatusBadge } from '../../components/StatusBadge';
 import { Modal } from '../../components/Modal';
@@ -29,6 +30,7 @@ interface AssignModalState {
 }
 
 export function RoleAssign() {
+  const { t } = useTranslation('roles');
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
   const { data: roleData, isLoading: roleLoading, error: roleError } = useRoleTemplate(id ?? '');
@@ -115,8 +117,8 @@ export function RoleAssign() {
     <div className="page">
       <div className="page-header">
         <div>
-          <h1 className="page-title">Assign Role</h1>
-          <p className="page-subtitle">Assign agents to this role template</p>
+          <h1 className="page-title">{t('assignTitle', { name: role.name })}</h1>
+          <p className="page-subtitle">{t('assign.subtitle')}</p>
         </div>
         <div className="action-group">
           <button className="btn btn-default" onClick={() => navigate('/roles')}>
@@ -131,24 +133,24 @@ export function RoleAssign() {
           <div>
             <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', marginBottom: '0.25rem' }}>
               <h2 style={{ fontSize: '1.125rem', fontWeight: 600, margin: 0 }}>{role.name}</h2>
-              {role.isBuiltin && <span className="tag">builtin</span>}
+              {role.isBuiltin && <span className="tag">{t('table.builtin')}</span>}
             </div>
             <span className="mono text-muted" style={{ fontSize: '0.8125rem' }}>{role.id}</span>
           </div>
           <div style={{ display: 'flex', gap: '0.75rem', flexWrap: 'wrap' }}>
             <div>
-              <div className="text-muted" style={{ fontSize: '0.75rem' }}>Mode</div>
+              <div className="text-muted" style={{ fontSize: '0.75rem' }}>{t('editor.mode')}</div>
               <StatusBadge status={role.mode} variant={role.mode === 'autonomous' ? 'success' : 'warning'} />
             </div>
             {role.department && (
               <div>
-                <div className="text-muted" style={{ fontSize: '0.75rem' }}>Department</div>
+                <div className="text-muted" style={{ fontSize: '0.75rem' }}>{t('editor.department')}</div>
                 <span style={{ fontSize: '0.875rem' }}>{role.department}</span>
               </div>
             )}
             {role.industry && (
               <div>
-                <div className="text-muted" style={{ fontSize: '0.75rem' }}>Industry</div>
+                <div className="text-muted" style={{ fontSize: '0.75rem' }}>{t('editor.industry')}</div>
                 <span style={{ fontSize: '0.875rem' }}>{role.industry}</span>
               </div>
             )}
@@ -198,7 +200,7 @@ export function RoleAssign() {
       <div style={{ marginBottom: '1rem' }}>
         <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '0.75rem' }}>
           <h2 style={{ fontSize: '1rem', fontWeight: 600, margin: 0 }}>
-            Available Agents
+            {t('assign.unassignedAgents')}
             <span className="text-muted" style={{ fontWeight: 400, marginLeft: '0.375rem' }}>
               ({filtered.length} unassigned)
             </span>
@@ -217,7 +219,7 @@ export function RoleAssign() {
           <div className="card" style={{ textAlign: 'center', padding: '2.5rem' }}>
             <p className="text-muted">
               {unassigned.length === 0
-                ? 'All agents are already assigned to roles.'
+                ? t('assign.noUnassigned')
                 : 'No agents match your search.'}
             </p>
           </div>
@@ -280,7 +282,7 @@ export function RoleAssign() {
                   style={{ width: '100%' }}
                   onClick={() => handleOpenAssign(nodeId, employeeName)}
                 >
-                  Assign to {role.name}
+                  {t('assign.assignButton')} {role.name}
                 </button>
               </div>
             );
@@ -306,7 +308,7 @@ export function RoleAssign() {
               onClick={handleAssign}
               disabled={!!jsonError || assignRole.isPending}
             >
-              {assignRole.isPending ? 'Assigning…' : 'Assign'}
+              {assignRole.isPending ? t('assign.assigning') : t('assign.assignButton')}
             </button>
           </div>
         }
@@ -317,7 +319,7 @@ export function RoleAssign() {
         </div>
 
         <div className="form-group">
-          <label className="form-label">Mode</label>
+          <label className="form-label">{t('editor.mode')}</label>
           <select
             className="select"
             value={selectedMode}

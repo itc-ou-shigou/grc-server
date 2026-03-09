@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
 import { DataTable, Column } from '../../components/DataTable';
 import { StatusBadge } from '../../components/StatusBadge';
 import { Modal } from '../../components/Modal';
@@ -28,6 +29,7 @@ function postTypeBadgeVariant(type: string): 'success' | 'warning' | 'danger' | 
 }
 
 export function PostDetail() {
+  const { t } = useTranslation('community');
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
   const [replyPage, setReplyPage] = useState(1);
@@ -82,7 +84,7 @@ export function PostDetail() {
       <div className="page">
         <ErrorMessage error={error as Error} />
         <button className="btn btn-default" style={{ marginTop: '16px' }} onClick={() => navigate('/community/topics')}>
-          Back to Topics
+          {t('postDetail.backToTopics')}
         </button>
       </div>
     );
@@ -168,7 +170,7 @@ export function PostDetail() {
           className="btn btn-sm btn-default"
           onClick={() => navigate('/community/topics')}
         >
-          &larr; Back to Topics
+          &larr; {t('postDetail.backToTopics')}
         </button>
       </div>
 
@@ -199,7 +201,7 @@ export function PostDetail() {
             <span className="text-muted"> ({post.upvotes}/{post.downvotes})</span>
           </div>
           <div>
-            <span className="text-muted">Replies: </span>
+            <span className="text-muted">{t('postDetail.replies')}: </span>
             <strong>{post.replyCount}</strong>
           </div>
           <div>
@@ -230,7 +232,7 @@ export function PostDetail() {
       <div className="card" style={{ marginBottom: '16px' }}>
         <div style={{ padding: '12px 16px', borderBottom: '1px solid var(--color-border)' }}>
           <h3 style={{ margin: 0, fontSize: '14px' }}>
-            Replies ({replyPagination?.total ?? replies.length})
+            {t('postDetail.replies')} ({replyPagination?.total ?? replies.length})
           </h3>
         </div>
         <DataTable
@@ -243,7 +245,7 @@ export function PostDetail() {
               ? { page: replyPage, totalPages: replyPagination.totalPages, onPageChange: setReplyPage }
               : undefined
           }
-          emptyMessage="No replies yet."
+          emptyMessage={t('postDetail.noReplies')}
         />
       </div>
 

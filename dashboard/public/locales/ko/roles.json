@@ -1,0 +1,72 @@
+{
+  "title": "역할 템플릿",
+  "subtitle": "에이전트 역할, 동작 및 기능 구성",
+  "createTitle": "역할 생성",
+  "createSubtitle": "새 역할 템플릿 정의",
+  "editTitle": "역할 편집 — {{name}}",
+  "assignTitle": "역할 배정 — {{name}}",
+  "table": {
+    "id": "ID",
+    "name": "이름",
+    "mode": "모드",
+    "department": "부서",
+    "industry": "산업",
+    "created": "생성일",
+    "builtin": "기본 제공"
+  },
+  "filters": {
+    "searchPlaceholder": "이름 또는 ID로 검색…",
+    "allModes": "전체 모드",
+    "autonomous": "자율",
+    "copilot": "코파일럿",
+    "count": "{{count}}개의 역할",
+    "count_other": "{{count}}개의 역할"
+  },
+  "editor": {
+    "basicInfo": "기본 정보",
+    "roleId": "역할 ID",
+    "displayName": "표시 이름",
+    "description": "설명",
+    "department": "부서",
+    "industry": "산업",
+    "mode": "모드",
+    "emoji": "이모지",
+    "tabs": {
+      "identity": "정체성",
+      "soul": "소울",
+      "agents": "에이전트",
+      "user": "사용자",
+      "tools": "도구",
+      "heartbeat": "하트비트",
+      "bootstrap": "부트스트랩",
+      "tasks": "작업"
+    },
+    "save": "변경 사항 저장",
+    "saving": "저장 중...",
+    "saved": "역할이 저장되었습니다."
+  },
+  "cloneModal": {
+    "title": "복제 — {{name}}",
+    "newId": "새 역할 ID",
+    "newIdPlaceholder": "my-custom-role",
+    "newName": "표시 이름",
+    "newNamePlaceholder": "내 커스텀 역할",
+    "button": "복제",
+    "cloning": "복제 중..."
+  },
+  "deleteModal": {
+    "title": "역할 삭제 — {{name}}",
+    "confirm": "{{name}} ({{id}})을(를) 영구적으로 삭제하시겠습니까? 현재 이 역할이 배정된 직원은 미배정 상태가 됩니다.",
+    "button": "삭제",
+    "deleting": "삭제 중...",
+    "builtinWarning": "기본 제공 역할은 삭제할 수 없습니다"
+  },
+  "assign": {
+    "subtitle": "이 역할을 배정할 직원 선택",
+    "unassignedAgents": "미배정 에이전트",
+    "noUnassigned": "모든 에이전트에 역할이 배정되어 있습니다.",
+    "assignButton": "선택 항목 배정",
+    "assigning": "배정 중..."
+  },
+  "newRole": "+ 새 역할"
+}

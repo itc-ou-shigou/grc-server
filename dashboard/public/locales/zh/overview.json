@@ -1,0 +1,19 @@
+{
+  "title": "概览",
+  "subtitle": "平台整体统计与洞察",
+  "stats": {
+    "totalUsers": "总用户数",
+    "activeNodes": "活跃节点",
+    "totalGenes": "基因总数",
+    "totalAssets": "资产总数",
+    "updateSuccessRate": "更新成功率",
+    "uniqueTelemetryNodes": "唯一遥测节点",
+    "totalTelemetryReports": "遥测报告总数",
+    "communityPosts": "社区帖子"
+  },
+  "charts": {
+    "dailyTelemetry": "每日遥测报告（近30天）",
+    "platformDistribution": "平台分布",
+    "genesByStatus": "按状态分类的基因"
+  }
+}

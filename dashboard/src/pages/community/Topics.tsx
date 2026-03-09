@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
 import { DataTable, Column } from '../../components/DataTable';
 import { StatusBadge } from '../../components/StatusBadge';
 import { Modal } from '../../components/Modal';
@@ -27,6 +28,7 @@ function postTypeBadgeVariant(type: string): 'success' | 'warning' | 'danger' | 
 }
 
 export function Topics() {
+  const { t } = useTranslation('community');
   const navigate = useNavigate();
   const [page, setPage] = useState(1);
   const [channelFilter, setChannelFilter] = useState('');
@@ -69,7 +71,7 @@ export function Topics() {
   const columns: Column<Record<string, unknown>>[] = [
     {
       key: 'title',
-      label: 'Title',
+      label: t('topics.table.title'),
       render: (v, row) => {
         const post = row as unknown as Post;
         return (
@@ -94,7 +96,7 @@ export function Topics() {
     },
     {
       key: 'channelId',
-      label: 'Channel',
+      label: t('topics.table.channel'),
       render: (v) => <span className="text-sm">{channelName(String(v))}</span>,
     },
     {
@@ -111,7 +113,7 @@ export function Topics() {
     },
     {
       key: 'replyCount',
-      label: 'Replies',
+      label: t('topics.table.replies'),
       render: (v) => <span className="mono">{String(v)}</span>,
     },
     {
@@ -171,8 +173,8 @@ export function Topics() {
   return (
     <div className="page">
       <div className="page-header">
-        <h1 className="page-title">Topics</h1>
-        <p className="page-subtitle">Browse and manage community discussion topics</p>
+        <h1 className="page-title">{t('topics.title')}</h1>
+        <p className="page-subtitle">{t('topics.subtitle')}</p>
       </div>
 
       <div className="card" style={{ padding: '12px 16px', marginBottom: '16px', display: 'flex', gap: '12px', alignItems: 'center', flexWrap: 'wrap' }}>
@@ -183,7 +185,7 @@ export function Topics() {
           value={channelFilter}
           onChange={(e) => { setChannelFilter(e.target.value); setPage(1); }}
         >
-          <option value="">All channels</option>
+          <option value="">{t('topics.filters.allChannels')}</option>
           {channels.map((ch) => (
             <option key={ch.id} value={ch.id}>
               {ch.displayName || ch.name}
@@ -219,7 +221,7 @@ export function Topics() {
               ? { page, totalPages: data.pagination.totalPages, onPageChange: setPage }
               : undefined
           }
-          emptyMessage="No topics found."
+          emptyMessage={t('topics.noTopics')}
         />
       </div>
 

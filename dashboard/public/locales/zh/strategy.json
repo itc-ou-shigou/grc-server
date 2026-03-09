@@ -1,0 +1,72 @@
+{
+  "title": "战略管理",
+  "subtitle": "定义公司战略并部署到 AI 员工",
+  "tabs": {
+    "profile": "公司简介",
+    "shortTerm": "短期",
+    "midTerm": "中期",
+    "longTerm": "长期",
+    "budgets": "预算",
+    "kpis": "KPI"
+  },
+  "profile": {
+    "mission": "公司使命",
+    "missionPlaceholder": "输入公司使命…",
+    "vision": "公司愿景",
+    "visionPlaceholder": "输入公司愿景…",
+    "values": "核心价值观",
+    "valuesPlaceholder": "输入核心价值观…"
+  },
+  "shortTerm": {
+    "title": "季度目标",
+    "quarter": "季度",
+    "goals": "目标",
+    "kpis": "KPI",
+    "target": "目标值",
+    "owner": "负责人"
+  },
+  "midTerm": {
+    "title": "年度目标",
+    "revenueTarget": "收入目标",
+    "goals": "目标",
+    "kpis": "KPI"
+  },
+  "longTerm": {
+    "title": "3-5年愿景",
+    "milestones": "里程碑"
+  },
+  "budgets": {
+    "title": "部门预算",
+    "department": "部门",
+    "annual": "年度",
+    "q1": "Q1",
+    "q2": "Q2",
+    "q3": "Q3",
+    "q4": "Q4",
+    "total": "合计"
+  },
+  "kpis": {
+    "title": "部门 KPI",
+    "department": "部门",
+    "kpi": "KPI",
+    "target": "目标",
+    "current": "当前",
+    "progress": "进度"
+  },
+  "actions": {
+    "saveDraft": "保存草稿",
+    "deploy": "保存并部署到所有代理",
+    "deploying": "部署中...",
+    "deployed": "战略部署成功。",
+    "history": "历史记录"
+  },
+  "history": {
+    "title": "战略历史",
+    "revision": "修订版本",
+    "changedBy": "修改者",
+    "summary": "摘要",
+    "date": "日期",
+    "compare": "比较",
+    "restore": "恢复"
+  }
+}

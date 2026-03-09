@@ -1,0 +1,50 @@
+{
+  "assets": {
+    "title": "アセット",
+    "subtitle": "進化アセット（遺伝子）を閲覧",
+    "table": {
+      "name": "名前",
+      "type": "タイプ",
+      "status": "ステータス",
+      "version": "バージョン",
+      "author": "作成者",
+      "promoted": "プロモート済み"
+    },
+    "filters": {
+      "searchPlaceholder": "アセットを検索…",
+      "allTypes": "全タイプ",
+      "allStatuses": "全ステータス"
+    }
+  },
+  "assetDetail": {
+    "backToAssets": "アセットに戻る",
+    "version": "バージョン",
+    "type": "タイプ",
+    "status": "ステータス",
+    "author": "作成者",
+    "description": "説明",
+    "dependencies": "依存関係",
+    "noDependencies": "依存関係なし",
+    "promote": "プロモート",
+    "demote": "デモート"
+  },
+  "nodes": {
+    "title": "ノード",
+    "subtitle": "WinClawクライアントノードを管理",
+    "table": {
+      "nodeId": "ノードID",
+      "hostname": "ホスト名",
+      "platform": "プラットフォーム",
+      "version": "バージョン",
+      "lastSeen": "最終確認",
+      "status": "ステータス"
+    }
+  },
+  "pipeline": {
+    "title": "パイプライン",
+    "subtitle": "進化パイプラインの状態",
+    "stages": "ステージ",
+    "running": "実行中",
+    "queued": "キュー中"
+  }
+}

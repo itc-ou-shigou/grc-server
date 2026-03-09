@@ -1,3 +1,4 @@
+import { useTranslation } from 'react-i18next';
 import { useTaskStats } from '../../api/hooks';
 import { ErrorMessage } from '../../components/ErrorMessage';
 
@@ -97,13 +98,14 @@ function BreakdownBar({ label, count, total, color }: BreakdownBarProps) {
 }
 
 export function TaskStatsPage() {
+  const { t } = useTranslation('tasks');
   const { data: stats, isLoading, error } = useTaskStats();
 
   if (isLoading) {
     return (
       <div className="page">
         <div className="page-header">
-          <h1 className="page-title">Task Statistics</h1>
+          <h1 className="page-title">{t('stats.title')}</h1>
         </div>
         <p className="text-muted">Loading statistics...</p>
       </div>
@@ -114,7 +116,7 @@ export function TaskStatsPage() {
     return (
       <div className="page">
         <div className="page-header">
-          <h1 className="page-title">Task Statistics</h1>
+          <h1 className="page-title">{t('stats.title')}</h1>
         </div>
         <ErrorMessage error={error as Error} />
       </div>
@@ -152,8 +154,8 @@ export function TaskStatsPage() {
     <div className="page">
       <div className="page-header">
         <div>
-          <h1 className="page-title">Task Statistics</h1>
-          <p className="page-subtitle">Overview of task performance and distribution</p>
+          <h1 className="page-title">{t('stats.title')}</h1>
+          <p className="page-subtitle">{t('stats.subtitle')}</p>
         </div>
       </div>
 
@@ -161,7 +163,7 @@ export function TaskStatsPage() {
       <div className="stat-grid" style={{ marginBottom: '1.5rem' }}>
         <div className="stat-card">
           <div className="stat-value">{stats.total.toLocaleString()}</div>
-          <div className="stat-label">Total Tasks</div>
+          <div className="stat-label">{t('stats.totalTasks')}</div>
         </div>
 
         <div className="stat-card">
@@ -169,7 +171,7 @@ export function TaskStatsPage() {
             {(stats.completionRate * 100).toFixed(1)}
             <span style={{ fontSize: '0.6em', marginLeft: '2px' }}>%</span>
           </div>
-          <div className="stat-label">Completion Rate</div>
+          <div className="stat-label">{t('stats.completionRate')}</div>
         </div>
 
         <div className="stat-card">
@@ -177,7 +179,7 @@ export function TaskStatsPage() {
             {stats.avgCompletionDays.toFixed(1)}
             <span style={{ fontSize: '0.6em', marginLeft: '2px' }}>d</span>
           </div>
-          <div className="stat-label">Avg. Completion Days</div>
+          <div className="stat-label">{t('stats.avgCompletionTime')}</div>
         </div>
 
         <div className="stat-card">

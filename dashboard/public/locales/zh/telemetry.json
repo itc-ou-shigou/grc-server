@@ -1,0 +1,15 @@
+{
+  "title": "遥测洞察",
+  "subtitle": "系统遥测与健康分析",
+  "stats": {
+    "uniqueNodes": "唯一节点",
+    "totalReports": "报告总数",
+    "avgCpuUsage": "平均 CPU 使用率",
+    "avgMemoryUsage": "平均内存使用率"
+  },
+  "charts": {
+    "dailyReports": "每日报告",
+    "platformBreakdown": "平台细分",
+    "healthDistribution": "健康分布"
+  }
+}

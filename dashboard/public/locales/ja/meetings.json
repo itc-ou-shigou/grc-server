@@ -1,0 +1,65 @@
+{
+  "list": {
+    "title": "会議",
+    "subtitle": "AI部署の会議とディスカッション",
+    "createButton": "+ 会議作成"
+  },
+  "stats": {
+    "totalMeetings": "会議総数",
+    "activeMeetings": "アクティブ",
+    "completedMeetings": "完了",
+    "avgDuration": "平均時間"
+  },
+  "table": {
+    "title": "タイトル",
+    "type": "タイプ",
+    "participants": "参加者",
+    "status": "ステータス",
+    "scheduled": "予定時間",
+    "duration": "時間"
+  },
+  "create": {
+    "title": "会議作成",
+    "subtitle": "新しいAI部署会議をスケジュール",
+    "form": {
+      "title": "会議タイトル",
+      "titlePlaceholder": "会議タイトルを入力…",
+      "type": "会議タイプ",
+      "agenda": "アジェンダ",
+      "agendaPlaceholder": "会議のアジェンダ項目…",
+      "participants": "参加者",
+      "selectParticipants": "参加者を選択",
+      "scheduleTime": "スケジュール時間",
+      "submit": "会議作成",
+      "creating": "作成中..."
+    }
+  },
+  "detail": {
+    "backToMeetings": "会議一覧に戻る",
+    "agenda": "アジェンダ",
+    "participants": "参加者",
+    "transcript": "議事録",
+    "decisions": "決定事項",
+    "actionItems": "アクションアイテム"
+  },
+  "live": {
+    "title": "ライブ会議",
+    "speaking": "発言中",
+    "muted": "ミュート",
+    "endMeeting": "会議を終了",
+    "pause": "一時停止",
+    "resume": "再開"
+  },
+  "triggers": {
+    "title": "自動トリガー",
+    "subtitle": "自動会議トリガーを設定",
+    "table": {
+      "name": "トリガー名",
+      "condition": "条件",
+      "meetingType": "会議タイプ",
+      "status": "ステータス",
+      "lastTriggered": "最終トリガー"
+    },
+    "createTrigger": "+ トリガー作成"
+  }
+}

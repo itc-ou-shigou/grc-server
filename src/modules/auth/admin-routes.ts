@@ -50,11 +50,11 @@ export async function registerAdmin(app: Express, config: GrcConfig) {
   const requireAuth = createAuthMiddleware(config);
   const requireAdmin = createAdminAuthMiddleware(config);
 
-  // ── GET /stats — Auth statistics (auth only — aggregated, no PII) ──
+  // ── GET /stats — Auth statistics (any authenticated user — aggregated, no PII) ──
 
   router.get(
     "/stats",
-    requireAuth, requireAdmin,
+    requireAuth,
     asyncHandler(async (_req: Request, res: Response) => {
       const db = getDb();
       const sevenDaysAgo = new Date();

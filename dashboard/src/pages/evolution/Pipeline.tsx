@@ -1,3 +1,4 @@
+import { useTranslation } from 'react-i18next';
 import { StatCard } from '../../components/StatCard';
 import { Chart } from '../../components/Chart';
 import { DataTable, Column } from '../../components/DataTable';
@@ -6,6 +7,7 @@ import { ErrorMessage } from '../../components/ErrorMessage';
 import { useEvolutionStats, useAdminAssets } from '../../api/hooks';
 
 export function Pipeline() {
+  const { t } = useTranslation('evolution');
   const { data: stats, isLoading: statsLoading, error: statsError } = useEvolutionStats();
   const { data: assets, isLoading: assetsLoading } = useAdminAssets({ page: 1, page_size: 10, status: 'pending' });
 
@@ -22,7 +24,7 @@ export function Pipeline() {
     },
     {
       key: 'assetType',
-      label: 'Type',
+      label: t('assets.table.type'),
       render: (v) => <StatusBadge status={String(v)} variant="info" />,
     },
     {
@@ -45,7 +47,7 @@ export function Pipeline() {
     },
     {
       key: 'status',
-      label: 'Status',
+      label: t('assets.table.status'),
       render: (v) => <StatusBadge status={String(v)} />,
     },
     {
@@ -66,8 +68,8 @@ export function Pipeline() {
   return (
     <div className="page">
       <div className="page-header">
-        <h1 className="page-title">Quality Pipeline</h1>
-        <p className="page-subtitle">Monitor asset review and promotion workflow</p>
+        <h1 className="page-title">{t('pipeline.title')}</h1>
+        <p className="page-subtitle">{t('pipeline.subtitle')}</p>
       </div>
 
       {statsError && <ErrorMessage error={statsError as Error} />}

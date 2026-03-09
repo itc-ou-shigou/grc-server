@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import { Link } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
 import { useExpenseQueue, useApproveExpense, useRejectExpense } from '../../api/hooks';
 import { DataTable } from '../../components/DataTable';
 import { StatusBadge } from '../../components/StatusBadge';
@@ -37,6 +38,7 @@ function formatAmount(amount: string | number | null, currency: string | null): 
 }
 
 export function ExpenseQueue() {
+  const { t } = useTranslation('tasks');
   const { data: tasksData, isLoading, error } = useExpenseQueue();
   const approveExpense = useApproveExpense();
   const rejectExpense = useRejectExpense();
@@ -85,12 +87,12 @@ export function ExpenseQueue() {
     },
     {
       key: 'title',
-      label: 'Title',
+      label: t('expenses.table.task'),
       render: (_value, row) => <span>{row.title}</span>,
     },
     {
       key: 'expenseAmount',
-      label: 'Amount',
+      label: t('expenses.table.amount'),
       render: (_value, row) => (
         <span className="mono" style={{ fontWeight: 600 }}>
           {formatAmount(row.expenseAmount, row.expenseCurrency)}
@@ -99,7 +101,7 @@ export function ExpenseQueue() {
     },
     {
       key: 'assignedRoleId',
-      label: 'Assigned Role',
+      label: t('expenses.table.requestedBy'),
       render: (_value, row) => (
         <span className={row.assignedRoleId ? 'mono' : 'text-muted'}>
           {row.assignedRoleId ?? '—'}
@@ -108,7 +110,7 @@ export function ExpenseQueue() {
     },
     {
       key: 'status',
-      label: 'Task Status',
+      label: t('expenses.table.status'),
       render: (_value, row) => <StatusBadge status={row.status} />,
     },
     {
@@ -136,7 +138,7 @@ export function ExpenseQueue() {
               type="button"
               title={alreadyDecided ? 'Already decided' : 'Approve expense'}
             >
-              Approve
+              {t('expenses.approveModal.button')}
             </button>
             <button
               className="btn btn-danger btn-sm"
@@ -145,7 +147,7 @@ export function ExpenseQueue() {
               type="button"
               title={alreadyDecided ? 'Already decided' : 'Reject expense'}
             >
-              Reject
+              {t('expenses.rejectModal.button')}
             </button>
           </div>
         );
@@ -159,8 +161,8 @@ export function ExpenseQueue() {
     <div className="page">
       <div className="page-header">
         <div>
-          <h1 className="page-title">Expense Approval Queue</h1>
-          <p className="page-subtitle">Review and action pending task expense requests</p>
+          <h1 className="page-title">{t('expenses.title')}</h1>
+          <p className="page-subtitle">{t('expenses.subtitle')}</p>
         </div>
         {taskList.length > 0 && (
           <div>
@@ -193,7 +195,9 @@ export function ExpenseQueue() {
         open={pending !== null}
         onClose={closeModal}
         title={
-          pending?.kind === 'approve' ? 'Approve Expense' : 'Reject Expense'
+          pending?.kind === 'approve'
+            ? t('expenses.approveModal.title')
+            : t('expenses.rejectModal.title')
         }
         footer={
           <div className="modal-footer-actions">
@@ -214,8 +218,8 @@ export function ExpenseQueue() {
               {isMutating
                 ? 'Processing...'
                 : pending?.kind === 'approve'
-                ? 'Approve'
-                : 'Reject'}
+                ? t('expenses.approveModal.button')
+                : t('expenses.rejectModal.button')}
             </button>
           </div>
         }

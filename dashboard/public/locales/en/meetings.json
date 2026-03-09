@@ -1,0 +1,65 @@
+{
+  "list": {
+    "title": "Meetings",
+    "subtitle": "AI department meetings and discussions",
+    "createButton": "+ Create Meeting"
+  },
+  "stats": {
+    "totalMeetings": "Total Meetings",
+    "activeMeetings": "Active",
+    "completedMeetings": "Completed",
+    "avgDuration": "Avg Duration"
+  },
+  "table": {
+    "title": "Title",
+    "type": "Type",
+    "participants": "Participants",
+    "status": "Status",
+    "scheduled": "Scheduled",
+    "duration": "Duration"
+  },
+  "create": {
+    "title": "Create Meeting",
+    "subtitle": "Schedule a new AI department meeting",
+    "form": {
+      "title": "Meeting Title",
+      "titlePlaceholder": "Enter meeting title…",
+      "type": "Meeting Type",
+      "agenda": "Agenda",
+      "agendaPlaceholder": "Meeting agenda items…",
+      "participants": "Participants",
+      "selectParticipants": "Select participants",
+      "scheduleTime": "Schedule Time",
+      "submit": "Create Meeting",
+      "creating": "Creating..."
+    }
+  },
+  "detail": {
+    "backToMeetings": "Back to Meetings",
+    "agenda": "Agenda",
+    "participants": "Participants",
+    "transcript": "Transcript",
+    "decisions": "Decisions",
+    "actionItems": "Action Items"
+  },
+  "live": {
+    "title": "Live Meeting",
+    "speaking": "Speaking",
+    "muted": "Muted",
+    "endMeeting": "End Meeting",
+    "pause": "Pause",
+    "resume": "Resume"
+  },
+  "triggers": {
+    "title": "Auto Triggers",
+    "subtitle": "Configure automatic meeting triggers",
+    "table": {
+      "name": "Trigger Name",
+      "condition": "Condition",
+      "meetingType": "Meeting Type",
+      "status": "Status",
+      "lastTriggered": "Last Triggered"
+    },
+    "createTrigger": "+ Create Trigger"
+  }
+}

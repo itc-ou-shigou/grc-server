@@ -1,5 +1,6 @@
 import { useState, useRef } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
 import {
   useTaskDetail,
   useChangeTaskStatus,
@@ -51,6 +52,7 @@ function formatDateOnly(dateStr: string | null | undefined): string {
 }
 
 export function TaskDetail() {
+  const { t } = useTranslation('tasks');
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
   const { isAdmin } = useUser();
@@ -210,7 +212,7 @@ export function TaskDetail() {
 
         {task.description && (
           <div style={{ marginTop: '1rem' }}>
-            <div className="form-label">Description</div>
+            <div className="form-label">{t('detail.description')}</div>
             <p style={{ margin: 0, whiteSpace: 'pre-wrap' }}>{task.description}</p>
           </div>
         )}
@@ -322,12 +324,12 @@ export function TaskDetail() {
       {/* Comments */}
       <div className="card" style={{ marginBottom: '1rem' }}>
         <h2 className="page-subtitle" style={{ marginBottom: '0.75rem' }}>
-          Comments ({comments.length})
+          {t('detail.comments')} ({comments.length})
         </h2>
 
         {comments.length === 0 && (
           <p className="text-muted" style={{ marginBottom: '1rem' }}>
-            No comments yet.
+            {t('detail.noComments')}
           </p>
         )}
 
@@ -362,7 +364,7 @@ export function TaskDetail() {
         <form onSubmit={handleAddComment}>
           <div className="form-group">
             <label className="form-label" htmlFor="comment-input">
-              Add Comment
+              {t('detail.addComment')}
             </label>
             <textarea
               id="comment-input"
@@ -371,7 +373,7 @@ export function TaskDetail() {
               rows={3}
               value={commentContent}
               onChange={(e) => setCommentContent(e.target.value)}
-              placeholder="Write a comment..."
+              placeholder={t('detail.addComment')}
               disabled={addComment.isPending}
             />
           </div>
@@ -380,7 +382,7 @@ export function TaskDetail() {
             className="btn btn-primary btn-sm"
             disabled={!commentContent.trim() || addComment.isPending}
           >
-            {addComment.isPending ? 'Posting...' : 'Post Comment'}
+            {addComment.isPending ? 'Posting...' : t('detail.submitComment')}
           </button>
         </form>
       </div>
@@ -389,7 +391,7 @@ export function TaskDetail() {
       {progress.length > 0 && (
         <div className="card" style={{ marginBottom: '1rem' }}>
           <h2 className="page-subtitle" style={{ marginBottom: '0.75rem' }}>
-            Activity Log
+            {t('detail.activity')}
           </h2>
           <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
             {progress.map((entry) => (

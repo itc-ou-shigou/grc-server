@@ -1,0 +1,29 @@
+{
+  "title": "A2A リレーログ",
+  "subtitle": "エージェント間メッセージリレー履歴",
+  "stats": {
+    "totalMessages": "総メッセージ数",
+    "todayMessages": "今日",
+    "successRate": "成功率",
+    "avgLatency": "平均レイテンシ"
+  },
+  "table": {
+    "from": "送信元",
+    "to": "送信先",
+    "method": "メソッド",
+    "status": "ステータス",
+    "latency": "レイテンシ",
+    "timestamp": "タイムスタンプ"
+  },
+  "filters": {
+    "searchPlaceholder": "メッセージを検索…",
+    "allStatuses": "すべてのステータス",
+    "allMethods": "すべてのメソッド"
+  },
+  "cleanupModal": {
+    "title": "古いログのクリーンアップ",
+    "confirm": "30日以上前のリレーログを削除しますか？",
+    "button": "クリーンアップ",
+    "cleaning": "クリーンアップ中..."
+  }
+}

@@ -1,0 +1,30 @@
+{
+  "title": "A2A 代理卡片",
+  "subtitle": "注册的代理到代理端点",
+  "detailTitle": "代理详情",
+  "table": {
+    "nodeId": "节点 ID",
+    "agentName": "代理名称",
+    "capabilities": "能力",
+    "status": "状态",
+    "lastHeartbeat": "最后心跳"
+  },
+  "stats": {
+    "totalAgents": "代理总数",
+    "onlineAgents": "在线",
+    "offlineAgents": "离线",
+    "avgResponseTime": "平均响应时间"
+  },
+  "detail": {
+    "backToAgents": "返回代理列表",
+    "capabilities": "能力",
+    "recentActivity": "最近活动",
+    "noActivity": "暂无最近活动。"
+  },
+  "cleanupModal": {
+    "title": "清理过期代理",
+    "confirm": "删除超过30天未见的代理吗？",
+    "button": "清理",
+    "cleaning": "清理中..."
+  }
+}
