@@ -21,6 +21,8 @@ import {
   NotFoundError,
 } from "../../shared/middleware/error-handler.js";
 
+import { nodeConfigSSE } from "../evolution/node-config-sse.js";
+
 const logger = pino({ name: "module:model-keys:service" });
 
 // ── AES-256-GCM Encryption Helpers ──────────────
@@ -418,6 +420,9 @@ export class ModelKeysService {
       "Keys assigned to node",
     );
 
+    // Push config update to node via SSE (if connected)
+    this.pushConfigToNode(nodeId, newRevision, "key_assignment");
+
     const updated = await db
       .select()
       .from(nodesTable)
@@ -454,6 +459,9 @@ export class ModelKeysService {
       .where(eq(nodesTable.nodeId, nodeId));
 
     logger.info({ nodeId }, "Keys unassigned from node");
+
+    // Push config update to node via SSE (if connected)
+    this.pushConfigToNode(nodeId, currentRevision + 1, "key_unassignment");
 
     const updated = await db
       .select()
@@ -585,6 +593,73 @@ export class ModelKeysService {
         { nodeId: node.nodeId, keyId, newRevision: currentRevision + 1 },
         "Refreshed key config for node after key update",
       );
+
+      // Push config update to node via SSE (if connected)
+      this.pushConfigToNode(node.nodeId, currentRevision + 1, "key_update");
+    }
+  }
+
+  /**
+   * Push full config to a node via SSE.
+   * Loads the node's resolved config and sends it as a config_update event.
+   */
+  private async pushConfigToNode(
+    nodeId: string,
+    revision: number,
+    reason: string,
+  ): Promise<void> {
+    if (!nodeConfigSSE.isNodeConnected(nodeId)) return;
+
+    try {
+      const db = getDb();
+      const nodeRows = await db
+        .select()
+        .from(nodesTable)
+        .where(eq(nodesTable.nodeId, nodeId))
+        .limit(1);
+
+      if (nodeRows.length === 0) return;
+      const node = nodeRows[0]!;
+
+      // Build files map from resolved columns
+      const files: Record<string, string> = {};
+      const resolvedMap: Record<string, string | null> = {
+        "AGENTS.md": node.resolvedAgentsMd,
+        "SOUL.md": node.resolvedSoulMd,
+        "IDENTITY.md": node.resolvedIdentityMd,
+        "USER.md": node.resolvedUserMd,
+        "TOOLS.md": node.resolvedToolsMd,
+        "HEARTBEAT.md": node.resolvedHeartbeatMd,
+        "BOOTSTRAP.md": node.resolvedBootstrapMd,
+        "TASKS.md": node.resolvedTasksMd,
+      };
+      for (const [k, v] of Object.entries(resolvedMap)) {
+        if (v) files[k] = v;
+      }
+
+      // Parse key_config_json
+      let keyConfig = null;
+      if (node.keyConfigJson) {
+        try {
+          keyConfig =
+            typeof node.keyConfigJson === "string"
+              ? JSON.parse(node.keyConfigJson)
+              : node.keyConfigJson;
+        } catch { /* ignore */ }
+      }
+
+      nodeConfigSSE.pushToNode(nodeId, {
+        revision,
+        reason,
+        config: {
+          role_id: node.roleId ?? null,
+          role_mode: node.roleMode ?? null,
+          files,
+          key_config: keyConfig,
+        },
+      });
+    } catch (err) {
+      logger.warn({ nodeId, err }, "Failed to push config via SSE");
     }
   }
 }

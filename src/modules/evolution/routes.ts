@@ -25,6 +25,8 @@ import {
   nodeIdSchema,
 } from "../../shared/utils/validators.js";
 import { EvolutionService, upsertNode } from "./service.js";
+import { nodeConfigSSE } from "./node-config-sse.js";
+import { RolesService } from "../roles/service.js";
 
 const logger = pino({ name: "module:evolution" });
 
@@ -65,6 +67,7 @@ const trendingQuerySchema = z.object({
 export async function register(app: Express, config: GrcConfig): Promise<void> {
   const router = Router();
   const service = new EvolutionService();
+  const rolesService = new RolesService();
   const authOptional = createAuthMiddleware(config, false);
   const authRequired = createAuthMiddleware(config, true);
   const adminAuth = createAdminAuthMiddleware(config);
@@ -103,6 +106,7 @@ export async function register(app: Express, config: GrcConfig): Promise<void> {
 
   // ────────────────────────────────────────────
   // POST /a2a/heartbeat — Alias for hello
+  // Now includes pending config if revision mismatch detected
   // ────────────────────────────────────────────
   router.post(
     "/heartbeat",
@@ -122,11 +126,30 @@ export async function register(app: Express, config: GrcConfig): Promise<void> {
         employeeEmail: body.employee_email,
       });
 
+      // Check if there's a pending config update — push it inline
+      let pendingConfig = null;
+      try {
+        const nodeConfig = await rolesService.getNodeConfig(body.node_id);
+        const clientRevision = (body as Record<string, unknown>).current_revision as number | undefined;
+        if (clientRevision !== undefined && nodeConfig.revision > clientRevision) {
+          pendingConfig = {
+            revision: nodeConfig.revision,
+            role_id: nodeConfig.roleId,
+            role_mode: nodeConfig.roleMode,
+            files: nodeConfig.files,
+            key_config: nodeConfig.key_config,
+          };
+        }
+      } catch {
+        // Node may not exist yet in config context; ignore
+      }
+
       res.json({
         ok: true,
         node_id: body.node_id,
         heartbeat: true,
         node,
+        ...(pendingConfig ? { config_update: pendingConfig } : {}),
       });
     }),
   );
@@ -327,8 +350,79 @@ export async function register(app: Express, config: GrcConfig): Promise<void> {
     }),
   );
 
+  // ────────────────────────────────────────────
+  // GET /a2a/config/stream — SSE stream for real-time config push
+  // Node connects once; server pushes config_update events.
+  // ────────────────────────────────────────────
+  router.get(
+    "/config/stream",
+    authOptional,
+    asyncHandler(async (req: Request, res: Response) => {
+      const nodeId = req.query.node_id as string;
+      if (!nodeId || nodeId.length < 10) {
+        res.status(400).json({ ok: false, error: "node_id query parameter required" });
+        return;
+      }
+
+      // Set SSE headers
+      res.writeHead(200, {
+        "Content-Type": "text/event-stream",
+        "Cache-Control": "no-cache",
+        Connection: "keep-alive",
+        "X-Accel-Buffering": "no", // Nginx: disable proxy buffering
+      });
+
+      // Send initial connected event
+      res.write(`event: connected\ndata: ${JSON.stringify({ node_id: nodeId })}\n\n`);
+
+      // If there's a pending config, push it immediately on connect
+      try {
+        const nodeConfig = await rolesService.getNodeConfig(nodeId);
+        // Always send current config on SSE connect so node gets latest state
+        const initEvent = {
+          revision: nodeConfig.revision,
+          reason: "sse_connect",
+          config: {
+            role_id: nodeConfig.roleId,
+            role_mode: nodeConfig.roleMode,
+            files: nodeConfig.files,
+            key_config: nodeConfig.key_config,
+          },
+        };
+        res.write(`event: config_update\ndata: ${JSON.stringify(initEvent)}\n\n`);
+      } catch {
+        // Node not found in DB — that's okay, it may register later
+      }
+
+      // Register SSE connection
+      nodeConfigSSE.addConnection(nodeId, res);
+
+      // Clean up on disconnect
+      req.on("close", () => {
+        nodeConfigSSE.removeConnection(nodeId, res);
+      });
+    }),
+  );
+
+  // ────────────────────────────────────────────
+  // GET /a2a/config/stream/stats — SSE connection stats (admin)
+  // ────────────────────────────────────────────
+  router.get(
+    "/config/stream/stats",
+    authRequired,
+    adminAuth,
+    asyncHandler(async (_req: Request, res: Response) => {
+      const stats = nodeConfigSSE.getStats();
+      res.json({
+        ok: true,
+        ...stats,
+        connected_nodes: nodeConfigSSE.getConnectedNodeIds(),
+      });
+    }),
+  );
+
   // ── Mount router under /a2a prefix ────────
   app.use("/a2a", router);
 
-  logger.info("Evolution Pool module registered — 10 A2A endpoints active");
+  logger.info("Evolution Pool module registered — 12 A2A endpoints active (incl. SSE)");
 }

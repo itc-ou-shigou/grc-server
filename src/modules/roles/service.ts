@@ -17,6 +17,8 @@ import {
   ConflictError,
 } from "../../shared/middleware/error-handler.js";
 
+import { nodeConfigSSE } from "../evolution/node-config-sse.js";
+
 const logger = pino({ name: "module:roles:service" });
 
 // ── MD field names (DB column names -> camelCase mapping) ──
@@ -417,6 +419,21 @@ export class RolesService {
       "Role assigned to node",
     );
 
+    // Push config update to node via SSE (if connected)
+    if (nodeConfigSSE.isNodeConnected(nodeId)) {
+      const fullConfig = await this.getNodeConfig(nodeId);
+      nodeConfigSSE.pushToNode(nodeId, {
+        revision: newRevision,
+        reason: "role_assignment",
+        config: {
+          role_id: fullConfig.roleId,
+          role_mode: fullConfig.roleMode,
+          files: fullConfig.files,
+          key_config: fullConfig.key_config,
+        },
+      });
+    }
+
     const updated = await db
       .select()
       .from(nodesTable)
@@ -466,6 +483,20 @@ export class RolesService {
       .where(eq(nodesTable.nodeId, nodeId));
 
     logger.info({ nodeId }, "Role unassigned from node");
+
+    // Push config update to node via SSE (if connected)
+    if (nodeConfigSSE.isNodeConnected(nodeId)) {
+      nodeConfigSSE.pushToNode(nodeId, {
+        revision: currentRevision + 1,
+        reason: "role_unassignment",
+        config: {
+          role_id: null,
+          role_mode: null,
+          files: {},
+          key_config: null,
+        },
+      });
+    }
 
     const updated = await db
       .select()
@@ -604,6 +635,21 @@ export class RolesService {
       .where(eq(nodesTable.nodeId, nodeId));
 
     logger.info({ nodeId, fileName, revision: newRevision }, "Node config file updated");
+
+    // Push config update to node via SSE (if connected)
+    if (nodeConfigSSE.isNodeConnected(nodeId)) {
+      const fullConfig = await this.getNodeConfig(nodeId);
+      nodeConfigSSE.pushToNode(nodeId, {
+        revision: newRevision,
+        reason: "config_file_update",
+        config: {
+          role_id: fullConfig.roleId,
+          role_mode: fullConfig.roleMode,
+          files: fullConfig.files,
+          key_config: fullConfig.key_config,
+        },
+      });
+    }
   }
 
   /**
