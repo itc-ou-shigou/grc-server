@@ -100,7 +100,7 @@ export async function register(app: Express, config: GrcConfig): Promise<void> {
   // ────────────────────────────────────────────
   router.post(
     "/config/status",
-    authRequired,
+    authOptional,
     asyncHandler(async (req: Request, res: Response) => {
       const body = configStatusSchema.parse(req.body);
 

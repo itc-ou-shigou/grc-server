@@ -9,6 +9,7 @@ import {
   useTelemetryDashboard,
   useCommunityStats,
 } from '../api/hooks';
+import { ApiError } from '../api/client';
 
 export function Overview() {
   const { t } = useTranslation('overview');
@@ -25,8 +26,13 @@ export function Overview() {
     telemetry.isLoading ||
     community.isLoading;
 
+  // Ignore 404 errors — they indicate a disabled module, not a real failure.
+  const isReal = (e: unknown): e is Error =>
+    e instanceof Error && !(e instanceof ApiError && e.status === 404);
+
   const error =
-    auth.error ?? evolution.error ?? update.error ?? telemetry.error ?? community.error;
+    [auth.error, evolution.error, update.error, telemetry.error, community.error].find(isReal) ??
+    null;
 
   // Prepare chart data
   const platformData = telemetry.data

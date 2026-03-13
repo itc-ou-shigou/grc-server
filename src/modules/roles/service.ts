@@ -346,6 +346,7 @@ export class RolesService {
     roleId: string,
     variables: Record<string, string>,
     overrides?: Record<string, string>,
+    modeOverride?: "autonomous" | "copilot",
   ): Promise<Record<string, unknown>> {
     const db = getDb();
 
@@ -399,7 +400,7 @@ export class RolesService {
       .update(nodesTable)
       .set({
         roleId: roleId,
-        roleMode: template.mode,
+        roleMode: modeOverride ?? template.mode,
         configRevision: newRevision,
         assignmentVariables: variables,
         configOverrides: overrides ?? null,

@@ -27,3 +27,6 @@ Thumbs.db
 
 # Binary archives
 *.tar.gz
+
+# Dev JWT keys (persisted for local development)
+.dev-jwt-keys.json

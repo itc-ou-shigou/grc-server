@@ -6,6 +6,8 @@
  */
 
 import { generateKeyPairSync } from "node:crypto";
+import fs from "node:fs";
+import path from "node:path";
 import pino from "pino";
 
 const configLogger = pino({ name: "config" });
@@ -86,20 +88,69 @@ export interface GrcConfig {
   };
 }
 
+/** Path where dev JWT keys are persisted between restarts. */
+const DEV_JWT_KEYS_PATH = path.join(
+  path.dirname(new URL(import.meta.url).pathname.replace(/^\/([A-Z]:)/, "$1")),
+  "..",
+  ".dev-jwt-keys.json",
+);
+
 /**
- * Generate an RSA key pair for development use.
- * These keys are ephemeral and regenerated on every restart.
+ * Load or generate an RSA key pair for development use.
+ *
+ * Keys are persisted to `.dev-jwt-keys.json` in the project root so that
+ * tokens issued by a previous GRC instance remain valid after a restart.
+ * This eliminates the need to refresh tokens on every connected WinClaw
+ * node whenever GRC is restarted during development.
  */
-function generateDevKeyPair(): { publicKey: string; privateKey: string } {
+function loadOrGenerateDevKeyPair(): { publicKey: string; privateKey: string } {
+  // Try to load persisted keys first
+  try {
+    const raw = fs.readFileSync(DEV_JWT_KEYS_PATH, "utf-8");
+    const stored = JSON.parse(raw) as { publicKey?: string; privateKey?: string };
+    if (
+      typeof stored.publicKey === "string" &&
+      typeof stored.privateKey === "string" &&
+      stored.publicKey.includes("BEGIN") &&
+      stored.privateKey.includes("BEGIN")
+    ) {
+      configLogger.info(
+        `Loaded persisted dev JWT keys from ${DEV_JWT_KEYS_PATH} — tokens from previous sessions remain valid.`,
+      );
+      return { publicKey: stored.publicKey, privateKey: stored.privateKey };
+    }
+  } catch {
+    // File doesn't exist or is invalid — generate new keys below
+  }
+
+  // Generate a fresh key pair
   configLogger.warn(
-    "JWT_PRIVATE_KEY and JWT_PUBLIC_KEY not set — generating ephemeral RSA key pair. " +
-    "This is acceptable for development but MUST NOT be used in production.",
+    `JWT_PRIVATE_KEY and JWT_PUBLIC_KEY not set — generating RSA key pair for development. ` +
+    `Keys will be saved to ${DEV_JWT_KEYS_PATH} so they persist across restarts.`,
   );
-  return generateKeyPairSync("rsa", {
+  const keys = generateKeyPairSync("rsa", {
     modulusLength: 2048,
     publicKeyEncoding: { type: "spki", format: "pem" },
     privateKeyEncoding: { type: "pkcs8", format: "pem" },
   });
+
+  // Persist to disk
+  try {
+    fs.writeFileSync(
+      DEV_JWT_KEYS_PATH,
+      JSON.stringify(
+        { publicKey: keys.publicKey, privateKey: keys.privateKey, createdAt: new Date().toISOString() },
+        null,
+        2,
+      ) + "\n",
+      { mode: 0o600 },
+    );
+    configLogger.info(`Dev JWT keys saved to ${DEV_JWT_KEYS_PATH}`);
+  } catch (err) {
+    configLogger.warn(`Could not persist dev JWT keys: ${(err as Error).message}`);
+  }
+
+  return keys;
 }
 
 function envBool(key: string, defaultValue: boolean): boolean {
@@ -135,9 +186,9 @@ export function loadConfig(): GrcConfig {
     );
   }
 
-  // In development, auto-generate an ephemeral RSA key pair if not provided
+  // In development, load persisted keys or generate a new pair (saved to disk)
   if (!jwtPrivateKey || !jwtPublicKey) {
-    const devKeys = generateDevKeyPair();
+    const devKeys = loadOrGenerateDevKeyPair();
     jwtPrivateKey = devKeys.privateKey;
     jwtPublicKey = devKeys.publicKey;
   }

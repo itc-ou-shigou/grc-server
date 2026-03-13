@@ -128,7 +128,6 @@ export async function registerAdmin(app: Express, config: GrcConfig) {
         ok: true,
         nodes_updated: result.nodesUpdated,
         revision: result.revision,
-        task_id: result.taskId,
       });
     }),
   );

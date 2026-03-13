@@ -76,6 +76,7 @@ interface KeyConfigEntry {
   model: string;
   apiKey: string;
   baseUrl?: string;
+  apiType?: string;
 }
 
 interface KeyConfigJson {

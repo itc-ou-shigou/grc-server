@@ -74,6 +74,7 @@ const cloneRoleSchema = z.object({
 
 const assignRoleSchema = z.object({
   role_id: z.string().min(1).max(50),
+  mode: z.enum(["autonomous", "copilot"]).optional(),
   variables: z.record(z.string()).default({}),
   overrides: z.record(z.string()).optional(),
 });
@@ -281,17 +282,13 @@ export async function registerAdmin(app: Express, config: GrcConfig) {
 
       const total = Number(totalResult[0]?.count ?? 0);
 
-      // Enrich with role info from capabilities JSON
-      const enriched = rows.map((row) => {
-        const caps = (row.capabilities as Record<string, unknown>) ?? {};
-        return {
-          ...row,
-          roleId: (caps.role_id as string) ?? null,
-          roleMode: (caps.role_mode as string) ?? null,
-          configRevision: (caps.config_revision as number) ?? 0,
-          configApplied: (caps.config_applied as boolean) ?? false,
-        };
-      });
+      // Use dedicated columns for role info (not the legacy capabilities JSON)
+      const enriched = rows.map((row) => ({
+        ...row,
+        roleId: row.roleId ?? null,
+        roleMode: row.roleMode ?? null,
+        configRevision: row.configRevision ?? 0,
+      }));
 
       res.json({
         data: enriched,
@@ -319,6 +316,7 @@ export async function registerAdmin(app: Express, config: GrcConfig) {
         body.role_id,
         body.variables,
         body.overrides,
+        body.mode,
       );
 
       logger.info(

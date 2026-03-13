@@ -15,10 +15,11 @@ import {
 } from "./schema.js";
 import { nodesTable } from "../evolution/schema.js";
 import { roleTemplatesTable } from "../roles/schema.js";
-import { tasksTable } from "../tasks/schema.js";
 import {
   NotFoundError,
 } from "../../shared/middleware/error-handler.js";
+
+import { nodeConfigSSE } from "../evolution/node-config-sse.js";
 
 // Roles that receive full strategy access (all objectives, budgets, KPIs)
 const FULL_ACCESS_ROLES = new Set(["ceo", "executive", "strategic-planner"]);
@@ -166,12 +167,14 @@ export class StrategyService {
    *    c. Apply strategy variables (company_mission, department_budget, etc.)
    *    d. Write result to resolvedUserMd column (dedicated column on nodes)
    *    e. Increment configRevision on the node
-   * 4. Create CEO task: "Strategic Realignment - Revision {rev}"
+   *    f. Push config update via SSE if node is connected
+   *
+   * Note: Task creation is handled autonomously by the CEO agent via
+   * the grc_task tool during heartbeat runs, not by this method.
    */
   async deployStrategy(updatedBy: string): Promise<{
     nodesUpdated: number;
     revision: number;
-    taskId: string;
   }> {
     const db = getDb();
 
@@ -221,42 +224,36 @@ export class StrategyService {
       userMd = this._resolveTemplate(userMd, strategyVars);
 
       // 3d-e. Write resolvedUserMd and increment configRevision (dedicated columns)
+      const newNodeRevision = node.configRevision + 1;
       await db
         .update(nodesTable)
         .set({
           resolvedUserMd: userMd,
-          configRevision: node.configRevision + 1,
+          configRevision: newNodeRevision,
         })
         .where(eq(nodesTable.nodeId, node.nodeId));
 
       nodesUpdated++;
+
+      // 3f. Push config update to node via SSE (if connected) so it syncs immediately
+      if (nodeConfigSSE.isNodeConnected(node.nodeId)) {
+        nodeConfigSSE.pushToNode(node.nodeId, {
+          revision: newNodeRevision,
+          reason: "strategy_deploy",
+        });
+        logger.info(
+          { nodeId: node.nodeId, revision: newNodeRevision },
+          "Strategy deploy SSE push sent to node",
+        );
+      }
     }
 
-    // Create CEO auto-task for the strategic realignment
-    const taskId = uuidv4();
-    const taskCode = `EXC-STR-${String(revision).padStart(3, "0")}`;
-
-    await db.insert(tasksTable).values({
-      id: taskId,
-      taskCode,
-      title: `Strategic Realignment - Revision ${revision}`,
-      description:
-        `Company strategy has been updated to revision ${revision} and deployed to ${nodesUpdated} agent nodes. ` +
-        `All nodes have received updated strategy variables and will apply them on next heartbeat. ` +
-        `Verify that all departments acknowledge the new strategic priorities.`,
-      category: "strategy",
-      priority: "high",
-      status: "pending",
-      assignedRoleId: "ceo",
-      assignedBy: updatedBy,
-    });
-
     logger.info(
-      { revision, nodesUpdated, taskId, updatedBy },
+      { revision, nodesUpdated, updatedBy },
       "Strategy deployed to all nodes",
     );
 
-    return { nodesUpdated, revision, taskId };
+    return { nodesUpdated, revision };
   }
 
   /**

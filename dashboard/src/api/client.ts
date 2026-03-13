@@ -1,5 +1,18 @@
 const BASE_URL = import.meta.env.VITE_API_BASE_URL ?? '';
 
+/**
+ * Custom error class that preserves HTTP status code for conditional handling.
+ * E.g. the dashboard overview can silently ignore 404s from disabled modules.
+ */
+export class ApiError extends Error {
+  status: number;
+  constructor(status: number, message: string) {
+    super(message);
+    this.name = 'ApiError';
+    this.status = status;
+  }
+}
+
 function getAuthHeader(): Record<string, string> {
   const token = localStorage.getItem('grc_admin_token');
   if (token) {
@@ -34,7 +47,7 @@ async function handleResponse<T>(res: Response): Promise<T> {
     } catch {
       // ignore parse error
     }
-    throw new Error(message);
+    throw new ApiError(res.status, message);
   }
   const text = await res.text();
   if (!text) return undefined as unknown as T;
