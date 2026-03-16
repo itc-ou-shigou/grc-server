@@ -60,7 +60,48 @@
       "employee": "직원",
       "role": "역할",
       "platform": "플랫폼",
-      "failedToDelete": "삭제 실패: {{error}}"
+      "failedToDelete": "삭제 실패: {{error}}",
+      "warningDescriptionDocker": "Docker 컨테이너도 중지 및 삭제됩니다.",
+      "warningDescriptionSandbox": "Daytona Sandbox도 삭제됩니다."
+    },
+    "create": {
+      "button": "노드 생성",
+      "title": "노드 생성",
+      "titleLocal": "로컬 Docker 노드 생성",
+      "titleRemote": "Daytona Sandbox 노드 생성",
+      "gatewayPort": "게이트웨이 포트",
+      "gatewayPortPlaceholder": "예: 10001",
+      "gatewayPortRequired": "게이트웨이 포트는 필수입니다",
+      "workspacePath": "워크스페이스 디렉토리",
+      "workspacePathPlaceholder": "예: C:\\Users\\user\\workspaces\\wk1",
+      "workspacePathHint": "「찾아보기」로 폴더를 선택하거나 전체 경로를 직접 입력하세요.",
+      "browse": "찾아보기...",
+      "workspacePathRequired": "워크스페이스 디렉토리는 필수입니다",
+      "employeeName": "직원 이름",
+      "employeeNamePlaceholder": "예: 홍길동",
+      "employeeCode": "직원 번호",
+      "employeeCodePlaceholder": "예: 0853242",
+      "employeeEmail": "직원 이메일",
+      "employeeEmailPlaceholder": "예: hong@company.com",
+      "submit": "생성",
+      "creating": "생성 중...",
+      "success": "노드가 성공적으로 생성되었습니다",
+      "failed": "노드 생성 실패: {{error}}"
+    },
+    "restart": {
+      "button": "재시작",
+      "title": "노드 재시작",
+      "confirm": "이 노드를 재시작하시겠습니까?",
+      "warningLocal": "Docker 컨테이너가 중지되고 동일한 설정으로 다시 생성됩니다.",
+      "warningRemote": "Daytona Sandbox가 삭제되고 최신 이미지로 다시 생성됩니다.",
+      "submit": "재시작",
+      "restarting": "재시작 중...",
+      "success": "노드가 성공적으로 재시작되었습니다",
+      "failed": "재시작 실패: {{error}}"
+    },
+    "gateway": {
+      "button": "게이트웨이",
+      "noUrl": "게이트웨이 URL을 사용할 수 없습니다"
     }
   },
   "pipeline": {

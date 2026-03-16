@@ -60,6 +60,13 @@ export const nodesTable = mysqlTable(
     primaryKeyId: char("primary_key_id", { length: 36 }),
     auxiliaryKeyId: char("auxiliary_key_id", { length: 36 }),
     keyConfigJson: json("key_config_json"),
+    // ── Node provisioning fields (014_node_provisioning.sql) ──
+    provisioningMode: mysqlEnum("provisioning_mode", ["local_docker", "daytona_sandbox"]),
+    containerId: varchar("container_id", { length: 255 }),
+    sandboxId: varchar("sandbox_id", { length: 255 }),
+    gatewayUrl: varchar("gateway_url", { length: 500 }),
+    gatewayPort: int("gateway_port"),
+    workspacePath: varchar("workspace_path", { length: 500 }),
     createdAt: timestamp("created_at").notNull().defaultNow(),
     updatedAt: timestamp("updated_at").notNull().defaultNow().onUpdateNow(),
   },

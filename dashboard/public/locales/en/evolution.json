@@ -60,7 +60,48 @@
       "employee": "Employee",
       "role": "Role",
       "platform": "Platform",
-      "failedToDelete": "Failed to delete: {{error}}"
+      "failedToDelete": "Failed to delete: {{error}}",
+      "warningDescriptionDocker": "The Docker container will also be stopped and removed.",
+      "warningDescriptionSandbox": "The Daytona Sandbox will also be deleted."
+    },
+    "create": {
+      "button": "Create Node",
+      "title": "Create Node",
+      "titleLocal": "Create Local Docker Node",
+      "titleRemote": "Create Daytona Sandbox Node",
+      "gatewayPort": "Gateway Port",
+      "gatewayPortPlaceholder": "e.g. 10001",
+      "gatewayPortRequired": "Gateway port is required",
+      "workspacePath": "Workspace Directory",
+      "workspacePathPlaceholder": "e.g. C:\\Users\\user\\workspaces\\wk1",
+      "workspacePathHint": "Click Browse to select a folder, or type the full path manually.",
+      "browse": "Browse...",
+      "workspacePathRequired": "Workspace directory is required",
+      "employeeName": "Employee Name",
+      "employeeNamePlaceholder": "e.g. Tanaka Ichiro",
+      "employeeCode": "Employee Code",
+      "employeeCodePlaceholder": "e.g. 0853242",
+      "employeeEmail": "Employee Email",
+      "employeeEmailPlaceholder": "e.g. tanaka@company.com",
+      "submit": "Create",
+      "creating": "Creating...",
+      "success": "Node created successfully",
+      "failed": "Failed to create node: {{error}}"
+    },
+    "restart": {
+      "button": "Restart",
+      "title": "Restart Node",
+      "confirm": "Are you sure you want to restart this node?",
+      "warningLocal": "The Docker container will be stopped and recreated with the same configuration.",
+      "warningRemote": "The Daytona sandbox will be destroyed and recreated with the latest image.",
+      "submit": "Restart",
+      "restarting": "Restarting...",
+      "success": "Node restarted successfully",
+      "failed": "Failed to restart: {{error}}"
+    },
+    "gateway": {
+      "button": "Gateway",
+      "noUrl": "Gateway URL is not available"
     }
   },
   "pipeline": {

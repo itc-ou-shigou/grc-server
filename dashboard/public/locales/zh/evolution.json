@@ -60,7 +60,48 @@
       "employee": "员工",
       "role": "角色",
       "platform": "平台",
-      "failedToDelete": "删除失败：{{error}}"
+      "failedToDelete": "删除失败：{{error}}",
+      "warningDescriptionDocker": "Docker 容器也将被停止并删除。",
+      "warningDescriptionSandbox": "Daytona Sandbox 也将被删除。"
+    },
+    "create": {
+      "button": "创建节点",
+      "title": "创建节点",
+      "titleLocal": "创建本地 Docker 节点",
+      "titleRemote": "创建 Daytona Sandbox 节点",
+      "gatewayPort": "网关端口",
+      "gatewayPortPlaceholder": "例如 10001",
+      "gatewayPortRequired": "网关端口为必填项",
+      "workspacePath": "工作区目录",
+      "workspacePathPlaceholder": "例如 C:\\Users\\user\\workspaces\\wk1",
+      "workspacePathHint": "点击「浏览」选择文件夹，或手动输入完整路径。",
+      "browse": "浏览...",
+      "workspacePathRequired": "工作区目录为必填项",
+      "employeeName": "员工姓名",
+      "employeeNamePlaceholder": "例如 张三",
+      "employeeCode": "员工编号",
+      "employeeCodePlaceholder": "例如 0853242",
+      "employeeEmail": "员工邮箱",
+      "employeeEmailPlaceholder": "例如 zhangsan@company.com",
+      "submit": "创建",
+      "creating": "创建中...",
+      "success": "节点创建成功",
+      "failed": "节点创建失败：{{error}}"
+    },
+    "restart": {
+      "button": "重启",
+      "title": "重启节点",
+      "confirm": "确定要重启此节点吗？",
+      "warningLocal": "Docker 容器将被停止并以相同配置重新创建。",
+      "warningRemote": "Daytona Sandbox 将被销毁并使用最新镜像重新创建。",
+      "submit": "重启",
+      "restarting": "重启中...",
+      "success": "节点重启成功",
+      "failed": "重启失败：{{error}}"
+    },
+    "gateway": {
+      "button": "网关",
+      "noUrl": "网关 URL 不可用"
     }
   },
   "pipeline": {

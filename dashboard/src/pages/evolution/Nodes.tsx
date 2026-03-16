@@ -4,7 +4,14 @@ import { DataTable, Column } from '../../components/DataTable';
 import { StatusBadge } from '../../components/StatusBadge';
 import { ErrorMessage } from '../../components/ErrorMessage';
 import { Modal } from '../../components/Modal';
-import { useAdminNodes, useDeleteNode, Node } from '../../api/hooks';
+import {
+  useAdminNodes,
+  useDeleteNode,
+  useProvisionNode,
+  useRestartNode,
+  Node,
+  ProvisionNodeInput,
+} from '../../api/hooks';
 
 const HOURS_24 = 24 * 60 * 60 * 1000;
 
@@ -23,22 +30,81 @@ function formatHeartbeat(lastHeartbeat: string | null): string {
   return `${Math.floor(diffHr / 24)}d ago`;
 }
 
+function isLocalhost(): boolean {
+  const h = window.location.hostname;
+  return h === 'localhost' || h === '127.0.0.1' || h === 'host.docker.internal';
+}
+
 interface DeleteTarget {
   nodeId: string;
   displayName?: string;
   employeeName?: string;
   roleId?: string;
   platform?: string;
+  provisioningMode?: 'local_docker' | 'daytona_sandbox' | null;
 }
+
+interface RestartTarget {
+  nodeId: string;
+  displayName?: string;
+  provisioningMode: 'local_docker' | 'daytona_sandbox';
+}
+
+const inputStyle: React.CSSProperties = {
+  width: '100%',
+  padding: '8px 12px',
+  border: '1px solid var(--color-border, #d1d5db)',
+  borderRadius: '6px',
+  fontSize: '14px',
+  background: 'var(--color-bg, #fff)',
+  color: 'var(--color-text, #111827)',
+  boxSizing: 'border-box',
+};
+
+const labelStyle: React.CSSProperties = {
+  display: 'block',
+  fontSize: '13px',
+  fontWeight: 600,
+  marginBottom: '4px',
+  color: 'var(--color-text, #111827)',
+};
+
+const fieldStyle: React.CSSProperties = {
+  marginBottom: '14px',
+};
+
+const errorTextStyle: React.CSSProperties = {
+  fontSize: '12px',
+  color: 'var(--color-danger, #dc2626)',
+  marginTop: '4px',
+};
 
 export function Nodes() {
   const { t } = useTranslation('evolution');
   const [page, setPage] = useState(1);
-  const [deleteTarget, setDeleteTarget] = useState<DeleteTarget | null>(null);
 
+  // ── modal state ──
+  const [deleteTarget, setDeleteTarget] = useState<DeleteTarget | null>(null);
+  const [restartTarget, setRestartTarget] = useState<RestartTarget | null>(null);
+  const [createOpen, setCreateOpen] = useState(false);
+
+  // ── create form state ──
+  const isLocal = isLocalhost();
+  const [gatewayPort, setGatewayPort] = useState('');
+  const [workspacePath, setWorkspacePath] = useState('');
+  const [employeeName, setEmployeeName] = useState('');
+  const [employeeCode, setEmployeeCode] = useState('');
+  const [employeeEmail, setEmployeeEmail] = useState('');
+  const [createFormErrors, setCreateFormErrors] = useState<Record<string, string>>({});
+  const [createSuccess, setCreateSuccess] = useState<string | null>(null);
+
+  // ── hooks ──
   const { data, isLoading, error } = useAdminNodes({ page, page_size: 20 });
   const deleteNode = useDeleteNode();
+  const provisionNode = useProvisionNode();
+  const restartNode = useRestartNode();
 
+  // ── delete handlers ──
   const openDeleteModal = (row: Record<string, unknown>) => {
     setDeleteTarget({
       nodeId: row.nodeId as string,
@@ -46,6 +112,7 @@ export function Nodes() {
       employeeName: row.employeeName as string | undefined,
       roleId: row.roleId as string | undefined,
       platform: row.platform as string | undefined,
+      provisioningMode: row.provisioningMode as 'local_docker' | 'daytona_sandbox' | null | undefined,
     });
   };
 
@@ -53,12 +120,80 @@ export function Nodes() {
     if (!deleteTarget) return;
     deleteNode.mutate(deleteTarget.nodeId, {
       onSuccess: () => setDeleteTarget(null),
-      onError: () => {
-        // keep modal open on error so user can see the issue
+    });
+  };
+
+  // ── restart handlers ──
+  const openRestartModal = (row: Record<string, unknown>) => {
+    setRestartTarget({
+      nodeId: row.nodeId as string,
+      displayName: row.displayName as string | undefined,
+      provisioningMode: row.provisioningMode as 'local_docker' | 'daytona_sandbox',
+    });
+  };
+
+  const confirmRestart = () => {
+    if (!restartTarget) return;
+    restartNode.mutate(restartTarget.nodeId, {
+      onSuccess: () => setRestartTarget(null),
+    });
+  };
+
+  // ── create handlers ──
+  const resetCreateForm = () => {
+    setGatewayPort('');
+    setWorkspacePath('');
+    setEmployeeName('');
+    setEmployeeCode('');
+    setEmployeeEmail('');
+    setCreateFormErrors({});
+    setCreateSuccess(null);
+  };
+
+  const closeCreateModal = () => {
+    if (provisionNode.isPending) return;
+    resetCreateForm();
+    provisionNode.reset();
+    setCreateOpen(false);
+  };
+
+  const submitCreate = () => {
+    const errors: Record<string, string> = {};
+    if (isLocal) {
+      if (!gatewayPort.trim()) errors.gatewayPort = t('nodes.create.gatewayPortRequired');
+      if (!workspacePath.trim()) errors.workspacePath = t('nodes.create.workspacePathRequired');
+    }
+    setCreateFormErrors(errors);
+    if (Object.keys(errors).length > 0) return;
+
+    const input: ProvisionNodeInput = {
+      mode: isLocal ? 'local_docker' : 'daytona_sandbox',
+      ...(isLocal && { gatewayPort: parseInt(gatewayPort, 10), workspacePath: workspacePath.trim() }),
+      ...(employeeName.trim() && { employeeName: employeeName.trim() }),
+      ...(employeeCode.trim() && { employeeCode: employeeCode.trim() }),
+      ...(employeeEmail.trim() && { employeeEmail: employeeEmail.trim() }),
+    };
+
+    provisionNode.mutate(input, {
+      onSuccess: () => {
+        setCreateSuccess(t('nodes.create.success'));
+        setTimeout(() => {
+          resetCreateForm();
+          provisionNode.reset();
+          setCreateOpen(false);
+        }, 1500);
       },
     });
   };
 
+  // ── delete warning description by provisioningMode ──
+  const deleteWarningDescription = (mode?: 'local_docker' | 'daytona_sandbox' | null) => {
+    if (mode === 'local_docker') return t('nodes.delete.warningDescriptionDocker');
+    if (mode === 'daytona_sandbox') return t('nodes.delete.warningDescriptionSandbox');
+    return t('nodes.delete.warningDescription');
+  };
+
+  // ── table columns ──
   const columns: Column<Record<string, unknown>>[] = [
     {
       key: 'nodeId',
@@ -134,15 +269,66 @@ export function Nodes() {
     {
       key: 'actions',
       label: '',
-      render: (_, row) => (
-        <button
-          className="btn btn-sm btn-danger"
-          onClick={(e) => { e.stopPropagation(); openDeleteModal(row as Record<string, unknown>); }}
-          title={t('nodes.delete.button')}
-        >
-          {t('nodes.delete.button')}
-        </button>
-      ),
+      render: (_, row) => {
+        const mode = row.provisioningMode as 'local_docker' | 'daytona_sandbox' | null;
+        const hasProvisioning = mode !== null && mode !== undefined;
+        return (
+          <div style={{ display: 'flex', gap: '6px', justifyContent: 'flex-end' }}>
+            {hasProvisioning && (
+              <button
+                className="btn btn-sm btn-primary"
+                title={t('nodes.gateway.button')}
+                onClick={async (e) => {
+                  e.stopPropagation();
+                  const storedUrl = row.gatewayUrl as string | null;
+                  if (storedUrl?.startsWith('daytona://')) {
+                    // Fetch preview URL from backend for Daytona sandbox nodes
+                    try {
+                      const authToken = localStorage.getItem('grc_admin_token');
+                      const resp = await fetch(`/api/v1/admin/evolution/nodes/${row.nodeId}/gateway`, {
+                        headers: authToken ? { Authorization: `Bearer ${authToken}` } : {},
+                      });
+                      const data = await resp.json();
+                      if (data?.data?.url) {
+                        window.open(data.data.url, '_blank');
+                      } else {
+                        alert(t('nodes.gateway.noUrl') + ' (Sandbox may still be starting)');
+                      }
+                    } catch {
+                      alert(t('nodes.gateway.noUrl'));
+                    }
+                  } else if (storedUrl) {
+                    window.open(storedUrl, '_blank');
+                  } else {
+                    alert(t('nodes.gateway.noUrl'));
+                  }
+                }}
+              >
+                {t('nodes.gateway.button')}
+              </button>
+            )}
+            {hasProvisioning && (
+              <button
+                className="btn btn-sm btn-warning"
+                title={t('nodes.restart.button')}
+                onClick={(e) => {
+                  e.stopPropagation();
+                  openRestartModal(row as Record<string, unknown>);
+                }}
+              >
+                {t('nodes.restart.button')}
+              </button>
+            )}
+            <button
+              className="btn btn-sm btn-danger"
+              onClick={(e) => { e.stopPropagation(); openDeleteModal(row as Record<string, unknown>); }}
+              title={t('nodes.delete.button')}
+            >
+              {t('nodes.delete.button')}
+            </button>
+          </div>
+        );
+      },
     },
   ];
 
@@ -151,18 +337,30 @@ export function Nodes() {
     return isActive(node.lastHeartbeat);
   }).length;
 
+  const createModalTitle = isLocal
+    ? t('nodes.create.titleLocal')
+    : t('nodes.create.titleRemote');
+
   return (
     <div className="page">
       <div className="page-header">
-        <h1 className="page-title">{t('nodes.title')}</h1>
-        <p className="page-subtitle">
-          {t('nodes.subtitle')}
-          {data && (
-            <span className="page-subtitle-extra">
-              {' \u2014 '}{t('nodes.activeOf', { active: activeCount, total: data.pagination.total })}
-            </span>
-          )}
-        </p>
+        <div>
+          <h1 className="page-title">{t('nodes.title')}</h1>
+          <p className="page-subtitle">
+            {t('nodes.subtitle')}
+            {data && (
+              <span className="page-subtitle-extra">
+                {' \u2014 '}{t('nodes.activeOf', { active: activeCount, total: data.pagination.total })}
+              </span>
+            )}
+          </p>
+        </div>
+        <button
+          className="btn btn-primary"
+          onClick={() => { resetCreateForm(); provisionNode.reset(); setCreateOpen(true); }}
+        >
+          + {t('nodes.create.button')}
+        </button>
       </div>
 
       {error && <ErrorMessage error={error as Error} />}
@@ -181,6 +379,241 @@ export function Nodes() {
           emptyMessage={t('nodes.noNodes')}
         />
       </div>
+
+      {/* ── Create Node Modal ── */}
+      <Modal
+        open={createOpen}
+        onClose={closeCreateModal}
+        title={createModalTitle}
+        size="md"
+        footer={
+          <div style={{ display: 'flex', gap: '12px', justifyContent: 'flex-end' }}>
+            <button
+              className="btn btn-secondary"
+              onClick={closeCreateModal}
+              disabled={provisionNode.isPending}
+            >
+              {t('nodes.delete.cancel')}
+            </button>
+            <button
+              className="btn btn-primary"
+              onClick={submitCreate}
+              disabled={provisionNode.isPending}
+            >
+              {provisionNode.isPending ? t('nodes.create.creating') : t('nodes.create.submit')}
+            </button>
+          </div>
+        }
+      >
+        <div>
+          {isLocal && (
+            <>
+              <div style={fieldStyle}>
+                <label style={labelStyle}>{t('nodes.create.gatewayPort')} *</label>
+                <input
+                  type="number"
+                  style={inputStyle}
+                  placeholder={t('nodes.create.gatewayPortPlaceholder')}
+                  value={gatewayPort}
+                  onChange={(e) => setGatewayPort(e.target.value)}
+                  disabled={provisionNode.isPending}
+                />
+                {createFormErrors.gatewayPort && (
+                  <p style={errorTextStyle}>{createFormErrors.gatewayPort}</p>
+                )}
+              </div>
+              <div style={fieldStyle}>
+                <label style={labelStyle}>{t('nodes.create.workspacePath')} *</label>
+                <div style={{ display: 'flex', gap: '8px', alignItems: 'center' }}>
+                  <input
+                    type="text"
+                    style={{ ...inputStyle, flex: 1 }}
+                    placeholder={t('nodes.create.workspacePathPlaceholder')}
+                    value={workspacePath}
+                    onChange={(e) => setWorkspacePath(e.target.value)}
+                    disabled={provisionNode.isPending}
+                  />
+                  <button
+                    type="button"
+                    className="btn btn-secondary btn-sm"
+                    style={{ whiteSpace: 'nowrap', padding: '8px 12px' }}
+                    disabled={provisionNode.isPending}
+                    onClick={async () => {
+                      try {
+                        // Use File System Access API for proper directory picker
+                        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+                        const dirHandle = await (window as any).showDirectoryPicker({ mode: 'read' });
+                        if (dirHandle?.name) {
+                          // Resolve full path via entries — browser only returns folder name
+                          // User should confirm/edit the full path
+                          const currentVal = workspacePath.trim();
+                          if (currentVal && !currentVal.endsWith('\\') && !currentVal.endsWith('/')) {
+                            setWorkspacePath(currentVal + '\\' + dirHandle.name);
+                          } else if (currentVal) {
+                            setWorkspacePath(currentVal + dirHandle.name);
+                          } else {
+                            setWorkspacePath(dirHandle.name);
+                          }
+                        }
+                      } catch {
+                        // User cancelled the picker — do nothing
+                      }
+                    }}
+                  >
+                    {t('nodes.create.browse')}
+                  </button>
+                </div>
+                <p style={{ fontSize: '11px', color: 'var(--color-text-secondary, #9ca3af)', marginTop: '4px' }}>
+                  {t('nodes.create.workspacePathHint')}
+                </p>
+                {createFormErrors.workspacePath && (
+                  <p style={errorTextStyle}>{createFormErrors.workspacePath}</p>
+                )}
+              </div>
+            </>
+          )}
+
+          <div style={fieldStyle}>
+            <label style={labelStyle}>{t('nodes.create.employeeName')}</label>
+            <input
+              type="text"
+              style={inputStyle}
+              placeholder={t('nodes.create.employeeNamePlaceholder')}
+              value={employeeName}
+              onChange={(e) => setEmployeeName(e.target.value)}
+              disabled={provisionNode.isPending}
+            />
+          </div>
+          <div style={fieldStyle}>
+            <label style={labelStyle}>{t('nodes.create.employeeCode')}</label>
+            <input
+              type="text"
+              style={inputStyle}
+              placeholder={t('nodes.create.employeeCodePlaceholder')}
+              value={employeeCode}
+              onChange={(e) => setEmployeeCode(e.target.value)}
+              disabled={provisionNode.isPending}
+            />
+          </div>
+          <div style={{ ...fieldStyle, marginBottom: 0 }}>
+            <label style={labelStyle}>{t('nodes.create.employeeEmail')}</label>
+            <input
+              type="email"
+              style={inputStyle}
+              placeholder={t('nodes.create.employeeEmailPlaceholder')}
+              value={employeeEmail}
+              onChange={(e) => setEmployeeEmail(e.target.value)}
+              disabled={provisionNode.isPending}
+            />
+          </div>
+
+          {createSuccess && (
+            <div style={{
+              marginTop: '14px',
+              padding: '12px',
+              background: 'var(--color-success-bg, #f0fdf4)',
+              border: '1px solid var(--color-success-border, #bbf7d0)',
+              borderRadius: '6px',
+              color: 'var(--color-success, #16a34a)',
+              fontSize: '13px',
+            }}>
+              {createSuccess}
+            </div>
+          )}
+
+          {provisionNode.isError && (
+            <div style={{
+              marginTop: '14px',
+              padding: '12px',
+              background: '#fef2f2',
+              border: '1px solid #fecaca',
+              borderRadius: '6px',
+              color: '#dc2626',
+              fontSize: '13px',
+            }}>
+              {t('nodes.create.failed', { error: (provisionNode.error as Error)?.message ?? 'Unknown error' })}
+            </div>
+          )}
+        </div>
+      </Modal>
+
+      {/* ── Restart Confirmation Modal ── */}
+      <Modal
+        open={!!restartTarget}
+        onClose={() => !restartNode.isPending && setRestartTarget(null)}
+        title={t('nodes.restart.title')}
+        size="sm"
+        footer={
+          <div style={{ display: 'flex', gap: '12px', justifyContent: 'flex-end' }}>
+            <button
+              className="btn btn-secondary"
+              onClick={() => setRestartTarget(null)}
+              disabled={restartNode.isPending}
+            >
+              {t('nodes.delete.cancel')}
+            </button>
+            <button
+              className="btn btn-warning"
+              onClick={confirmRestart}
+              disabled={restartNode.isPending}
+            >
+              {restartNode.isPending ? t('nodes.restart.restarting') : t('nodes.restart.submit')}
+            </button>
+          </div>
+        }
+      >
+        {restartTarget && (
+          <div>
+            <div style={{
+              background: 'var(--color-warning-bg, #fffbeb)',
+              border: '1px solid var(--color-warning-border, #fde68a)',
+              borderRadius: '8px',
+              padding: '16px',
+              marginBottom: '16px',
+              display: 'flex',
+              alignItems: 'flex-start',
+              gap: '12px',
+            }}>
+              <span style={{ fontSize: '24px', lineHeight: 1 }}>&#9888;</span>
+              <div>
+                <strong style={{ color: 'var(--color-warning-text, #92400e)' }}>
+                  {t('nodes.restart.confirm')}
+                </strong>
+                <p style={{ margin: '4px 0 0', fontSize: '14px', color: 'var(--color-text-secondary, #6b7280)' }}>
+                  {restartTarget.provisioningMode === 'local_docker'
+                    ? t('nodes.restart.warningLocal')
+                    : t('nodes.restart.warningRemote')}
+                </p>
+              </div>
+            </div>
+
+            {restartTarget.displayName && (
+              <table style={{ width: '100%', fontSize: '14px', borderCollapse: 'collapse' }}>
+                <tbody>
+                  <tr>
+                    <td style={{ padding: '6px 12px 6px 0', color: 'var(--color-text-secondary, #6b7280)', whiteSpace: 'nowrap' }}>{t('nodes.delete.displayName')}</td>
+                    <td style={{ padding: '6px 0' }}>{restartTarget.displayName}</td>
+                  </tr>
+                </tbody>
+              </table>
+            )}
+
+            {restartNode.isError && (
+              <div style={{
+                marginTop: '12px',
+                padding: '12px',
+                background: '#fef2f2',
+                border: '1px solid #fecaca',
+                borderRadius: '6px',
+                color: '#dc2626',
+                fontSize: '13px',
+              }}>
+                {t('nodes.restart.failed', { error: (restartNode.error as Error)?.message ?? 'Unknown error' })}
+              </div>
+            )}
+          </div>
+        )}
+      </Modal>
 
       {/* ── Delete Confirmation Modal ── */}
       <Modal
@@ -225,7 +658,7 @@ export function Nodes() {
                   {t('nodes.delete.warningTitle')}
                 </strong>
                 <p style={{ margin: '4px 0 0', fontSize: '14px', color: 'var(--color-text-secondary, #6b7280)' }}>
-                  {t('nodes.delete.warningDescription')}
+                  {deleteWarningDescription(deleteTarget.provisioningMode)}
                 </p>
               </div>
             </div>

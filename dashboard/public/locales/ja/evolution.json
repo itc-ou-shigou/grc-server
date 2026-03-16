@@ -60,7 +60,48 @@
       "employee": "従業員",
       "role": "ロール",
       "platform": "プラットフォーム",
-      "failedToDelete": "削除に失敗しました：{{error}}"
+      "failedToDelete": "削除に失敗しました：{{error}}",
+      "warningDescriptionDocker": "Dockerコンテナも停止・削除されます。",
+      "warningDescriptionSandbox": "Daytona Sandboxも削除されます。"
+    },
+    "create": {
+      "button": "ノード作成",
+      "title": "ノード作成",
+      "titleLocal": "ローカル Docker ノードを作成",
+      "titleRemote": "Daytona Sandbox ノードを作成",
+      "gatewayPort": "ゲートウェイポート",
+      "gatewayPortPlaceholder": "例: 10001",
+      "gatewayPortRequired": "ゲートウェイポートは必須です",
+      "workspacePath": "ワークスペースディレクトリ",
+      "workspacePathPlaceholder": "例: C:\\Users\\user\\workspaces\\wk1",
+      "workspacePathHint": "「参照」でフォルダを選択するか、フルパスを手入力してください。",
+      "browse": "参照...",
+      "workspacePathRequired": "ワークスペースディレクトリは必須です",
+      "employeeName": "社員名",
+      "employeeNamePlaceholder": "例: 田中一郎",
+      "employeeCode": "社員番号",
+      "employeeCodePlaceholder": "例: 0853242",
+      "employeeEmail": "社員メール",
+      "employeeEmailPlaceholder": "例: tanaka@company.com",
+      "submit": "作成",
+      "creating": "作成中...",
+      "success": "ノードが正常に作成されました",
+      "failed": "ノード作成に失敗しました：{{error}}"
+    },
+    "restart": {
+      "button": "再起動",
+      "title": "ノードを再起動",
+      "confirm": "このノードを再起動しますか？",
+      "warningLocal": "Dockerコンテナが停止され、同じ設定で再作成されます。",
+      "warningRemote": "Daytona Sandboxが削除され、最新イメージで再作成されます。",
+      "submit": "再起動",
+      "restarting": "再起動中...",
+      "success": "ノードが正常に再起動されました",
+      "failed": "再起動に失敗しました：{{error}}"
+    },
+    "gateway": {
+      "button": "ゲートウェイ",
+      "noUrl": "ゲートウェイURLが利用できません"
     }
   },
   "pipeline": {

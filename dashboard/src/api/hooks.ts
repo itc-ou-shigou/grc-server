@@ -129,6 +129,12 @@ export interface Node {
   auxiliaryKeyId: string | null;
   createdAt: string;
   updatedAt: string;
+  provisioningMode: 'local_docker' | 'daytona_sandbox' | null;
+  containerId: string | null;
+  sandboxId: string | null;
+  gatewayUrl: string | null;
+  gatewayPort: number | null;
+  workspacePath: string | null;
 }
 
 export interface EvolutionStats {
@@ -347,6 +353,33 @@ export function useDeleteNode() {
       qc.invalidateQueries({ queryKey: ['admin', 'nodes'] });
       qc.invalidateQueries({ queryKey: ['admin', 'employees'] });
     },
+  });
+}
+
+export interface ProvisionNodeInput {
+  mode: 'local_docker' | 'daytona_sandbox';
+  gatewayPort?: number;
+  workspacePath?: string;
+  employeeName?: string;
+  employeeCode?: string;
+  employeeEmail?: string;
+}
+
+export function useProvisionNode() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: (data: ProvisionNodeInput) =>
+      apiClient.post('/api/v1/admin/evolution/nodes/provision', data),
+    onSuccess: () => qc.invalidateQueries({ queryKey: ['admin', 'nodes'] }),
+  });
+}
+
+export function useRestartNode() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: (nodeId: string) =>
+      apiClient.post(`/api/v1/admin/evolution/nodes/${nodeId}/restart`),
+    onSuccess: () => qc.invalidateQueries({ queryKey: ['admin', 'nodes'] }),
   });
 }
 

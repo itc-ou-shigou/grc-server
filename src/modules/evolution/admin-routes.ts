@@ -350,6 +350,484 @@ export async function registerAdmin(app: Express, config: GrcConfig) {
     }),
   );
 
+  // ── POST /nodes/provision — Provision a new node (Docker or Daytona) ──
+
+  const provisionNodeSchema = z.object({
+    mode: z.enum(["local_docker", "daytona_sandbox"]),
+    gatewayPort: z.number().int().min(1024).max(65535).optional(),
+    workspacePath: z.string().optional(),
+    employeeName: z.string().optional(),
+    employeeCode: z.string().optional(),
+    employeeEmail: z.string().optional(),
+  });
+
+  router.post(
+    "/nodes/provision",
+    requireAuth, requireAdmin,
+    asyncHandler(async (req: Request, res: Response) => {
+      const body = provisionNodeSchema.parse(req.body);
+      const { execSync } = await import("child_process");
+
+      if (body.mode === "local_docker") {
+        // Validate required fields
+        if (!body.gatewayPort) {
+          return res.status(400).json({ error: "gatewayPort is required for local_docker mode" });
+        }
+        if (!body.workspacePath) {
+          return res.status(400).json({ error: "workspacePath is required for local_docker mode" });
+        }
+
+        // Determine GRC port from current server
+        const grcPort = process.env.PORT || "3200";
+
+        // Build docker run arguments (use execFileSync to prevent command injection)
+        const { execFileSync } = await import("child_process");
+        const dockerArgs = ["run", "-d", "-p", `${body.gatewayPort}:18789`,
+          "-e", `WINCLAW_GRC_URL=http://host.docker.internal:${grcPort}`];
+        if (body.employeeName) dockerArgs.push("-e", `employee_name=${body.employeeName}`);
+        if (body.employeeCode) dockerArgs.push("-e", `employee_code=${body.employeeCode}`);
+        dockerArgs.push("-v", `${body.workspacePath}:/home/winclaw/.winclaw/workspace`);
+        dockerArgs.push("itccloudsoft/winclaw-node:latest");
+
+        logger.info({ dockerArgs }, "Provisioning local Docker node");
+
+        let containerId: string;
+        try {
+          containerId = execFileSync("docker", dockerArgs, { encoding: "utf-8" }).trim();
+        } catch (err: any) {
+          logger.error({ err: err.message }, "Docker run failed");
+          return res.status(500).json({ error: "Docker run failed", detail: err.message });
+        }
+
+        // Extract token from docker logs (poll up to 15 seconds)
+        let token: string | null = null;
+        const TOKEN_REGEX = /Token:\s+(winclaw-node-[a-f0-9]+)/;
+        for (let i = 0; i < 30; i++) {
+          await new Promise(r => setTimeout(r, 500));
+          try {
+            const logs = execFileSync("docker", ["logs", containerId], { encoding: "utf-8", stdio: ["pipe", "pipe", "pipe"] });
+            const match = logs.match(TOKEN_REGEX);
+            if (match) {
+              token = match[1];
+              break;
+            }
+          } catch { /* container may still be starting */ }
+        }
+
+        if (!token) {
+          logger.warn({ containerId }, "Could not extract token from docker logs");
+          return res.status(500).json({ error: "Failed to extract gateway token from container logs" });
+        }
+
+        const gatewayUrl = `http://localhost:${body.gatewayPort}/chat?token=${token}`;
+
+        // Wait for the node to register with GRC (poll up to 20 seconds)
+        const db = getDb();
+        let nodeId: string | null = null;
+        for (let i = 0; i < 40; i++) {
+          await new Promise(r => setTimeout(r, 500));
+          const found = await db
+            .select({ nodeId: nodesTable.nodeId, id: nodesTable.id })
+            .from(nodesTable)
+            .where(
+              body.employeeCode
+                ? eq(nodesTable.employeeId, body.employeeCode)
+                : eq(nodesTable.containerId, containerId)
+            )
+            .orderBy(sql`${nodesTable.createdAt} DESC`)
+            .limit(1);
+          if (found[0]) {
+            nodeId = found[0].nodeId;
+            break;
+          }
+        }
+
+        if (nodeId) {
+          // Update the node record with provisioning data
+          await db
+            .update(nodesTable)
+            .set({
+              provisioningMode: "local_docker",
+              containerId: containerId.slice(0, 64),
+              gatewayUrl,
+              gatewayPort: body.gatewayPort,
+              workspacePath: body.workspacePath,
+            })
+            .where(eq(nodesTable.nodeId, nodeId));
+        }
+
+        logger.info({ containerId, nodeId, gatewayUrl }, "Local Docker node provisioned");
+
+        res.json({
+          data: {
+            nodeId,
+            containerId: containerId.slice(0, 64),
+            gatewayUrl,
+            gatewayPort: body.gatewayPort,
+            provisioningMode: "local_docker",
+          },
+        });
+
+      } else if (body.mode === "daytona_sandbox") {
+        // Daytona Sandbox mode
+        const DAYTONA_API_KEY = process.env.DAYTONA_API_KEY || "dtn_a92ccd0521fdaf9bc2c173087e23a3a52edc2d67fbb6a3508871a614a474b023";
+        const DAYTONA_API_URL = process.env.DAYTONA_API_URL || "https://app.daytona.io/api";
+        const DAYTONA_TARGET = process.env.DAYTONA_TARGET || "us";
+
+        // Determine GRC URL from request origin or env
+        const grcUrl = process.env.GRC_PUBLIC_URL || `https://${req.headers.host}`;
+
+        // Generate a deterministic gateway token for WinClaw auth
+        const { randomBytes } = await import("crypto");
+        const winclawToken = `winclaw-node-${randomBytes(16).toString("hex")}`;
+
+        const sandboxBody = {
+          buildInfo: {
+            dockerfileContent: "FROM itccloudsoft/winclaw-node:latest\n",
+          },
+          target: DAYTONA_TARGET,
+          env: {
+            WINCLAW_GRC_URL: grcUrl,
+            WINCLAW_GATEWAY_TOKEN: winclawToken,
+            ...(body.employeeName && { employee_name: body.employeeName }),
+            ...(body.employeeCode && { employee_code: body.employeeCode }),
+          },
+          cpu: 2,
+          memory: 2,
+          disk: 5,
+          autoStopInterval: 0,
+        };
+
+        logger.info({ sandboxBody }, "Creating Daytona sandbox");
+
+        let sandboxResponse: any;
+        try {
+          const resp = await fetch(`${DAYTONA_API_URL}/sandbox`, {
+            method: "POST",
+            headers: {
+              "Authorization": `Bearer ${DAYTONA_API_KEY}`,
+              "Content-Type": "application/json",
+            },
+            body: JSON.stringify(sandboxBody),
+          });
+          if (!resp.ok) {
+            const errText = await resp.text();
+            throw new Error(`Daytona API ${resp.status}: ${errText}`);
+          }
+          sandboxResponse = await resp.json();
+        } catch (err: any) {
+          logger.error({ err: err.message }, "Daytona sandbox creation failed");
+          return res.status(500).json({ error: "Daytona sandbox creation failed", detail: err.message });
+        }
+
+        const sandboxId = sandboxResponse.id || sandboxResponse.sandboxId;
+
+        // Gateway URL will be fetched dynamically via preview-url API when user clicks Gateway button
+        // Store sandboxId and winclawToken for later resolution
+        const gatewayUrl = `daytona://${sandboxId}/18789?token=${winclawToken}`;
+
+        // Daytona sandbox does NOT run Docker ENTRYPOINT/CMD automatically.
+        // We need to wait for sandbox to be "started" then launch WinClaw via toolbox API.
+        const TOOLBOX_URL = "https://proxy.app.daytona.io/toolbox";
+
+        // Poll until sandbox state is "started" (max 120s for image build + start)
+        for (let i = 0; i < 120; i++) {
+          await new Promise(r => setTimeout(r, 2000));
+          try {
+            const stateResp = await fetch(`${DAYTONA_API_URL}/sandbox/${sandboxId}`, {
+              headers: { "Authorization": `Bearer ${DAYTONA_API_KEY}` },
+            });
+            if (stateResp.ok) {
+              const stateData: any = await stateResp.json();
+              if (stateData.state === "started") {
+                logger.info({ sandboxId, iteration: i }, "Sandbox is started, launching WinClaw entrypoint");
+                break;
+              }
+              if (stateData.state === "error" || stateData.state === "build_failed") {
+                logger.error({ sandboxId, state: stateData.state }, "Sandbox failed to start");
+                return res.status(500).json({ error: `Sandbox failed: ${stateData.state}`, detail: stateData.errorReason });
+              }
+              logger.info({ sandboxId, state: stateData.state, iteration: i }, "Waiting for sandbox to start...");
+            }
+          } catch { /* retry */ }
+        }
+
+        // Launch WinClaw entrypoint inside sandbox via toolbox API
+        try {
+          await fetch(`${TOOLBOX_URL}/${sandboxId}/process/execute`, {
+            method: "POST",
+            headers: {
+              "Authorization": `Bearer ${DAYTONA_API_KEY}`,
+              "Content-Type": "application/json",
+            },
+            body: JSON.stringify({
+              command: "bash -c 'nohup /usr/local/bin/entrypoint-node.sh > /tmp/winclaw.log 2>&1 &'",
+              timeout: 10,
+            }),
+          });
+          logger.info({ sandboxId }, "WinClaw entrypoint launched inside sandbox");
+        } catch (err: any) {
+          logger.warn({ sandboxId, err: err.message }, "Failed to launch entrypoint (sandbox may still be starting)");
+        }
+
+        // Wait for WinClaw to auto-register with GRC (entrypoint connects to GRC via A2A)
+        const db = getDb();
+        let nodeId: string | null = null;
+        for (let i = 0; i < 30; i++) {
+          await new Promise(r => setTimeout(r, 2000));
+          // Find recently registered node matching employee code or most recent
+          const found = await db
+            .select({ nodeId: nodesTable.nodeId })
+            .from(nodesTable)
+            .where(
+              body.employeeCode
+                ? eq(nodesTable.employeeId, body.employeeCode)
+                : sql`1=1`
+            )
+            .orderBy(sql`${nodesTable.createdAt} DESC`)
+            .limit(1);
+          if (found[0]) {
+            nodeId = found[0].nodeId;
+            break;
+          }
+        }
+
+        if (nodeId) {
+          // Update auto-registered node with Daytona provisioning info
+          await db
+            .update(nodesTable)
+            .set({
+              provisioningMode: "daytona_sandbox",
+              sandboxId,
+              gatewayUrl,
+            })
+            .where(eq(nodesTable.nodeId, nodeId));
+          logger.info({ sandboxId, nodeId, gatewayUrl }, "Daytona sandbox node provisioned and linked");
+        } else {
+          logger.warn({ sandboxId }, "WinClaw node did not register within timeout, sandbox created but not linked");
+        }
+
+        res.json({
+          data: {
+            nodeId,
+            sandboxId,
+            gatewayUrl,
+            provisioningMode: "daytona_sandbox",
+          },
+        });
+      }
+    }),
+  );
+
+  // ── GET /nodes/:nodeId/gateway — Get gateway URL for a Daytona sandbox node ──
+
+  router.get(
+    "/nodes/:nodeId/gateway",
+    requireAuth, requireAdmin,
+    asyncHandler(async (req: Request, res: Response) => {
+      const nodeId = req.params.nodeId as string;
+      const db = getDb();
+      const existing = await db.select().from(nodesTable).where(eq(nodesTable.nodeId, nodeId)).limit(1);
+      if (!existing[0]) {
+        return res.status(404).json({ error: "Node not found" });
+      }
+      const node = existing[0];
+
+      if (node.provisioningMode !== "daytona_sandbox" || !node.sandboxId) {
+        // For local_docker nodes, return stored gatewayUrl directly
+        return res.json({ data: { url: node.gatewayUrl } });
+      }
+
+      // For Daytona sandbox, fetch preview URL from Daytona API
+      const DAYTONA_API_KEY = process.env.DAYTONA_API_KEY;
+      const DAYTONA_API_URL = process.env.DAYTONA_API_URL || "https://app.daytona.io/api";
+
+      try {
+        const resp = await fetch(
+          `${DAYTONA_API_URL}/sandbox/${node.sandboxId}/ports/18789/preview-url`,
+          {
+            headers: { "Authorization": `Bearer ${DAYTONA_API_KEY}` },
+          }
+        );
+        if (!resp.ok) {
+          const errText = await resp.text();
+          logger.warn({ sandboxId: node.sandboxId, status: resp.status, errText }, "Failed to get preview URL");
+          return res.status(502).json({ error: "Failed to get gateway URL from Daytona", detail: errText });
+        }
+        const previewData: any = await resp.json();
+        const baseUrl = previewData.url || previewData.previewUrl;
+
+        // Extract WinClaw token from stored gatewayUrl (daytona://sandboxId/port?token=xxx)
+        let winclawToken = "";
+        if (node.gatewayUrl?.includes("token=")) {
+          winclawToken = node.gatewayUrl.split("token=")[1] || "";
+        }
+
+        // Build full gateway chat URL with WinClaw auth token
+        const url = winclawToken
+          ? `${baseUrl}/chat?token=${winclawToken}`
+          : `${baseUrl}/chat`;
+
+        res.json({ data: { url } });
+      } catch (err: any) {
+        logger.error({ err: err.message }, "Error fetching Daytona preview URL");
+        res.status(500).json({ error: "Failed to fetch gateway URL", detail: err.message });
+      }
+    }),
+  );
+
+  // ── POST /nodes/:nodeId/restart — Restart a provisioned node ──
+
+  router.post(
+    "/nodes/:nodeId/restart",
+    requireAuth, requireAdmin,
+    asyncHandler(async (req: Request, res: Response) => {
+      const nodeId = req.params.nodeId as string;
+      const db = getDb();
+      const { execSync } = await import("child_process");
+
+      const existing = await db
+        .select()
+        .from(nodesTable)
+        .where(eq(nodesTable.nodeId, nodeId))
+        .limit(1);
+
+      if (!existing[0]) {
+        throw new NotFoundError("Node");
+      }
+
+      const node = existing[0];
+
+      if (!node.provisioningMode) {
+        return res.status(400).json({ error: "Node is not a provisioned node (no provisioning mode)" });
+      }
+
+      if (node.provisioningMode === "local_docker") {
+        if (!node.containerId) {
+          return res.status(400).json({ error: "No container ID found for this node" });
+        }
+
+        const { execFileSync } = await import("child_process");
+
+        // Stop and remove old container
+        try {
+          execFileSync("docker", ["stop", node.containerId], { encoding: "utf-8" });
+          execFileSync("docker", ["rm", node.containerId], { encoding: "utf-8" });
+        } catch (err: any) {
+          logger.warn({ err: err.message, containerId: node.containerId }, "Failed to stop/remove old container");
+        }
+
+        // Re-run with same config
+        const grcPort = process.env.PORT || "3200";
+        const dockerArgs = ["run", "-d", "-p", `${node.gatewayPort}:18789`,
+          "-e", `WINCLAW_GRC_URL=http://host.docker.internal:${grcPort}`];
+        if (node.employeeName) dockerArgs.push("-e", `employee_name=${node.employeeName}`);
+        if (node.employeeId) dockerArgs.push("-e", `employee_code=${node.employeeId}`);
+        if (node.workspacePath) dockerArgs.push("-v", `${node.workspacePath}:/home/winclaw/.winclaw/workspace`);
+        dockerArgs.push("itccloudsoft/winclaw-node:latest");
+
+        let newContainerId: string;
+        try {
+          newContainerId = execFileSync("docker", dockerArgs, { encoding: "utf-8" }).trim();
+        } catch (err: any) {
+          return res.status(500).json({ error: "Docker run failed", detail: err.message });
+        }
+
+        // Extract new token
+        let token: string | null = null;
+        const TOKEN_REGEX = /Token:\s+(winclaw-node-[a-f0-9]+)/;
+        for (let i = 0; i < 30; i++) {
+          await new Promise(r => setTimeout(r, 500));
+          try {
+            const logs = execFileSync("docker", ["logs", newContainerId], { encoding: "utf-8", stdio: ["pipe", "pipe", "pipe"] });
+            const match = logs.match(TOKEN_REGEX);
+            if (match) { token = match[1]; break; }
+          } catch { /* still starting */ }
+        }
+
+        const gatewayUrl = token
+          ? `http://localhost:${node.gatewayPort}/chat?token=${token}`
+          : node.gatewayUrl;
+
+        await db
+          .update(nodesTable)
+          .set({
+            containerId: newContainerId.slice(0, 64),
+            gatewayUrl,
+          })
+          .where(eq(nodesTable.nodeId, nodeId));
+
+        logger.info({ nodeId, newContainerId, gatewayUrl }, "Local Docker node restarted");
+
+        res.json({
+          data: { nodeId, containerId: newContainerId.slice(0, 64), gatewayUrl, restarted: true },
+        });
+
+      } else if (node.provisioningMode === "daytona_sandbox") {
+        const DAYTONA_API_KEY = process.env.DAYTONA_API_KEY || "dtn_a92ccd0521fdaf9bc2c173087e23a3a52edc2d67fbb6a3508871a614a474b023";
+        const DAYTONA_API_URL = process.env.DAYTONA_API_URL || "https://app.daytona.io/api";
+        const DAYTONA_TARGET = process.env.DAYTONA_TARGET || "us";
+
+        // Delete old sandbox
+        if (node.sandboxId) {
+          try {
+            await fetch(`${DAYTONA_API_URL}/sandbox/${node.sandboxId}`, {
+              method: "DELETE",
+              headers: { "Authorization": `Bearer ${DAYTONA_API_KEY}` },
+            });
+          } catch (err: any) {
+            logger.warn({ err: err.message }, "Failed to delete old sandbox");
+          }
+        }
+
+        // Create new sandbox
+        const grcUrl = process.env.GRC_PUBLIC_URL || `https://${req.headers.host}`;
+        const resp = await fetch(`${DAYTONA_API_URL}/sandbox`, {
+          method: "POST",
+          headers: {
+            "Authorization": `Bearer ${DAYTONA_API_KEY}`,
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({
+            buildInfo: {
+              dockerfileContent: "FROM itccloudsoft/winclaw-node:latest\n",
+            },
+            target: DAYTONA_TARGET,
+            env: {
+              WINCLAW_GRC_URL: grcUrl,
+              ...(node.employeeName && { employee_name: node.employeeName }),
+              ...(node.employeeId && { employee_code: node.employeeId }),
+            },
+            cpu: 2,
+            memory: 2,
+            disk: 5,
+            autoStopInterval: 0,
+          }),
+        });
+
+        if (!resp.ok) {
+          const errText = await resp.text();
+          return res.status(500).json({ error: "Daytona sandbox creation failed", detail: errText });
+        }
+
+        const sandboxResponse: any = await resp.json();
+        const newSandboxId = sandboxResponse.id || sandboxResponse.sandboxId;
+        const gatewayUrl = `daytona://${newSandboxId}/18789`;
+
+        await db
+          .update(nodesTable)
+          .set({ sandboxId: newSandboxId, gatewayUrl })
+          .where(eq(nodesTable.nodeId, nodeId));
+
+        logger.info({ nodeId, newSandboxId, gatewayUrl }, "Daytona sandbox node restarted");
+
+        res.json({
+          data: { nodeId, sandboxId: newSandboxId, gatewayUrl, restarted: true },
+        });
+      }
+    }),
+  );
+
   // ── DELETE /nodes/:nodeId — Delete a node (admin) ──
 
   router.delete(
@@ -360,7 +838,7 @@ export async function registerAdmin(app: Express, config: GrcConfig) {
       const db = getDb();
 
       const existing = await db
-        .select({ nodeId: nodesTable.nodeId })
+        .select()
         .from(nodesTable)
         .where(eq(nodesTable.nodeId, nodeId))
         .limit(1);
@@ -368,6 +846,33 @@ export async function registerAdmin(app: Express, config: GrcConfig) {
       if (!existing[0]) {
         throw new NotFoundError("Node");
       }
+
+      const node = existing[0];
+
+      // Clean up provisioned resources
+      if (node.provisioningMode === "local_docker" && node.containerId) {
+        const { execFileSync } = await import("child_process");
+        try {
+          execFileSync("docker", ["stop", node.containerId], { encoding: "utf-8" });
+          execFileSync("docker", ["rm", node.containerId], { encoding: "utf-8" });
+          logger.info({ containerId: node.containerId }, "Docker container stopped and removed");
+        } catch (err: any) {
+          logger.warn({ err: err.message, containerId: node.containerId }, "Failed to remove Docker container");
+        }
+      } else if (node.provisioningMode === "daytona_sandbox" && node.sandboxId) {
+        const DAYTONA_API_KEY = process.env.DAYTONA_API_KEY || "dtn_a92ccd0521fdaf9bc2c173087e23a3a52edc2d67fbb6a3508871a614a474b023";
+        const DAYTONA_API_URL = process.env.DAYTONA_API_URL || "https://app.daytona.io/api";
+        try {
+          await fetch(`${DAYTONA_API_URL}/sandbox/${node.sandboxId}`, {
+            method: "DELETE",
+            headers: { "Authorization": `Bearer ${DAYTONA_API_KEY}` },
+          });
+          logger.info({ sandboxId: node.sandboxId }, "Daytona sandbox deleted");
+        } catch (err: any) {
+          logger.warn({ err: err.message, sandboxId: node.sandboxId }, "Failed to delete Daytona sandbox");
+        }
+      }
+      // For regular PC nodes (provisioningMode = null), only GRC data is deleted
 
       await db.delete(nodesTable).where(eq(nodesTable.nodeId, nodeId));
 
