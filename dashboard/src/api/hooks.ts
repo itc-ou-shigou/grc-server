@@ -1090,6 +1090,15 @@ export interface CompanyStrategy {
   updatedBy: string | null;
   createdAt: string;
   updatedAt: string;
+  companyName: string | null;
+  industry: string | null;
+  employeeCount: number | null;
+  annualRevenueTarget: string | null;
+  fiscalYearStart: string | null;
+  fiscalYearEnd: string | null;
+  currency: string | null;
+  language: string | null;
+  timezone: string | null;
 }
 
 export interface StrategyHistoryEntry {

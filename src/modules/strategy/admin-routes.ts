@@ -24,6 +24,15 @@ const logger = pino({ name: "admin:strategy" });
 // ── Zod Schemas ─────────────────────────────────
 
 const updateStrategySchema = z.object({
+  company_name: z.string().optional(),
+  industry: z.string().optional(),
+  employee_count: z.number().int().optional(),
+  annual_revenue_target: z.string().optional(),
+  fiscal_year_start: z.string().optional(),
+  fiscal_year_end: z.string().optional(),
+  currency: z.string().max(10).optional(),
+  language: z.string().max(50).optional(),
+  timezone: z.string().max(50).optional(),
   company_mission: z.string().optional(),
   company_vision: z.string().optional(),
   company_values: z.string().optional(),
@@ -90,6 +99,15 @@ export async function registerAdmin(app: Express, config: GrcConfig) {
 
       // Map snake_case request body to camelCase service params
       const data: Record<string, unknown> = {};
+      if (body.company_name !== undefined) data.companyName = body.company_name;
+      if (body.industry !== undefined) data.industry = body.industry;
+      if (body.employee_count !== undefined) data.employeeCount = body.employee_count;
+      if (body.annual_revenue_target !== undefined) data.annualRevenueTarget = body.annual_revenue_target;
+      if (body.fiscal_year_start !== undefined) data.fiscalYearStart = body.fiscal_year_start;
+      if (body.fiscal_year_end !== undefined) data.fiscalYearEnd = body.fiscal_year_end;
+      if (body.currency !== undefined) data.currency = body.currency;
+      if (body.language !== undefined) data.language = body.language;
+      if (body.timezone !== undefined) data.timezone = body.timezone;
       if (body.company_mission !== undefined) data.companyMission = body.company_mission;
       if (body.company_vision !== undefined) data.companyVision = body.company_vision;
       if (body.company_values !== undefined) data.companyValues = body.company_values;

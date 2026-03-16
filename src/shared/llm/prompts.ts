@@ -162,6 +162,15 @@ Your task is to generate a comprehensive company strategy.
 
 The output MUST be a valid JSON object with these exact fields:
 {
+  "companyName": "Official company name",
+  "industry": "Primary industry sector",
+  "employeeCount": 50,
+  "annualRevenueTarget": "$10M or equivalent",
+  "fiscalYearStart": "April" or "January",
+  "fiscalYearEnd": "March" or "December",
+  "currency": "JPY",
+  "language": "ja",
+  "timezone": "Asia/Tokyo",
   "companyMission": "A clear, concise mission statement (1-2 sentences)",
   "companyVision": "An inspiring vision statement (1-2 sentences)",
   "companyValues": "3-5 core values, separated by newlines",
@@ -199,6 +208,9 @@ Guidelines:
 - Budget numbers should be realistic for the company size
 - KPI targets should be measurable and specific
 - Strategic priorities should be 3-5 items
+- Infer companyName, industry, employeeCount from the company info provided
+- Set fiscalYearStart/fiscalYearEnd based on regional norms (e.g. April/March for Japan)
+- Set currency, language, timezone based on the company's region
 
 IMPORTANT: Return ONLY the JSON object, no markdown fences, no explanation.`,
   };
@@ -206,12 +218,22 @@ IMPORTANT: Return ONLY the JSON object, no markdown fences, no explanation.`,
   let userContent: string;
 
   if (params.mode === "update" && params.existingStrategy) {
+    const profileContext = [
+      params.existingStrategy.companyName && `Company: ${params.existingStrategy.companyName}`,
+      params.existingStrategy.industry && `Industry: ${params.existingStrategy.industry}`,
+      params.existingStrategy.employeeCount && `Employees: ${params.existingStrategy.employeeCount}`,
+      params.existingStrategy.annualRevenueTarget && `Revenue Target: ${params.existingStrategy.annualRevenueTarget}`,
+      params.existingStrategy.currency && `Currency: ${params.existingStrategy.currency}`,
+      params.existingStrategy.timezone && `Timezone: ${params.existingStrategy.timezone}`,
+    ].filter(Boolean).join("\n");
+
     userContent = `Update the following existing company strategy based on these instructions:
 
 Update instructions: ${params.updateInstruction || "Improve and refine the strategy"}
 
 Company info: ${params.companyInfo}
 
+${profileContext ? `Company profile:\n${profileContext}\n` : ""}
 Existing strategy (partial):
 ${JSON.stringify(params.existingStrategy, null, 2).substring(0, 3000)}
 

@@ -10,6 +10,15 @@
     "kpis": "KPI"
   },
   "profile": {
+    "companyName": "会社名",
+    "industry": "業種",
+    "employeeCount": "従業員数",
+    "annualRevenueTarget": "年間売上目標",
+    "fiscalYearStart": "会計年度開始",
+    "fiscalYearEnd": "会計年度終了",
+    "currency": "通貨",
+    "language": "使用言語",
+    "timezone": "タイムゾーン",
     "mission": "会社ミッション",
     "missionPlaceholder": "会社のミッションを入力…",
     "vision": "会社ビジョン",

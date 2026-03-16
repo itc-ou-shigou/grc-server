@@ -10,6 +10,15 @@
     "kpis": "KPI"
   },
   "profile": {
+    "companyName": "公司名称",
+    "industry": "所属行业",
+    "employeeCount": "员工人数",
+    "annualRevenueTarget": "年度营收目标",
+    "fiscalYearStart": "财年开始",
+    "fiscalYearEnd": "财年结束",
+    "currency": "货币",
+    "language": "工作语言",
+    "timezone": "时区",
     "mission": "公司使命",
     "missionPlaceholder": "输入公司使命…",
     "vision": "公司愿景",

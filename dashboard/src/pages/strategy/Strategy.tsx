@@ -345,14 +345,94 @@ interface CompanyProfileTabProps {
   vision: string;
   values: string;
   onChange: (field: 'mission' | 'vision' | 'values', value: string) => void;
+  companyName: string;
+  industry: string;
+  employeeCount: number | null;
+  annualRevenueTarget: string;
+  fiscalYearStart: string;
+  fiscalYearEnd: string;
+  currency: string;
+  language: string;
+  timezone: string;
+  onCompanyNameChange: (v: string) => void;
+  onIndustryChange: (v: string) => void;
+  onEmployeeCountChange: (v: number | null) => void;
+  onAnnualRevenueTargetChange: (v: string) => void;
+  onFiscalYearStartChange: (v: string) => void;
+  onFiscalYearEndChange: (v: string) => void;
+  onCurrencyChange: (v: string) => void;
+  onLanguageChange: (v: string) => void;
+  onTimezoneChange: (v: string) => void;
 }
 
-function CompanyProfileTab({ mission, vision, values, onChange }: CompanyProfileTabProps) {
+function CompanyProfileTab({
+  mission,
+  vision,
+  values,
+  onChange,
+  companyName,
+  industry,
+  employeeCount,
+  annualRevenueTarget,
+  fiscalYearStart,
+  fiscalYearEnd,
+  currency,
+  language,
+  timezone,
+  onCompanyNameChange,
+  onIndustryChange,
+  onEmployeeCountChange,
+  onAnnualRevenueTargetChange,
+  onFiscalYearStartChange,
+  onFiscalYearEndChange,
+  onCurrencyChange,
+  onLanguageChange,
+  onTimezoneChange,
+}: CompanyProfileTabProps) {
+  const { t } = useTranslation('strategy');
   return (
     <div style={{ maxWidth: 720 }}>
       <SectionNote>
         Define the foundational identity of the company. These fields are broadcast to all AI agents as core context.
       </SectionNote>
+      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '16px', marginBottom: '24px' }}>
+        <div>
+          <label className="form-label">{t('profile.companyName')}</label>
+          <input className="form-input" value={companyName} onChange={e => onCompanyNameChange(e.target.value)} />
+        </div>
+        <div>
+          <label className="form-label">{t('profile.industry')}</label>
+          <input className="form-input" value={industry} onChange={e => onIndustryChange(e.target.value)} />
+        </div>
+        <div>
+          <label className="form-label">{t('profile.employeeCount')}</label>
+          <input className="form-input" type="number" value={employeeCount ?? ''} onChange={e => onEmployeeCountChange(e.target.value ? Number(e.target.value) : null)} />
+        </div>
+        <div>
+          <label className="form-label">{t('profile.annualRevenueTarget')}</label>
+          <input className="form-input" value={annualRevenueTarget} onChange={e => onAnnualRevenueTargetChange(e.target.value)} />
+        </div>
+        <div>
+          <label className="form-label">{t('profile.fiscalYearStart')}</label>
+          <input className="form-input" value={fiscalYearStart} onChange={e => onFiscalYearStartChange(e.target.value)} />
+        </div>
+        <div>
+          <label className="form-label">{t('profile.fiscalYearEnd')}</label>
+          <input className="form-input" value={fiscalYearEnd} onChange={e => onFiscalYearEndChange(e.target.value)} />
+        </div>
+        <div>
+          <label className="form-label">{t('profile.currency')}</label>
+          <input className="form-input" value={currency} onChange={e => onCurrencyChange(e.target.value)} />
+        </div>
+        <div>
+          <label className="form-label">{t('profile.language')}</label>
+          <input className="form-input" value={language} onChange={e => onLanguageChange(e.target.value)} />
+        </div>
+        <div>
+          <label className="form-label">{t('profile.timezone')}</label>
+          <input className="form-input" value={timezone} onChange={e => onTimezoneChange(e.target.value)} />
+        </div>
+      </div>
       <div className="form-group">
         <label className="form-label">Mission</label>
         <textarea
@@ -880,6 +960,15 @@ export function Strategy() {
   const [mission, setMission] = useState('');
   const [vision, setVision] = useState('');
   const [values, setValues] = useState('');
+  const [companyName, setCompanyName] = useState('');
+  const [industry, setIndustry] = useState('');
+  const [employeeCount, setEmployeeCount] = useState<number | null>(null);
+  const [annualRevenueTarget, setAnnualRevenueTarget] = useState('');
+  const [fiscalYearStart, setFiscalYearStart] = useState('');
+  const [fiscalYearEnd, setFiscalYearEnd] = useState('');
+  const [currency, setCurrency] = useState('JPY');
+  const [language, setLanguage] = useState('ja');
+  const [timezone, setTimezone] = useState('Asia/Tokyo');
 
   // Structured tab states
   const [shortTerm, setShortTerm] = useState<QuarterlyObjective[]>(DEFAULT_SHORT_TERM);
@@ -900,6 +989,15 @@ export function Strategy() {
     setMission(s.companyMission ?? '');
     setVision(s.companyVision ?? '');
     setValues(s.companyValues ?? '');
+    setCompanyName(s.companyName ?? '');
+    setIndustry(s.industry ?? '');
+    setEmployeeCount(s.employeeCount ?? null);
+    setAnnualRevenueTarget(s.annualRevenueTarget ?? '');
+    setFiscalYearStart(s.fiscalYearStart ?? '');
+    setFiscalYearEnd(s.fiscalYearEnd ?? '');
+    setCurrency(s.currency ?? 'JPY');
+    setLanguage(s.language ?? 'ja');
+    setTimezone(s.timezone ?? 'Asia/Tokyo');
     setShortTerm(parseShortTerm(s.shortTermObjectives));
     setMidTerm(parseMidTerm(s.midTermObjectives));
     setLongTerm(parseLongTerm(s.longTermObjectives));
@@ -919,6 +1017,15 @@ export function Strategy() {
     company_mission: mission,
     company_vision: vision,
     company_values: values,
+    company_name: companyName,
+    industry: industry,
+    employee_count: employeeCount,
+    annual_revenue_target: annualRevenueTarget,
+    fiscal_year_start: fiscalYearStart,
+    fiscal_year_end: fiscalYearEnd,
+    currency: currency,
+    language: language,
+    timezone: timezone,
     short_term_objectives: shortTerm,
     mid_term_objectives: midTerm,
     long_term_objectives: longTerm,
@@ -1111,6 +1218,24 @@ export function Strategy() {
               else if (field === 'vision') setVision(value);
               else setValues(value);
             }}
+            companyName={companyName}
+            industry={industry}
+            employeeCount={employeeCount}
+            annualRevenueTarget={annualRevenueTarget}
+            fiscalYearStart={fiscalYearStart}
+            fiscalYearEnd={fiscalYearEnd}
+            currency={currency}
+            language={language}
+            timezone={timezone}
+            onCompanyNameChange={setCompanyName}
+            onIndustryChange={setIndustry}
+            onEmployeeCountChange={setEmployeeCount}
+            onAnnualRevenueTargetChange={setAnnualRevenueTarget}
+            onFiscalYearStartChange={setFiscalYearStart}
+            onFiscalYearEndChange={setFiscalYearEnd}
+            onCurrencyChange={setCurrency}
+            onLanguageChange={setLanguage}
+            onTimezoneChange={setTimezone}
           />
         )}
 
@@ -1162,6 +1287,15 @@ export function Strategy() {
             if (generated.companyMission != null) setMission(generated.companyMission);
             if (generated.companyVision != null) setVision(generated.companyVision);
             if (generated.companyValues != null) setValues(generated.companyValues);
+            if (generated.companyName != null) setCompanyName(generated.companyName);
+            if (generated.industry != null) setIndustry(generated.industry);
+            if (generated.employeeCount != null) setEmployeeCount(generated.employeeCount);
+            if (generated.annualRevenueTarget != null) setAnnualRevenueTarget(generated.annualRevenueTarget);
+            if (generated.fiscalYearStart != null) setFiscalYearStart(generated.fiscalYearStart);
+            if (generated.fiscalYearEnd != null) setFiscalYearEnd(generated.fiscalYearEnd);
+            if (generated.currency != null) setCurrency(generated.currency);
+            if (generated.language != null) setLanguage(generated.language);
+            if (generated.timezone != null) setTimezone(generated.timezone);
             if (generated.shortTermObjectives !== undefined) setShortTerm(parseShortTerm(generated.shortTermObjectives));
             if (generated.midTermObjectives !== undefined) setMidTerm(parseMidTerm(generated.midTermObjectives));
             if (generated.longTermObjectives !== undefined) setLongTerm(parseLongTerm(generated.longTermObjectives));

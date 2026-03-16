@@ -10,6 +10,15 @@
     "kpis": "KPI"
   },
   "profile": {
+    "companyName": "회사명",
+    "industry": "업종",
+    "employeeCount": "직원 수",
+    "annualRevenueTarget": "연간 매출 목표",
+    "fiscalYearStart": "회계연도 시작",
+    "fiscalYearEnd": "회계연도 종료",
+    "currency": "통화",
+    "language": "사용 언어",
+    "timezone": "시간대",
     "mission": "회사 미션",
     "missionPlaceholder": "회사 미션을 입력…",
     "vision": "회사 비전",

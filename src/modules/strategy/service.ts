@@ -29,6 +29,15 @@ const logger = pino({ name: "module:strategy:service" });
 // ── Default Strategy Skeleton ───────────────────
 
 const DEFAULT_STRATEGY = {
+  companyName: null,
+  industry: null,
+  employeeCount: null,
+  annualRevenueTarget: null,
+  fiscalYearStart: null,
+  fiscalYearEnd: null,
+  currency: "JPY",
+  language: "ja",
+  timezone: "Asia/Tokyo",
   companyMission: "",
   companyVision: "",
   companyValues: "",
@@ -83,6 +92,15 @@ export class StrategyService {
    */
   async updateStrategy(
     data: Partial<{
+      companyName: string;
+      industry: string;
+      employeeCount: number;
+      annualRevenueTarget: string;
+      fiscalYearStart: string;
+      fiscalYearEnd: string;
+      currency: string;
+      language: string;
+      timezone: string;
       companyMission: string;
       companyVision: string;
       companyValues: string;
@@ -127,6 +145,15 @@ export class StrategyService {
       updatedBy,
     };
 
+    if (data.companyName !== undefined) updateSet.companyName = data.companyName;
+    if (data.industry !== undefined) updateSet.industry = data.industry;
+    if (data.employeeCount !== undefined) updateSet.employeeCount = data.employeeCount;
+    if (data.annualRevenueTarget !== undefined) updateSet.annualRevenueTarget = data.annualRevenueTarget;
+    if (data.fiscalYearStart !== undefined) updateSet.fiscalYearStart = data.fiscalYearStart;
+    if (data.fiscalYearEnd !== undefined) updateSet.fiscalYearEnd = data.fiscalYearEnd;
+    if (data.currency !== undefined) updateSet.currency = data.currency;
+    if (data.language !== undefined) updateSet.language = data.language;
+    if (data.timezone !== undefined) updateSet.timezone = data.timezone;
     if (data.companyMission !== undefined) updateSet.companyMission = data.companyMission;
     if (data.companyVision !== undefined) updateSet.companyVision = data.companyVision;
     if (data.companyValues !== undefined) updateSet.companyValues = data.companyValues;
@@ -211,26 +238,37 @@ export class StrategyService {
         continue;
       }
 
-      // 3a. Start with the original USER.md template from role_templates
-      let userMd = template.userMd;
-
-      // 3b. Apply static assignment variables (employee_name, node_id, etc.)
+      // 3a. Build variable maps
       const assignmentVars = (node.assignmentVariables as Record<string, string>) ?? {};
-      userMd = this._resolveTemplate(userMd, assignmentVars);
-
-      // 3c. Determine department from template, then build and apply strategy variables
       const department = template.department ?? undefined;
       const strategyVars = this.buildStrategyVariables(strategy, roleId, department);
-      userMd = this._resolveTemplate(userMd, strategyVars);
 
-      // 3d-e. Write resolvedUserMd and increment configRevision (dedicated columns)
+      // 3b-c. Resolve ALL 8 MD template fields
+      const MD_FIELDS_MAP: Record<string, string> = {
+        agentsMd: "resolvedAgentsMd",
+        soulMd: "resolvedSoulMd",
+        identityMd: "resolvedIdentityMd",
+        userMd: "resolvedUserMd",
+        toolsMd: "resolvedToolsMd",
+        heartbeatMd: "resolvedHeartbeatMd",
+        bootstrapMd: "resolvedBootstrapMd",
+        tasksMd: "resolvedTasksMd",
+      };
+
+      const updateSet: Record<string, unknown> = {};
+      for (const [templateField, resolvedColumn] of Object.entries(MD_FIELDS_MAP)) {
+        let content = (template as Record<string, unknown>)[templateField] as string ?? "";
+        content = this._resolveTemplate(content, assignmentVars);
+        content = this._resolveTemplate(content, strategyVars);
+        updateSet[resolvedColumn] = content;
+      }
+      updateSet.configRevision = sql`${nodesTable.configRevision} + 1`;
+
+      // 3d-e. Write all resolved MD fields and increment configRevision
       const newNodeRevision = node.configRevision + 1;
       await db
         .update(nodesTable)
-        .set({
-          resolvedUserMd: userMd,
-          configRevision: newNodeRevision,
-        })
+        .set(updateSet as typeof nodesTable.$inferInsert)
         .where(eq(nodesTable.nodeId, node.nodeId));
 
       nodesUpdated++;
@@ -446,6 +484,17 @@ export class StrategyService {
     const isFullAccess = FULL_ACCESS_ROLES.has(roleId.toLowerCase());
 
     const vars: Record<string, string> = {};
+
+    // ── Company profile variables (all roles) ─────────
+    vars.company_name = (strategy.companyName as string) || "(not set)";
+    vars.industry = (strategy.industry as string) || "(not set)";
+    vars.employee_count = String(strategy.employeeCount ?? "(not set)");
+    vars.annual_revenue_target = (strategy.annualRevenueTarget as string) || "(not set)";
+    vars.fiscal_year_start = (strategy.fiscalYearStart as string) || "(not set)";
+    vars.fiscal_year_end = (strategy.fiscalYearEnd as string) || "(not set)";
+    vars.currency = (strategy.currency as string) || "JPY";
+    vars.language = (strategy.language as string) || "ja";
+    vars.timezone = (strategy.timezone as string) || "Asia/Tokyo";
 
     // ── Common variables (all roles) ──────────────────
     vars.company_mission = (strategy.companyMission as string) || "(not set)";

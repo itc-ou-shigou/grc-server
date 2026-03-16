@@ -10,6 +10,15 @@
     "kpis": "KPIs"
   },
   "profile": {
+    "companyName": "Company Name",
+    "industry": "Industry",
+    "employeeCount": "Employee Count",
+    "annualRevenueTarget": "Annual Revenue Target",
+    "fiscalYearStart": "Fiscal Year Start",
+    "fiscalYearEnd": "Fiscal Year End",
+    "currency": "Currency",
+    "language": "Language",
+    "timezone": "Timezone",
     "mission": "Company Mission",
     "missionPlaceholder": "Enter company mission…",
     "vision": "Company Vision",
