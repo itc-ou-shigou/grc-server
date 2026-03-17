@@ -66,9 +66,9 @@ export function Moderation() {
       render: (v) => <StatusBadge status={String(v)} variant="info" />,
     },
     {
-      key: 'score',
+      key: 'visibility',
       label: 'Visibility',
-      render: (v) => <StatusBadge status={Number(v) <= -999 ? 'Hidden' : 'Visible'} />,
+      render: (_v, row) => <StatusBadge status={Number(row.score) <= -999 ? 'Hidden' : 'Visible'} />,
     },
     {
       key: 'isLocked',
