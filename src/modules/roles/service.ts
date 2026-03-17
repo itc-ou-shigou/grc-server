@@ -382,8 +382,90 @@ export class RolesService {
       employee_name: node.employeeName || "",
       employee_email: node.employeeEmail || "",
       role_id: roleId,
-      ...variables,
     };
+
+    // Auto-fill company profile variables from company_strategy table
+    try {
+      const [strategyRows] = await (db as any).execute(
+        sql`SELECT * FROM company_strategy ORDER BY updated_at DESC LIMIT 1`,
+      );
+      const strategy = strategyRows?.[0];
+      if (strategy) {
+        baseVars.company_name = strategy.company_name || "";
+        baseVars.industry = strategy.industry || "";
+        baseVars.employee_count = String(strategy.employee_count || "");
+        baseVars.annual_revenue_target = strategy.annual_revenue_target || "";
+        baseVars.fiscal_year_start = strategy.fiscal_year_start || "";
+        baseVars.fiscal_year_end = strategy.fiscal_year_end || "";
+        baseVars.currency = strategy.currency || "";
+        baseVars.language = strategy.language || "";
+        baseVars.timezone = strategy.timezone || "";
+        baseVars.company_mission = strategy.company_mission || "";
+        baseVars.company_vision = strategy.company_vision || "";
+        baseVars.company_values = strategy.company_values || "";
+        baseVars.human_name = "橋本 透";
+        baseVars.human_title = "CEO";
+
+        // Parse JSON fields
+        const priorities = strategy.strategic_priorities;
+        baseVars.strategic_priorities = Array.isArray(priorities)
+          ? priorities.join(", ")
+          : typeof priorities === "string" ? priorities : "";
+
+        const deptBudgets = strategy.department_budgets;
+        if (deptBudgets && typeof deptBudgets === "object") {
+          // Map role to department budget key
+          const budgetKeyMap: Record<string, string> = {
+            marketing: "marketing", finance: "finance", sales: "sales",
+            "engineering-lead": "engineering", "customer-support": "support",
+            hr: "hr", "strategic-planner": "strategy", "product-manager": "engineering",
+          };
+          const budgetKey = budgetKeyMap[roleId];
+          const dept = budgetKey ? (deptBudgets as Record<string, any>)[budgetKey] : undefined;
+          baseVars.department_budget = dept?.annual || "";
+          baseVars.budget_limit = dept?.annual || "";
+        }
+
+        const deptKpis = strategy.department_kpis;
+        if (deptKpis && typeof deptKpis === "object") {
+          const kpiKeyMap: Record<string, string> = {
+            marketing: "marketing", finance: "finance", sales: "sales",
+            "engineering-lead": "engineering", "customer-support": "support",
+            hr: "hr", "strategic-planner": "strategy", "product-manager": "engineering",
+          };
+          const kpiKey = kpiKeyMap[roleId];
+          const kpis = kpiKey ? (deptKpis as Record<string, any>)[kpiKey] : undefined;
+          baseVars.department_kpis = Array.isArray(kpis)
+            ? kpis.filter((k: any) => k.name).map((k: any) => `- ${k.name}: ${k.target}`).join("\n")
+            : "";
+        }
+
+        // Long-term vision
+        const longTerm = strategy.long_term_objectives;
+        if (longTerm?.milestones) {
+          baseVars.long_term_vision = longTerm.milestones
+            .map((m: any) => `Year ${m.year}: ${m.description}`)
+            .join("\n");
+        }
+
+        // Short-term goals for current_quarter_goals
+        const shortTerm = strategy.short_term_objectives;
+        if (Array.isArray(shortTerm) && shortTerm[0]) {
+          baseVars.current_quarter_goals = shortTerm[0].goals?.join("\n- ") || "";
+          baseVars.annual_targets = shortTerm
+            .map((q: any) => `${q.quarter}: ${q.goals?.[0] || ""}`)
+            .join("\n");
+        }
+
+        baseVars.strategy_revision = String(strategy.revision || "");
+        baseVars.company_strategy_summary = `${strategy.company_mission || ""}\nPriorities: ${baseVars.strategic_priorities}`;
+      }
+    } catch (err) {
+      logger.warn({ err }, "Failed to load company strategy for variable resolution");
+    }
+
+    // Caller-provided variables override auto-filled ones
+    Object.assign(baseVars, variables);
 
     // Generate company context variables (roster, org_chart, etc.)
     try {
@@ -764,8 +846,36 @@ export class RolesService {
         employee_id: node.employeeId || "",
         employee_name: node.employeeName || "",
         employee_email: node.employeeEmail || "",
+        role_id: node.roleId,
         ...contextVars,
       };
+
+      // 4b. Load company strategy variables
+      try {
+        const [stratRows] = await (db as any).execute(
+          sql`SELECT * FROM company_strategy ORDER BY updated_at DESC LIMIT 1`,
+        );
+        const s = stratRows?.[0];
+        if (s) {
+          allVars.company_name = s.company_name || "";
+          allVars.industry = s.industry || "";
+          allVars.employee_count = String(s.employee_count || "");
+          allVars.annual_revenue_target = s.annual_revenue_target || "";
+          allVars.fiscal_year_start = s.fiscal_year_start || "";
+          allVars.fiscal_year_end = s.fiscal_year_end || "";
+          allVars.currency = s.currency || "";
+          allVars.language = s.language || "";
+          allVars.timezone = s.timezone || "";
+          allVars.company_mission = s.company_mission || "";
+          allVars.company_vision = s.company_vision || "";
+          allVars.company_values = s.company_values || "";
+          allVars.human_name = "橋本 透";
+          allVars.human_title = "CEO";
+          const priorities = s.strategic_priorities;
+          allVars.strategic_priorities = Array.isArray(priorities) ? priorities.join(", ") : "";
+          allVars.strategy_revision = String(s.revision || "");
+        }
+      } catch { /* company_strategy may not exist */ }
 
       // 5. Re-resolve the agentsMd template
       const resolvedAgentsMd = this.resolveTemplateVariables(
