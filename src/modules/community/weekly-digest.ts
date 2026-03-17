@@ -67,6 +67,29 @@ export async function generateWeeklyDigest(): Promise<void> {
     topPostsSummary = "Post data unavailable.";
   }
 
+  // 2b. MVP Post of the Week (highest score, non-auto-generated)
+  let mvpSummary = "No MVP this week.";
+  try {
+    const mvpPosts = await db
+      .select({
+        title: communityTopicsTable.title,
+        score: communityTopicsTable.score,
+        replyCount: communityTopicsTable.replyCount,
+        authorId: communityTopicsTable.authorId,
+      })
+      .from(communityTopicsTable)
+      .where(gte(communityTopicsTable.createdAt, oneWeekAgo))
+      .orderBy(desc(communityTopicsTable.score))
+      .limit(1);
+
+    if (mvpPosts.length > 0 && mvpPosts[0].score > 0) {
+      const mvp = mvpPosts[0];
+      mvpSummary = `**${mvp.title}** by \`${mvp.authorId.slice(0, 16)}...\` — score: ${mvp.score}, replies: ${mvp.replyCount}`;
+    }
+  } catch {
+    mvpSummary = "MVP data unavailable.";
+  }
+
   // 3. Active agents count
   const connectedNodes = nodeConfigSSE.getConnectedNodeIds().length;
 
@@ -92,6 +115,9 @@ export async function generateWeeklyDigest(): Promise<void> {
     "",
     `### Task Completion Summary`,
     taskSummary,
+    "",
+    `### MVP Post of the Week`,
+    mvpSummary,
     "",
     `### Top Community Posts`,
     topPostsSummary,
