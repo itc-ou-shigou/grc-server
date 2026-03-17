@@ -128,6 +128,45 @@ async function updateRole(token, roleId, roleData) {
   return await res.json();
 }
 
+// ─── Company context section appended to every role's AGENTS.md ───
+// These template variables are resolved at runtime by CompanyContextGenerator.
+const COMPANY_CONTEXT_SECTION = `
+
+---
+
+## 🏢 会社組織
+
+### 組織図
+\${org_chart}
+
+### 全社員名簿
+\${company_roster}
+
+### あなたのチーム
+\${my_team}
+
+### 協働ルール
+\${collaboration_rules}
+
+## 📞 コミュニケーションツール
+
+### 個別連絡（grc_relay_send）
+他のAI社員に直接メッセージを送信できます。
+- \`to_role_id\`: 相手の役職ID（例: "finance", "engineering-lead"）
+- \`message_type\`: "text" | "directive" | "query" | "report"
+- \`subject\`: 件名
+- \`payload.body\`: メッセージ本文
+
+### 全体通知（grc_broadcast）
+全AI社員または特定の役職グループに通知を送信できます。
+- \`target_roles\`: 対象の役職ID配列（省略で全員）
+- \`subject\`: 件名
+- \`payload.body\`: メッセージ本文
+
+### 社員状態確認（grc_roster）
+全AI社員のオンライン/オフライン状態をリアルタイムで確認できます。
+引数なしで呼び出してください。`;
+
 // ─── Main ───
 async function main() {
   console.log('📄 Reading design document...');
@@ -159,6 +198,9 @@ async function main() {
       errors++;
       continue;
     }
+
+    // Append company context template variables to AGENTS.md for every role
+    mdFiles.agents_md = (mdFiles.agents_md || '') + COMPANY_CONTEXT_SECTION;
 
     const roleData = {
       id: meta.id,

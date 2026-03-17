@@ -9,6 +9,8 @@ import { Router } from "express";
 import type { Express, Request, Response } from "express";
 import { z } from "zod";
 import { eq, desc, sql, and } from "drizzle-orm";
+import path from "node:path";
+import fs from "node:fs";
 import pino from "pino";
 import type { GrcConfig } from "../../config.js";
 import { createAuthMiddleware } from "../../shared/middleware/auth.js";
@@ -24,6 +26,7 @@ import {
 } from "./schema.js";
 import { users } from "../auth/schema.js";
 import { AuthService } from "../auth/service.js";
+import { RolesService } from "../roles/service.js";
 
 const logger = pino({ name: "admin:evolution" });
 
@@ -390,6 +393,10 @@ export async function registerAdmin(app: Express, config: GrcConfig) {
         if (body.employeeName) dockerArgs.push("-e", `employee_name=${body.employeeName}`);
         if (body.employeeCode) dockerArgs.push("-e", `employee_code=${body.employeeCode}`);
         dockerArgs.push("-v", `${body.workspacePath}:/home/winclaw/.winclaw/workspace`);
+        // Persist device identity inside workspace dir so each node has unique identity
+        const identityPath = path.join(body.workspacePath, ".identity");
+        fs.mkdirSync(identityPath, { recursive: true });
+        dockerArgs.push("-v", `${identityPath}:/home/winclaw/.winclaw/identity`);
         dockerArgs.push("itccloudsoft/winclaw-node:latest");
 
         logger.info({ dockerArgs }, "Provisioning local Docker node");
@@ -735,6 +742,26 @@ export async function registerAdmin(app: Express, config: GrcConfig) {
 
         const { execFileSync } = await import("child_process");
 
+        // Identity path inside workspace dir (unique per node)
+        const identityPath = node.workspacePath
+          ? path.join(node.workspacePath, ".identity")
+          : null;
+
+        // Extract identity from old container BEFORE removing it
+        if (identityPath) {
+          fs.mkdirSync(identityPath, { recursive: true });
+          try {
+            execFileSync("docker", [
+              "cp",
+              `${node.containerId}:/home/winclaw/.winclaw/identity/device.json`,
+              path.join(identityPath, "device.json"),
+            ], { encoding: "utf-8" });
+            logger.info({ identityPath }, "Extracted device identity from old container");
+          } catch (err: any) {
+            logger.warn({ err: err.message }, "Could not extract identity from old container (may already be on host)");
+          }
+        }
+
         // Stop and remove old container
         try {
           execFileSync("docker", ["stop", node.containerId], { encoding: "utf-8" });
@@ -749,8 +776,14 @@ export async function registerAdmin(app: Express, config: GrcConfig) {
           "-e", `WINCLAW_GRC_URL=http://host.docker.internal:${grcPort}`];
         if (node.employeeName) dockerArgs.push("-e", `employee_name=${node.employeeName}`);
         if (node.employeeId) dockerArgs.push("-e", `employee_code=${node.employeeId}`);
-        if (node.workspacePath) dockerArgs.push("-v", `${node.workspacePath}:/home/winclaw/.winclaw/workspace`);
+        if (node.workspacePath) {
+          dockerArgs.push("-v", `${node.workspacePath}:/home/winclaw/.winclaw/workspace`);
+          dockerArgs.push("-v", `${identityPath}:/home/winclaw/.winclaw/identity`);
+        }
         dockerArgs.push("itccloudsoft/winclaw-node:latest");
+
+        // Delete old node record — new container will auto-register with GRC
+        await db.delete(nodesTable).where(eq(nodesTable.nodeId, nodeId));
 
         let newContainerId: string;
         try {
@@ -759,35 +792,65 @@ export async function registerAdmin(app: Express, config: GrcConfig) {
           return res.status(500).json({ error: "Docker run failed", detail: err.message });
         }
 
-        // Extract new token
+        // Wait for new container to register with GRC and extract token
         let token: string | null = null;
+        let newNodeId: string | null = null;
         const TOKEN_REGEX = /Token:\s+(winclaw-node-[a-f0-9]+)/;
         for (let i = 0; i < 30; i++) {
           await new Promise(r => setTimeout(r, 500));
           try {
             const logs = execFileSync("docker", ["logs", newContainerId], { encoding: "utf-8", stdio: ["pipe", "pipe", "pipe"] });
-            const match = logs.match(TOKEN_REGEX);
-            if (match) { token = match[1]; break; }
+            if (!token) {
+              const match = logs.match(TOKEN_REGEX);
+              if (match) token = match[1];
+            }
+            if (logs.includes("Node registered with GRC")) {
+              // Find the newly registered node by employeeId
+              if (node.employeeId) {
+                const newNodes = await db
+                  .select()
+                  .from(nodesTable)
+                  .where(eq(nodesTable.employeeId, node.employeeId))
+                  .orderBy(desc(nodesTable.lastHeartbeat))
+                  .limit(1);
+                if (newNodes.length > 0) {
+                  newNodeId = newNodes[0].nodeId;
+                }
+              }
+              break;
+            }
           } catch { /* still starting */ }
         }
 
-        const gatewayUrl = token
-          ? `http://localhost:${node.gatewayPort}/chat?token=${token}`
-          : node.gatewayUrl;
+        // Update the new node record with provisioning metadata
+        if (newNodeId) {
+          const gatewayUrl = token
+            ? `http://localhost:${node.gatewayPort}/chat?token=${token}`
+            : node.gatewayUrl;
 
-        await db
-          .update(nodesTable)
-          .set({
-            containerId: newContainerId.slice(0, 64),
-            gatewayUrl,
-          })
-          .where(eq(nodesTable.nodeId, nodeId));
+          await db
+            .update(nodesTable)
+            .set({
+              containerId: newContainerId.slice(0, 64),
+              gatewayUrl,
+              gatewayPort: node.gatewayPort,
+              provisioningMode: "local_docker",
+              workspacePath: node.workspacePath,
+            })
+            .where(eq(nodesTable.nodeId, newNodeId));
 
-        logger.info({ nodeId, newContainerId, gatewayUrl }, "Local Docker node restarted");
+          logger.info({ oldNodeId: nodeId, newNodeId, newContainerId, gatewayUrl }, "Local Docker node restarted");
 
-        res.json({
-          data: { nodeId, containerId: newContainerId.slice(0, 64), gatewayUrl, restarted: true },
-        });
+          res.json({
+            data: { nodeId: newNodeId, containerId: newContainerId.slice(0, 64), gatewayUrl, restarted: true },
+          });
+        } else {
+          // Fallback: container started but didn't register yet
+          logger.warn({ newContainerId }, "New container started but node not yet registered with GRC");
+          res.json({
+            data: { containerId: newContainerId.slice(0, 64), restarted: true, warning: "Node not yet registered — will appear after heartbeat" },
+          });
+        }
 
       } else if (node.provisioningMode === "daytona_sandbox") {
         const DAYTONA_API_KEY = process.env.DAYTONA_API_KEY || "dtn_a92ccd0521fdaf9bc2c173087e23a3a52edc2d67fbb6a3508871a614a474b023";
@@ -916,6 +979,12 @@ export async function registerAdmin(app: Express, config: GrcConfig) {
       logger.info(
         { nodeId, admin: req.auth?.sub },
         "Node deleted by admin",
+      );
+
+      // Propagate updated roster (node removed from company)
+      const rolesService = new RolesService();
+      rolesService.propagateCompanyContext("node_released").catch(err =>
+        logger.warn({ err }, "Failed to propagate context after node release")
       );
 
       res.json({ data: { nodeId, deleted: true } });

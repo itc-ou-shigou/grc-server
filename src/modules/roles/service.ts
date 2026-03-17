@@ -6,7 +6,7 @@
  */
 
 import { v4 as uuidv4 } from "uuid";
-import { eq, desc, sql, and, like } from "drizzle-orm";
+import { eq, desc, sql, and, like, isNotNull, gte } from "drizzle-orm";
 import pino from "pino";
 import { getDb } from "../../shared/db/connection.js";
 import { roleTemplatesTable, nodesTable } from "./schema.js";
@@ -18,6 +18,7 @@ import {
 } from "../../shared/middleware/error-handler.js";
 
 import { nodeConfigSSE } from "../evolution/node-config-sse.js";
+import { CompanyContextGenerator } from "./context-generator.js";
 
 const logger = pino({ name: "module:roles:service" });
 
@@ -435,6 +436,11 @@ export class RolesService {
       });
     }
 
+    // Propagate updated roster to all other nodes
+    this.propagateCompanyContext("role_assignment").catch(err =>
+      logger.warn({ err }, "Failed to propagate context after role assignment")
+    );
+
     const updated = await db
       .select()
       .from(nodesTable)
@@ -498,6 +504,11 @@ export class RolesService {
         },
       });
     }
+
+    // Propagate updated roster to all other nodes (employee removed from roster)
+    this.propagateCompanyContext("role_unassignment").catch(err =>
+      logger.warn({ err }, "Failed to propagate context after role unassignment")
+    );
 
     const updated = await db
       .select()
@@ -685,5 +696,91 @@ export class RolesService {
     }
 
     return resolved;
+  }
+
+  /**
+   * Re-resolve company context variables for all active nodes and push updates.
+   * Called when the roster changes (new employee, role change, departure).
+   *
+   * @param reason - Why context is being propagated (for logging)
+   */
+  async propagateCompanyContext(reason: string): Promise<{ updatedCount: number }> {
+    const db = getDb();
+    const contextGen = new CompanyContextGenerator(
+      db as unknown as import("drizzle-orm/mysql2").MySql2Database,
+    );
+
+    // 1. Get all active nodes with roles assigned (heartbeat within 24h)
+    const activeNodes = await db
+      .select()
+      .from(nodesTable)
+      .where(
+        and(
+          isNotNull(nodesTable.roleId),
+          gte(nodesTable.lastHeartbeat, new Date(Date.now() - 24 * 60 * 60 * 1000))
+        )
+      );
+
+    let updatedCount = 0;
+
+    for (const node of activeNodes) {
+      if (!node.roleId) continue;
+
+      // 2. Get the role template
+      const [template] = await db
+        .select()
+        .from(roleTemplatesTable)
+        .where(eq(roleTemplatesTable.id, node.roleId));
+
+      if (!template) continue;
+
+      // 3. Generate context variables for this node's role
+      const contextVars = await contextGen.generateAllContextVariables(node.roleId);
+
+      // 4. Build full variables map (existing assignment vars + new context vars)
+      const assignmentVars = (node.assignmentVariables as Record<string, string>) || {};
+      const allVars: Record<string, string> = {
+        ...assignmentVars,
+        employee_id: node.employeeId || "",
+        employee_name: node.employeeName || "",
+        employee_email: node.employeeEmail || "",
+        ...contextVars,
+      };
+
+      // 5. Re-resolve the agentsMd template
+      const resolvedAgentsMd = this.resolveTemplateVariables(
+        { agentsMd: template.agentsMd || "" },
+        allVars,
+      ).agentsMd || "";
+
+      // 6. Update only agentsMd and increment revision
+      await db
+        .update(nodesTable)
+        .set({
+          resolvedAgentsMd: resolvedAgentsMd,
+          configRevision: sql`config_revision + 1`,
+        })
+        .where(eq(nodesTable.nodeId, node.nodeId));
+
+      // 7. Push SSE config update
+      const updatedNode = await this.getNodeConfig(node.nodeId);
+      if (updatedNode) {
+        nodeConfigSSE.pushToNode(node.nodeId, {
+          revision: updatedNode.revision,
+          reason: `context_propagation:${reason}`,
+          config: {
+            role_id: updatedNode.roleId,
+            role_mode: updatedNode.roleMode,
+            files: updatedNode.files,
+            key_config: updatedNode.key_config,
+          },
+        });
+      }
+
+      updatedCount++;
+    }
+
+    logger.info({ reason, updatedCount }, "Company context propagated to all active nodes");
+    return { updatedCount };
   }
 }

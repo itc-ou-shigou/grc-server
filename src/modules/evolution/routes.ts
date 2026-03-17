@@ -112,6 +112,19 @@ export async function register(app: Express, config: GrcConfig): Promise<void> {
 
       logger.debug({ nodeId: body.node_id }, "Hello received");
 
+      // Propagate company context if this node has a role assigned
+      const helloNode = await getDb()
+        .select({ roleId: nodesTable.roleId })
+        .from(nodesTable)
+        .where(eq(nodesTable.nodeId, body.node_id))
+        .limit(1);
+
+      if (helloNode[0]?.roleId) {
+        rolesService.propagateCompanyContext("new_node_hello").catch(err =>
+          logger.warn({ err }, "Failed to propagate context after hello")
+        );
+      }
+
       res.json({
         ok: true,
         node_id: body.node_id,
