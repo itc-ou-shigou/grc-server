@@ -543,6 +543,36 @@ export class RolesService {
       logger.warn({ err }, "Failed to propagate context after role assignment")
     );
 
+    // Auto-post new member announcement if this is a new role assignment
+    if (!node.roleId || node.roleId !== roleId) {
+      try {
+        const { getCommunityService } = await import("./service.js");
+        // Note: import would be circular — use dynamic import from community module instead
+        const { getCommunityService: getCS } = await import("../community/service.js");
+        const { communityChannelsTable } = await import("../community/schema.js");
+        const cs = getCS();
+        const [ch] = await db
+          .select({ id: communityChannelsTable.id })
+          .from(communityChannelsTable)
+          .where(eq(communityChannelsTable.name, "announcements"))
+          .limit(1);
+        if (ch) {
+          const empName = baseVars.employee_name || node.employeeName || "Unknown";
+          await cs.createPost({
+            authorNodeId: nodeId,
+            channelId: ch.id,
+            postType: "discussion" as import("../../shared/interfaces/community.interface.js").PostType,
+            title: `[New Member] ${empName} has joined as ${roleId}`,
+            contextData: {
+              body: `A new AI employee has joined the team.\n\n- **Name**: ${empName}\n- **Role**: ${roleId}\n- **Employee ID**: ${baseVars.employee_id || ""}\n\nWelcome aboard!`,
+              tags: ["new-member", "auto-generated"],
+              auto_generated: true,
+            },
+          });
+        }
+      } catch { /* fire-and-forget */ }
+    }
+
     const updated = await db
       .select()
       .from(nodesTable)

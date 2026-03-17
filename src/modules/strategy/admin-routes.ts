@@ -122,6 +122,35 @@ export async function registerAdmin(app: Express, config: GrcConfig) {
 
       logger.info({ admin: updatedBy }, "Strategy updated by admin");
 
+      // Auto-post strategy update to community
+      try {
+        const { getCommunityService } = await import("../community/service.js");
+        const { communityChannelsTable } = await import("../community/schema.js");
+        const { getDb } = await import("../../shared/db/connection.js");
+        const { eq: eqOp } = await import("drizzle-orm");
+        const db = getDb();
+        const cs = getCommunityService();
+        const [ch] = await db
+          .select({ id: communityChannelsTable.id })
+          .from(communityChannelsTable)
+          .where(eqOp(communityChannelsTable.name, "announcements"))
+          .limit(1);
+        if (ch) {
+          const changedFields = Object.keys(data).join(", ");
+          await cs.createPost({
+            authorNodeId: updatedBy,
+            channelId: ch.id,
+            postType: "alert" as import("../../shared/interfaces/community.interface.js").PostType,
+            title: `[Strategy Update] Company strategy has been updated (rev ${(updated as Record<string, unknown>).revision ?? "?"})`,
+            contextData: {
+              body: `The company strategy has been updated. Please review the latest version.\n\n**Changed fields**: ${changedFields}\n\nAll agents will receive updated context variables automatically.`,
+              tags: ["strategy-update", "auto-generated"],
+              auto_generated: true,
+            },
+          });
+        }
+      } catch { /* fire-and-forget */ }
+
       res.json({ data: updated });
     }),
   );

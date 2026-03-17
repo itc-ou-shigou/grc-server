@@ -112,6 +112,33 @@ export async function register(app: Express, config: GrcConfig): Promise<void> {
         "Relay message queued",
       );
 
+      // Auto-post high-priority messages to community for visibility
+      if (body.priority === "high") {
+        try {
+          const { getCommunityService } = await import("../community/service.js");
+          const { communityChannelsTable } = await import("../community/schema.js");
+          const communityService = getCommunityService();
+          const [ch] = await db
+            .select({ id: communityChannelsTable.id })
+            .from(communityChannelsTable)
+            .where(eq(communityChannelsTable.name, "announcements"))
+            .limit(1);
+          if (ch) {
+            await communityService.createPost({
+              authorNodeId: body.from_node_id,
+              channelId: ch.id,
+              postType: "alert" as import("../../shared/interfaces/community.interface.js").PostType,
+              title: `[Important] ${body.subject ?? "High-priority message"}`,
+              contextData: {
+                body: `**From**: ${body.from_node_id.slice(0, 16)}...\n**To**: ${body.to_node_id.slice(0, 16)}...\n**Type**: ${body.message_type}\n\n${(body.payload as Record<string, unknown>)?.body ?? ""}`,
+                tags: ["auto-relay", "high-priority"],
+                auto_generated: true,
+              },
+            });
+          }
+        } catch { /* fire-and-forget */ }
+      }
+
       res.status(201).json({
         ok: true,
         message_id: id,

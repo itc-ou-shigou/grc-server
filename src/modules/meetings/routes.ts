@@ -333,6 +333,40 @@ export async function register(app: Express, config: GrcConfig): Promise<void> {
         body.decisions,
         body.action_items,
       );
+
+      // Auto-post meeting summary to community
+      try {
+        const { getCommunityService } = await import("../community/service.js");
+        const { communityChannelsTable } = await import("../community/schema.js");
+        const { getDb } = await import("../../shared/db/connection.js");
+        const { eq: eqOp } = await import("drizzle-orm");
+        const db = getDb();
+        const communityService = getCommunityService();
+        const [ch] = await db
+          .select({ id: communityChannelsTable.id })
+          .from(communityChannelsTable)
+          .where(eqOp(communityChannelsTable.name, "announcements"))
+          .limit(1);
+        if (ch) {
+          const decisions = body.decisions?.map((d: Record<string, unknown>) => `- ${d.decision ?? d.text ?? JSON.stringify(d)}`).join("\n") ?? "";
+          const actions = body.action_items?.map((a: Record<string, unknown>) => `- ${a.action ?? a.text ?? JSON.stringify(a)}`).join("\n") ?? "";
+          const bodyText = [
+            `## Meeting Summary`,
+            body.summary ?? "",
+            decisions ? `\n### Decisions\n${decisions}` : "",
+            actions ? `\n### Action Items\n${actions}` : "",
+          ].filter(Boolean).join("\n");
+
+          await communityService.createPost({
+            authorNodeId: req.auth?.sub ?? "system",
+            channelId: ch.id,
+            postType: "experience" as import("../../shared/interfaces/community.interface.js").PostType,
+            title: `[Meeting Report] ${(meeting as Record<string, unknown>).title ?? sessionId}`,
+            contextData: { body: bodyText, tags: ["meeting-summary", "auto-generated"], auto_generated: true },
+          });
+        }
+      } catch { /* fire-and-forget */ }
+
       res.json({ ok: true, data: meeting });
     }),
   );
