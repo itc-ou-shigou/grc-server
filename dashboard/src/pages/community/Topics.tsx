@@ -10,6 +10,7 @@ import {
   useAdminChannels,
   useModeratePost,
   useDeletePost,
+  useCreateCommunityPost,
   Post,
   Channel,
 } from '../../api/hooks';
@@ -34,7 +35,14 @@ export function Topics() {
   const [channelFilter, setChannelFilter] = useState('');
   const [typeFilter, setTypeFilter] = useState('all');
   const [deleteTarget, setDeleteTarget] = useState<Post | null>(null);
+  const [createOpen, setCreateOpen] = useState(false);
+  const [newTitle, setNewTitle] = useState('');
+  const [newBody, setNewBody] = useState('');
+  const [newChannel, setNewChannel] = useState('');
+  const [newType, setNewType] = useState('discussion');
+  const [newTags, setNewTags] = useState('');
   const { isAdmin } = useUser();
+  const createPost = useCreateCommunityPost();
 
   const queryParams: Record<string, unknown> = { page, page_size: 20 };
   if (channelFilter) queryParams.channel_id = channelFilter;
@@ -170,11 +178,31 @@ export function Topics() {
     },
   ];
 
+  async function handleCreatePost() {
+    if (!newTitle.trim() || !newBody.trim() || !newChannel) return;
+    await createPost.mutateAsync({
+      channelId: newChannel,
+      postType: newType,
+      title: newTitle,
+      body: newBody,
+      tags: newTags ? newTags.split(',').map(t => t.trim()).filter(Boolean) : undefined,
+    });
+    setCreateOpen(false);
+    setNewTitle('');
+    setNewBody('');
+    setNewTags('');
+  }
+
   return (
     <div className="page">
       <div className="page-header">
-        <h1 className="page-title">{t('topics.title')}</h1>
-        <p className="page-subtitle">{t('topics.subtitle')}</p>
+        <div>
+          <h1 className="page-title">{t('topics.title')}</h1>
+          <p className="page-subtitle">{t('topics.subtitle')}</p>
+        </div>
+        <button className="btn btn-primary" onClick={() => setCreateOpen(true)}>
+          + New Post
+        </button>
       </div>
 
       <div className="card" style={{ padding: '12px 16px', marginBottom: '16px', display: 'flex', gap: '12px', alignItems: 'center', flexWrap: 'wrap' }}>
@@ -224,6 +252,63 @@ export function Topics() {
           emptyMessage={t('topics.noTopics')}
         />
       </div>
+
+      {/* Create Post Modal */}
+      <Modal
+        open={createOpen}
+        onClose={() => setCreateOpen(false)}
+        title="Create New Post"
+        footer={
+          <div className="modal-footer-actions">
+            <button className="btn btn-default" onClick={() => setCreateOpen(false)}>Cancel</button>
+            <button
+              className="btn btn-primary"
+              onClick={handleCreatePost}
+              disabled={createPost.isPending || !newTitle.trim() || !newBody.trim() || !newChannel}
+            >
+              {createPost.isPending ? 'Posting...' : 'Post'}
+            </button>
+          </div>
+        }
+      >
+        <div className="form-group">
+          <label className="form-label">Channel</label>
+          <select className="input" value={newChannel} onChange={e => setNewChannel(e.target.value)}>
+            <option value="">Select channel...</option>
+            {channels.map(ch => (
+              <option key={ch.id} value={ch.id}>{ch.displayName || ch.name}</option>
+            ))}
+          </select>
+        </div>
+        <div className="form-group">
+          <label className="form-label">Post Type</label>
+          <select className="input" value={newType} onChange={e => setNewType(e.target.value)}>
+            {POST_TYPES.filter(t => t !== 'all').map(t => (
+              <option key={t} value={t}>{t}</option>
+            ))}
+          </select>
+        </div>
+        <div className="form-group">
+          <label className="form-label">Title</label>
+          <input className="input" value={newTitle} onChange={e => setNewTitle(e.target.value)} placeholder="Post title" />
+        </div>
+        <div className="form-group">
+          <label className="form-label">Body (Markdown)</label>
+          <textarea
+            className="textarea"
+            value={newBody}
+            onChange={e => setNewBody(e.target.value)}
+            placeholder="Write your post content here..."
+            rows={8}
+            style={{ width: '100%', fontFamily: 'var(--font-mono, monospace)', fontSize: '0.8125rem', resize: 'vertical' }}
+          />
+        </div>
+        <div className="form-group">
+          <label className="form-label">Tags (comma-separated)</label>
+          <input className="input" value={newTags} onChange={e => setNewTags(e.target.value)} placeholder="tag1, tag2" />
+        </div>
+        {createPost.error && <ErrorMessage error={createPost.error as Error} />}
+      </Modal>
 
       <Modal
         open={!!deleteTarget}

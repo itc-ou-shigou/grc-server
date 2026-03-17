@@ -12,6 +12,8 @@ import {
   useDeletePost,
   useDeleteReply,
   useModerateReply,
+  useCreateCommunityReply,
+  useVoteCommunityPost,
   Post,
   Reply,
   Channel,
@@ -36,8 +38,11 @@ export function PostDetail() {
   const [deletePostModal, setDeletePostModal] = useState(false);
   const [deleteReplyTarget, setDeleteReplyTarget] = useState<Reply | null>(null);
   const [modAction, setModAction] = useState<{ action: 'hide' | 'lock' | 'unlock' | 'pin' | 'unpin' } | null>(null);
+  const [replyContent, setReplyContent] = useState('');
 
   const { isAdmin } = useUser();
+  const createReply = useCreateCommunityReply();
+  const votePost = useVoteCommunityPost();
   const { data, isLoading, error } = useAdminPostDetail(id ?? '', { page: replyPage, page_size: 20 });
   const { data: channelsData } = useAdminChannels({ page: 1, page_size: 100 });
   const moderatePost = useModeratePost();
@@ -193,12 +198,30 @@ export function PostDetail() {
             <span className="text-muted">Author: </span>
             <span className="mono">{post.authorId.slice(0, 12)}...</span>
           </div>
-          <div>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
             <span className="text-muted">Score: </span>
             <span className={post.score >= 0 ? 'text-success' : 'text-danger'}>
               {post.score >= 0 ? '+' : ''}{post.score}
             </span>
             <span className="text-muted"> ({post.upvotes}/{post.downvotes})</span>
+            <button
+              className="btn btn-sm btn-default"
+              onClick={() => votePost.mutate({ postId: post.id, direction: 'upvote' })}
+              disabled={votePost.isPending}
+              title="Upvote"
+              style={{ padding: '2px 8px', fontSize: '14px' }}
+            >
+              👍
+            </button>
+            <button
+              className="btn btn-sm btn-default"
+              onClick={() => votePost.mutate({ postId: post.id, direction: 'downvote' })}
+              disabled={votePost.isPending}
+              title="Downvote"
+              style={{ padding: '2px 8px', fontSize: '14px' }}
+            >
+              👎
+            </button>
           </div>
           <div>
             <span className="text-muted">{t('postDetail.replies')}: </span>
@@ -248,6 +271,35 @@ export function PostDetail() {
           emptyMessage={t('postDetail.noReplies')}
         />
       </div>
+
+      {/* Reply input (unless locked) */}
+      {!isLocked && (
+        <div className="card" style={{ padding: '16px', marginBottom: '16px' }}>
+          <h3 style={{ marginTop: 0, marginBottom: '12px', fontSize: '14px', color: 'var(--color-text-muted)' }}>
+            Write a Reply
+          </h3>
+          <textarea
+            className="textarea"
+            value={replyContent}
+            onChange={e => setReplyContent(e.target.value)}
+            placeholder="Write your reply here..."
+            rows={4}
+            style={{ width: '100%', fontFamily: 'var(--font-mono, monospace)', fontSize: '0.8125rem', resize: 'vertical', marginBottom: '8px' }}
+          />
+          <button
+            className="btn btn-primary"
+            onClick={async () => {
+              if (!replyContent.trim()) return;
+              await createReply.mutateAsync({ postId: post.id, content: replyContent });
+              setReplyContent('');
+            }}
+            disabled={createReply.isPending || !replyContent.trim()}
+          >
+            {createReply.isPending ? 'Posting...' : 'Post Reply'}
+          </button>
+          {createReply.error && <ErrorMessage error={createReply.error as Error} />}
+        </div>
+      )}
 
       {/* Moderation actions (admin only) */}
       {isAdmin && (

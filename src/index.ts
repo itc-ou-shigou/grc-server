@@ -153,6 +153,20 @@ async function main() {
   // ── Global Error Handler (must be last) ───────────
   app.use(errorHandler);
 
+  // ── Weekly Digest Cron (Friday 18:00 JST = 09:00 UTC) ──
+  try {
+    const cron = await import("node-cron");
+    const { generateWeeklyDigest } = await import("./modules/community/weekly-digest.js");
+    cron.default.schedule("0 9 * * 5", () => {
+      generateWeeklyDigest().catch((err) =>
+        logger.warn({ err }, "Weekly digest cron failed"),
+      );
+    });
+    logger.info("Weekly digest cron scheduled (Fridays 09:00 UTC / 18:00 JST)");
+  } catch (err) {
+    logger.warn({ err }, "Failed to register weekly digest cron — node-cron may not be installed");
+  }
+
   // ── Start Server ──────────────────────────────────
   const server = app.listen(config.port, () => {
     logger.info(

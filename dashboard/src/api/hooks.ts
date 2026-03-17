@@ -680,6 +680,46 @@ export function useDeleteChannel() {
 }
 
 // ---------------------------------------------------------------------------
+// Community — CEO participation (create post, reply, vote)
+// ---------------------------------------------------------------------------
+
+export function useCreateCommunityPost() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: (data: { channelId: string; postType: string; title: string; body: string; tags?: string[] }) =>
+      apiClient.post('/api/v1/community/posts', data),
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ['admin', 'posts'] });
+      qc.invalidateQueries({ queryKey: ['admin', 'community', 'stats'] });
+    },
+  });
+}
+
+export function useCreateCommunityReply() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: ({ postId, content }: { postId: string; content: string }) =>
+      apiClient.post(`/api/v1/community/posts/${postId}/replies`, { content }),
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ['admin', 'post'] });
+      qc.invalidateQueries({ queryKey: ['admin', 'posts'] });
+    },
+  });
+}
+
+export function useVoteCommunityPost() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: ({ postId, direction }: { postId: string; direction: 'upvote' | 'downvote' }) =>
+      apiClient.post(`/api/v1/community/posts/${postId}/${direction}`, {}),
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ['admin', 'posts'] });
+      qc.invalidateQueries({ queryKey: ['admin', 'post'] });
+    },
+  });
+}
+
+// ---------------------------------------------------------------------------
 // Platform
 // ---------------------------------------------------------------------------
 
