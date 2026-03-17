@@ -376,10 +376,30 @@ export class RolesService {
     const template = templateRows[0]!;
     const node = nodeRows[0]!;
 
+    // Auto-fill base variables from node DB record if not provided by caller
+    const baseVars: Record<string, string> = {
+      employee_id: node.employeeId || "",
+      employee_name: node.employeeName || "",
+      employee_email: node.employeeEmail || "",
+      role_id: roleId,
+      ...variables,
+    };
+
+    // Generate company context variables (roster, org_chart, etc.)
+    try {
+      const contextGen = new CompanyContextGenerator(
+        db as unknown as import("drizzle-orm/mysql2").MySql2Database,
+      );
+      const contextVars = await contextGen.generateAllContextVariables(roleId);
+      Object.assign(baseVars, contextVars);
+    } catch (err) {
+      logger.warn({ err }, "Failed to generate company context during role assignment");
+    }
+
     // Resolve template variables
     const resolved = this.resolveTemplateVariables(
       template as unknown as Record<string, unknown>,
-      variables,
+      baseVars,
     );
 
     // Apply overrides if provided (override specific resolved files)
@@ -403,7 +423,7 @@ export class RolesService {
         roleId: roleId,
         roleMode: modeOverride ?? template.mode,
         configRevision: newRevision,
-        assignmentVariables: variables,
+        assignmentVariables: baseVars,
         configOverrides: overrides ?? null,
         resolvedAgentsMd: resolved.agentsMd,
         resolvedSoulMd: resolved.soulMd,
