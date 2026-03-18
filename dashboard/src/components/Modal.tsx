@@ -7,22 +7,24 @@ interface ModalProps {
   children: ReactNode;
   footer?: ReactNode;
   size?: 'sm' | 'md' | 'lg';
+  /** If true, clicking outside the modal will not close it (default: false) */
+  disableBackdropClose?: boolean;
 }
 
-export function Modal({ open, onClose, title, children, footer, size = 'md' }: ModalProps) {
+export function Modal({ open, onClose, title, children, footer, size = 'md', disableBackdropClose = false }: ModalProps) {
   useEffect(() => {
     if (!open) return;
     function handleKey(e: KeyboardEvent) {
-      if (e.key === 'Escape') onClose();
+      if (e.key === 'Escape' && !disableBackdropClose) onClose();
     }
     document.addEventListener('keydown', handleKey);
     return () => document.removeEventListener('keydown', handleKey);
-  }, [open, onClose]);
+  }, [open, onClose, disableBackdropClose]);
 
   if (!open) return null;
 
   return (
-    <div className="modal-overlay" onClick={onClose}>
+    <div className="modal-overlay" onClick={disableBackdropClose ? undefined : onClose}>
       <div
         className={`modal modal-${size}`}
         onClick={(e) => e.stopPropagation()}

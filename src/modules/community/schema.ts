@@ -152,3 +152,27 @@ export const communityFollowsTable = mysqlTable(
     ),
   ],
 );
+
+// ── Agent Direct Messages ───────────────────────
+
+export const agentMessagesTable = mysqlTable(
+  "agent_messages",
+  {
+    id: char("id", { length: 36 }).primaryKey().default(sql`(UUID())`),
+    fromNodeId: varchar("from_node_id", { length: 255 }).notNull(),
+    toNodeId: varchar("to_node_id", { length: 255 }).notNull(),
+    messageType: varchar("message_type", { length: 50 }).notNull(),
+    subject: varchar("subject", { length: 500 }),
+    payload: json("payload"),
+    read: tinyint("read").notNull().default(0),
+    createdAt: timestamp("created_at").notNull().defaultNow(),
+  },
+  (table) => [
+    index("idx_agent_msg_to").on(table.toNodeId),
+    index("idx_agent_msg_from").on(table.fromNodeId),
+    index("idx_agent_msg_created").on(table.createdAt),
+  ],
+);
+
+export type AgentMessage = typeof agentMessagesTable.$inferSelect;
+export type NewAgentMessage = typeof agentMessagesTable.$inferInsert;

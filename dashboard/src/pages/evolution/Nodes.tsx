@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
 import { DataTable, Column } from '../../components/DataTable';
 import { StatusBadge } from '../../components/StatusBadge';
@@ -12,6 +12,7 @@ import {
   Node,
   ProvisionNodeInput,
 } from '../../api/hooks';
+import { get } from '../../api/client';
 
 const HOURS_24 = 24 * 60 * 60 * 1000;
 
@@ -97,6 +98,20 @@ export function Nodes() {
   const [employeeEmail, setEmployeeEmail] = useState('');
   const [createFormErrors, setCreateFormErrors] = useState<Record<string, string>>({});
   const [createSuccess, setCreateSuccess] = useState<string | null>(null);
+  const [workspacesBase, setWorkspacesBase] = useState('');
+
+  // Fetch workspace base path when create modal opens
+  useEffect(() => {
+    if (createOpen && isLocal && !workspacesBase) {
+      get<{ workspacesBasePath: string; platform: string }>('/api/v1/admin/evolution/nodes/provision-defaults')
+        .then(data => {
+          if (data?.workspacesBasePath) {
+            setWorkspacesBase(data.workspacesBasePath);
+          }
+        })
+        .catch(() => { /* ignore */ });
+    }
+  }, [createOpen, isLocal, workspacesBase]);
 
   // ── hooks ──
   const { data, isLoading, error } = useAdminNodes({ page, page_size: 20 });
@@ -386,6 +401,7 @@ export function Nodes() {
         onClose={closeCreateModal}
         title={createModalTitle}
         size="md"
+        disableBackdropClose={true}
         footer={
           <div style={{ display: 'flex', gap: '12px', justifyContent: 'flex-end' }}>
             <button
@@ -440,17 +456,15 @@ export function Nodes() {
                     disabled={provisionNode.isPending}
                     onClick={async () => {
                       try {
-                        // Use File System Access API for proper directory picker
                         // eslint-disable-next-line @typescript-eslint/no-explicit-any
                         const dirHandle = await (window as any).showDirectoryPicker({ mode: 'read' });
                         if (dirHandle?.name) {
-                          // Resolve full path via entries — browser only returns folder name
-                          // User should confirm/edit the full path
-                          const currentVal = workspacePath.trim();
-                          if (currentVal && !currentVal.endsWith('\\') && !currentVal.endsWith('/')) {
-                            setWorkspacePath(currentVal + '\\' + dirHandle.name);
-                          } else if (currentVal) {
-                            setWorkspacePath(currentVal + dirHandle.name);
+                          // Build full path: workspacesBase + selected folder name
+                          const sep = workspacesBase.includes('/') ? '/' : '\\';
+                          const base = workspacesBase || '';
+                          if (base) {
+                            const cleanBase = base.endsWith(sep) ? base.slice(0, -1) : base;
+                            setWorkspacePath(cleanBase + sep + dirHandle.name);
                           } else {
                             setWorkspacePath(dirHandle.name);
                           }

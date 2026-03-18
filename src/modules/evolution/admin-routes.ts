@@ -356,6 +356,22 @@ export async function registerAdmin(app: Express, config: GrcConfig) {
     }),
   );
 
+  // ── GET /nodes/provision-defaults — Return host workspace base path ──
+
+  router.get(
+    "/nodes/provision-defaults",
+    requireAuth, requireAdmin,
+    asyncHandler(async (_req: Request, res: Response) => {
+      // Default workspaces directory — configurable via env var
+      const workspacesBase = process.env.WINCLAW_WORKSPACES_DIR
+        || path.resolve("C:\\work\\workspaces");
+      res.json({
+        workspacesBasePath: workspacesBase,
+        platform: process.platform,
+      });
+    }),
+  );
+
   // ── POST /nodes/provision — Provision a new node (Docker or Daytona) ──
 
   const provisionNodeSchema = z.object({
@@ -383,13 +399,21 @@ export async function registerAdmin(app: Express, config: GrcConfig) {
           return res.status(400).json({ error: "workspacePath is required for local_docker mode" });
         }
 
-        // Determine GRC port from current server
-        const grcPort = process.env.PORT || "3200";
+        // Determine GRC port - backend API is on 3100, frontend is on 3200
+        // WinClaw nodes need to connect to the backend API
+        const grcPort = process.env.GRC_API_PORT || "3100";
+
+        // For Docker Desktop on Windows, host.docker.internal may not resolve correctly
+        // Use host-gateway IP which is more reliable
+        // The --add-host maps host.docker.internal to the host's gateway IP
 
         // Build docker run arguments (use execFileSync to prevent command injection)
         const { execFileSync } = await import("child_process");
         const dockerArgs = ["run", "-d", "-p", `${body.gatewayPort}:18789`,
-          "-e", `WINCLAW_GRC_URL=http://host.docker.internal:${grcPort}`];
+          "--add-host", "host.docker.internal:host-gateway",
+          "-e", `WINCLAW_GRC_URL=http://host.docker.internal:${grcPort}`,
+          "-e", `WINCLAW_GATEWAY_BIND=lan`,
+          "--network", "bridge"];
         if (body.employeeName) dockerArgs.push("-e", `employee_name=${body.employeeName}`);
         if (body.employeeCode) dockerArgs.push("-e", `employee_code=${body.employeeCode}`);
         dockerArgs.push("-v", `${body.workspacePath}:/home/winclaw/.winclaw/workspace`);
