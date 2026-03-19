@@ -31,11 +31,48 @@ interface DeleteModalState {
   name: string;
 }
 
+const KNOWN_DEPARTMENTS = [
+  'Engineering',
+  'Marketing',
+  'Sales',
+  'Product',
+  'Design',
+  'Testing',
+  'Support',
+  'Data',
+  'Business',
+  'Operations',
+  'Specialized',
+  'Project Management',
+  'Paid Media',
+  'Game Development',
+  'Spatial Computing',
+  'Human Resources',
+  'Finance',
+  'Executive Office',
+  'Customer Support',
+  'Strategy & Planning',
+];
+
+const PAGE_SIZE = 20;
+
 export function RoleTemplates() {
   const { t } = useTranslation('roles');
   const navigate = useNavigate();
   const { isAdmin } = useUser();
-  const { data: rolesData, isLoading, error } = useRoleTemplates();
+
+  const [page, setPage] = useState(1);
+  const [search, setSearch] = useState('');
+  const [modeFilter, setModeFilter] = useState('');
+  const [deptFilter, setDeptFilter] = useState('');
+
+  const { data: rolesData, isLoading, error } = useRoleTemplates({
+    page,
+    page_size: PAGE_SIZE,
+    department: deptFilter || undefined,
+    mode: modeFilter || undefined,
+  });
+
   const roles = rolesData?.data ?? [];
   const cloneRole = useCloneRole();
   const deleteRole = useDeleteRole();
@@ -44,14 +81,16 @@ export function RoleTemplates() {
   const [deleteModal, setDeleteModal] = useState<DeleteModalState>({ open: false, id: '', name: '' });
   const [newId, setNewId] = useState('');
   const [newDisplayName, setNewDisplayName] = useState('');
-  const [search, setSearch] = useState('');
-  const [modeFilter, setModeFilter] = useState('');
 
+  const s = search.toLowerCase();
   const filtered = roles.filter(r => {
-    const matchSearch = !search || r.name.toLowerCase().includes(search.toLowerCase()) || r.id.toLowerCase().includes(search.toLowerCase());
-    const matchMode = !modeFilter || r.mode === modeFilter;
-    return matchSearch && matchMode;
+    const matchSearch = !search || r.name.toLowerCase().includes(s) || r.id.toLowerCase().includes(s) || (r.department || '').toLowerCase().includes(s);
+    return matchSearch;
   });
+
+  const total = rolesData?.pagination?.total ?? 0;
+  const rangeStart = total === 0 ? 0 : (page - 1) * PAGE_SIZE + 1;
+  const rangeEnd = Math.min(page * PAGE_SIZE, total);
 
   type RoleRow = typeof roles[0];
 
@@ -191,13 +230,19 @@ export function RoleTemplates() {
           type="text"
           placeholder={t('filters.searchPlaceholder')}
           value={search}
-          onChange={e => setSearch(e.target.value)}
+          onChange={e => { setSearch(e.target.value); setPage(1); }}
           style={{ minWidth: '200px' }}
         />
-        <select className="select" value={modeFilter} onChange={e => setModeFilter(e.target.value)}>
+        <select className="select" value={modeFilter} onChange={e => { setModeFilter(e.target.value); setPage(1); }}>
           <option value="">{t('filters.allModes')}</option>
           <option value="autonomous">{t('filters.autonomous')}</option>
           <option value="copilot">{t('filters.copilot')}</option>
+        </select>
+        <select className="select" value={deptFilter} onChange={e => { setDeptFilter(e.target.value); setPage(1); }}>
+          <option value="">All Departments</option>
+          {KNOWN_DEPARTMENTS.map(d => (
+            <option key={d} value={d}>{d}</option>
+          ))}
         </select>
         <span className="text-muted" style={{ fontSize: '0.875rem' }}>
           {filtered.length} role{filtered.length !== 1 ? 's' : ''}
@@ -210,6 +255,31 @@ export function RoleTemplates() {
         loading={isLoading}
         rowKey="id"
       />
+
+      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '1rem 0' }}>
+        <span className="text-muted text-sm">
+          {total === 0
+            ? 'No roles found'
+            : `Showing ${rangeStart}–${rangeEnd} of ${total} roles`}
+        </span>
+        <div style={{ display: 'flex', gap: 8 }}>
+          <button
+            className="btn btn-sm btn-default"
+            onClick={() => setPage(p => Math.max(1, p - 1))}
+            disabled={page <= 1}
+          >
+            ← Prev
+          </button>
+          <span style={{ padding: '4px 12px', fontSize: 13 }}>Page {page}</span>
+          <button
+            className="btn btn-sm btn-default"
+            onClick={() => setPage(p => p + 1)}
+            disabled={!rolesData?.pagination || page * PAGE_SIZE >= rolesData.pagination.total}
+          >
+            Next →
+          </button>
+        </div>
+      </div>
 
       {/* Clone Modal */}
       <Modal

@@ -923,10 +923,18 @@ export function useRoleTemplates(params?: {
   department?: string;
   mode?: string;
 }) {
+  // Backend expects 'limit' not 'page_size'
+  const apiParams: Record<string, string | number | boolean | undefined> = {
+    page: params?.page,
+    limit: params?.page_size,
+    department: params?.department,
+    mode: params?.mode,
+    industry: params?.industry,
+  };
   return useQuery<PaginatedResponse<RoleTemplate>>({
     queryKey: ['admin', 'roles', params],
     queryFn: () =>
-      apiClient.get<PaginatedResponse<RoleTemplate>>('/api/v1/admin/roles', params as Record<string, string | number | boolean | undefined>),
+      apiClient.get<PaginatedResponse<RoleTemplate>>('/api/v1/admin/roles', apiParams),
   });
 }
 
