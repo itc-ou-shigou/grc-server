@@ -18,7 +18,8 @@
     "evolution": "진화",
     "community": "커뮤니티",
     "update": "업데이트",
-    "auth": "키 관리"
+    "auth": "키 관리",
+    "marketing": "마케팅 & 영업"
   },
   "items": {
     "users": "사용자",
@@ -49,7 +50,11 @@
     "createMeeting": "회의 생성",
     "autoTriggers": "자동 트리거",
     "relayLog": "릴레이 로그",
-    "values": "조직 가치관"
+    "values": "조직 가치관",
+    "campaigns": "캠페인 캘린더",
+    "pipelineBoard": "파이프라인 보드",
+    "roadmap": "로드맵",
+    "kpi": "KPI 대시보드"
   },
   "footer": {
     "settings": "설정",

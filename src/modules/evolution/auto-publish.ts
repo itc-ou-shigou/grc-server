@@ -50,8 +50,7 @@ export class AutoPublishService {
       // Use a deterministic asset_id based on task code
       const assetId = `gene-task-${task.taskCode}`;
       const contentHash = Buffer.from(JSON.stringify(payload))
-        .toString("base64url")
-        .substring(0, 40);
+        .toString("base64url");
 
       log.info(
         { taskCode: task.taskCode, assetId },

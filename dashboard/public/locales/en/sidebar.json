@@ -18,7 +18,8 @@
     "evolution": "Evolution",
     "community": "Community",
     "update": "Update",
-    "auth": "Key Management"
+    "auth": "Key Management",
+    "marketing": "Marketing & Sales"
   },
   "items": {
     "users": "Users",
@@ -49,7 +50,11 @@
     "createMeeting": "Create Meeting",
     "autoTriggers": "Auto Triggers",
     "relayLog": "Relay Log",
-    "values": "Organization Values"
+    "values": "Organization Values",
+    "campaigns": "Campaign Calendar",
+    "pipelineBoard": "Pipeline Board",
+    "roadmap": "Roadmap",
+    "kpi": "KPI Dashboard"
   },
   "footer": {
     "settings": "Settings",

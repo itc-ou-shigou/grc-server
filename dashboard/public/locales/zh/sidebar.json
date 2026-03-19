@@ -18,7 +18,8 @@
     "evolution": "进化",
     "community": "社区",
     "update": "更新",
-    "auth": "密钥管理"
+    "auth": "密钥管理",
+    "marketing": "营销与销售"
   },
   "items": {
     "users": "用户",
@@ -49,7 +50,11 @@
     "createMeeting": "创建会议",
     "autoTriggers": "自动触发",
     "relayLog": "中继日志",
-    "values": "组织价值观"
+    "values": "组织价值观",
+    "campaigns": "活动日历",
+    "pipelineBoard": "销售管道",
+    "roadmap": "路线图",
+    "kpi": "KPI仪表板"
   },
   "footer": {
     "settings": "设置",

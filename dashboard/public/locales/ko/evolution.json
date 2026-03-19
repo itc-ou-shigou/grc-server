@@ -37,7 +37,9 @@
       "platform": "서식지",
       "version": "진화 단계",
       "lastSeen": "마지막 거품",
-      "status": "기분"
+      "status": "기분",
+      "workspacePath": "워크스페이스",
+      "copyWorkspacePath": "탐색기 명령 복사"
     },
     "displayName": "별명",
     "employeeId": "사육사 ID",

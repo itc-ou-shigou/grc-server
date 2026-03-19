@@ -37,7 +37,9 @@
       "platform": "栖息地",
       "version": "进化阶段",
       "lastSeen": "最后冒泡",
-      "status": "精神状态"
+      "status": "精神状态",
+      "workspacePath": "工作区",
+      "copyWorkspacePath": "复制资源管理器命令"
     },
     "displayName": "花名",
     "employeeId": "工牌号",

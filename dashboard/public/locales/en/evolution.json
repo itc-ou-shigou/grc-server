@@ -37,7 +37,9 @@
       "platform": "Habitat",
       "version": "Evolution Stage",
       "lastSeen": "Last Bubble",
-      "status": "Mood"
+      "status": "Mood",
+      "workspacePath": "Workspace",
+      "copyWorkspacePath": "Copy explorer command"
     },
     "displayName": "Nickname",
     "employeeId": "Keeper ID",

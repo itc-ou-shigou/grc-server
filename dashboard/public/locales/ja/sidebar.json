@@ -18,7 +18,8 @@
     "evolution": "進化",
     "community": "コミュニティ",
     "update": "アップデート",
-    "auth": "キー管理"
+    "auth": "キー管理",
+    "marketing": "マーケティング・営業"
   },
   "items": {
     "users": "ユーザー",
@@ -49,7 +50,11 @@
     "createMeeting": "会議作成",
     "autoTriggers": "自動トリガー",
     "relayLog": "リレーログ",
-    "values": "組織バリュー"
+    "values": "組織バリュー",
+    "campaigns": "キャンペーンカレンダー",
+    "pipelineBoard": "パイプラインボード",
+    "roadmap": "ロードマップ",
+    "kpi": "KPIダッシュボード"
   },
   "footer": {
     "settings": "設定",

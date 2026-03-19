@@ -37,7 +37,9 @@
       "platform": "生息地",
       "version": "進化段階",
       "lastSeen": "最後の泡",
-      "status": "ご機嫌"
+      "status": "ご機嫌",
+      "workspacePath": "ワークスペース",
+      "copyWorkspacePath": "explorerコマンドをコピー"
     },
     "displayName": "ニックネーム",
     "employeeId": "飼育員ID",

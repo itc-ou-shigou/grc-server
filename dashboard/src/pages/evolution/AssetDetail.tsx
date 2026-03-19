@@ -1,11 +1,13 @@
 import { useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
+import { useQuery } from '@tanstack/react-query';
 import { DataTable, Column } from '../../components/DataTable';
 import { StatusBadge } from '../../components/StatusBadge';
 import { Modal } from '../../components/Modal';
 import { ErrorMessage } from '../../components/ErrorMessage';
 import { useAdminAssetDetail, useChangeAssetStatus, AssetReport } from '../../api/hooks';
+import { apiClient } from '../../api/client';
 import { useUser } from '../../context/UserContext';
 
 export function AssetDetail() {
@@ -202,50 +204,8 @@ export function AssetDetail() {
         </div>
       </div>
 
-      {/* Decoded Content Preview */}
-      {asset.contentHash && (() => {
-        try {
-          const base64 = asset.contentHash.replace(/-/g, '+').replace(/_/g, '/');
-          const padded = base64 + '='.repeat((4 - base64.length % 4) % 4);
-          const decoded = JSON.parse(atob(padded));
-          return (
-            <div className="card" style={{ marginBottom: '1.5rem' }}>
-              <div className="card-header">
-                <h2 className="card-title">📄 コンテンツ内容</h2>
-              </div>
-              <div style={{ padding: '0 1rem 1rem' }}>
-                {decoded.source && (
-                  <div style={{ marginBottom: 8 }}>
-                    <span className="badge badge-info" style={{ marginRight: 8 }}>{decoded.source}</span>
-                    {decoded.taskCode && <span className="badge badge-outline">{decoded.taskCode}</span>}
-                  </div>
-                )}
-                {decoded.title && (
-                  <h3 style={{ fontSize: 16, fontWeight: 600, marginBottom: 8 }}>{decoded.title}</h3>
-                )}
-                {decoded.resultSummary && (
-                  <p style={{ color: 'var(--color-text-secondary)', lineHeight: 1.6, marginBottom: 8 }}>{decoded.resultSummary}</p>
-                )}
-                {decoded.deliverables && (
-                  <div style={{ marginBottom: 8 }}>
-                    <span className="text-muted text-sm">成果物:</span>
-                    <p style={{ whiteSpace: 'pre-wrap' }}>{decoded.deliverables}</p>
-                  </div>
-                )}
-                {/* Fallback: show all fields for non-task genes */}
-                {!decoded.source && (
-                  <pre style={{ padding: 12, fontSize: 12, overflow: 'auto', maxHeight: 300, background: 'var(--bg-secondary)', borderRadius: 4 }}>
-                    {JSON.stringify(decoded, null, 2)}
-                  </pre>
-                )}
-              </div>
-            </div>
-          );
-        } catch {
-          // Not decodable — show hash only
-          return null;
-        }
-      })()}
+      {/* Gene/Capsule Content Description */}
+      <GeneContentDescription assetId={asset.assetId} contentHash={asset.contentHash} />
 
       {/* Strategy / Trigger Data */}
       {isGene && asset.strategy && (
@@ -351,6 +311,123 @@ export function AssetDetail() {
           </p>
         )}
       </Modal>
+    </div>
+  );
+}
+
+// ── Gene/Capsule Content Description ──────────────────────────────────────
+
+function GeneContentDescription({ assetId, contentHash }: { assetId: string; contentHash?: string }) {
+  // Extract task code from assetId (e.g., "gene-task-FIN-013" → "FIN-013")
+  const taskCodeMatch = assetId.match(/gene-task-(\w+-\d+)/);
+  const taskCode = taskCodeMatch?.[1];
+
+  // Try to decode contentHash (base64url JSON)
+  let decoded: Record<string, unknown> | null = null;
+  if (contentHash) {
+    try {
+      const base64 = contentHash.replace(/-/g, '+').replace(/_/g, '/');
+      const padded = base64 + '='.repeat((4 - base64.length % 4) % 4);
+      decoded = JSON.parse(atob(padded));
+    } catch { /* not decodable */ }
+  }
+
+  // Fetch linked task details if taskCode exists
+  const { data: taskData } = useQuery({
+    queryKey: ['admin', 'tasks', 'by-code', taskCode],
+    queryFn: async () => {
+      if (!taskCode) return null;
+      const res = await apiClient.get<{ data: any[] }>(`/api/v1/admin/tasks`, { task_code: taskCode, page_size: 1 });
+      const tasks = (res as any).data ?? [];
+      return tasks[0] ?? null;
+    },
+    enabled: !!taskCode,
+    staleTime: 5 * 60 * 1000,
+  });
+
+  const task = taskData as any;
+
+  // If neither decoded content nor linked task, show nothing meaningful
+  if (!decoded && !task) {
+    // Check for capsule-style assetId
+    const capsuleMatch = assetId.match(/capsule-(.+)/);
+    if (capsuleMatch) {
+      return (
+        <div className="card" style={{ marginBottom: '1.5rem' }}>
+          <div className="card-header"><h2 className="card-title">📄 このCapsuleについて</h2></div>
+          <div style={{ padding: '0 1rem 1rem' }}>
+            <p style={{ color: 'var(--color-text-secondary)' }}>
+              カプセル <strong>{capsuleMatch[1]}</strong> — Geneの知識を特定のコンテキストに適用した実行可能な経験パッケージです。
+            </p>
+          </div>
+        </div>
+      );
+    }
+    return null;
+  }
+
+  return (
+    <div className="card" style={{ marginBottom: '1.5rem' }}>
+      <div className="card-header"><h2 className="card-title">📄 このGeneについて</h2></div>
+      <div style={{ padding: '0 1rem 1rem' }}>
+
+        {/* Source badge */}
+        {(decoded?.source || taskCode) && (
+          <div style={{ marginBottom: 12 }}>
+            <span className="badge badge-info" style={{ marginRight: 8 }}>
+              {String(decoded?.source ?? 'task-completion')}
+            </span>
+            {taskCode && <span className="badge badge-outline">{taskCode}</span>}
+          </div>
+        )}
+
+        {/* Title from task or decoded */}
+        <h3 style={{ fontSize: 16, fontWeight: 600, marginBottom: 8 }}>
+          {String(task?.title ?? decoded?.title ?? assetId)}
+        </h3>
+
+        {/* Description / Result Summary */}
+        {(task?.description || decoded?.resultSummary) && (
+          <div style={{ marginBottom: 12 }}>
+            <span className="text-muted text-sm">概要:</span>
+            <p style={{ color: 'var(--color-text-secondary)', lineHeight: 1.6, marginTop: 4 }}>
+              {String(task?.description ?? decoded?.resultSummary)}
+            </p>
+          </div>
+        )}
+
+        {/* Result / Deliverables from task */}
+        {task?.resultSummary && (
+          <div style={{ marginBottom: 12 }}>
+            <span className="text-muted text-sm">成果:</span>
+            <p style={{ lineHeight: 1.6, marginTop: 4 }}>{String(task.resultSummary)}</p>
+          </div>
+        )}
+
+        {task?.deliverables && (
+          <div style={{ marginBottom: 12 }}>
+            <span className="text-muted text-sm">成果物:</span>
+            <p style={{ whiteSpace: 'pre-wrap', marginTop: 4 }}>{String(task.deliverables)}</p>
+          </div>
+        )}
+
+        {/* Task metadata */}
+        {task && (
+          <div style={{ display: 'flex', gap: 16, flexWrap: 'wrap', fontSize: 13, color: 'var(--color-text-muted)', marginTop: 8, paddingTop: 8, borderTop: '1px solid var(--color-border)' }}>
+            {task.status && <span>ステータス: <strong>{String(task.status)}</strong></span>}
+            {task.assignedRoleId && <span>担当: <strong>{String(task.assignedRoleId)}</strong></span>}
+            {task.category && <span>カテゴリ: <strong>{String(task.category)}</strong></span>}
+            {task.priority && <span>優先度: <strong>{String(task.priority)}</strong></span>}
+          </div>
+        )}
+
+        {/* Fallback: show decoded JSON for non-task genes */}
+        {decoded && !task && !decoded.source && (
+          <pre style={{ padding: 12, fontSize: 12, overflow: 'auto', maxHeight: 300, background: 'var(--bg-secondary)', borderRadius: 4 }}>
+            {JSON.stringify(decoded, null, 2)}
+          </pre>
+        )}
+      </div>
     </div>
   );
 }
