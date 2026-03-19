@@ -1163,6 +1163,33 @@ export async function registerAdmin(app: Express, config: GrcConfig) {
     }),
   );
 
+  // ── GET /leaderboard — Evolution Score leaderboard ──
+
+  router.get(
+    "/leaderboard",
+    requireAuth, requireAdmin,
+    asyncHandler(async (req: Request, res: Response) => {
+      const periodParam = (req.query.period as string) || "weekly";
+      const limitParam = parseInt(req.query.limit as string, 10) || 10;
+
+      if (periodParam !== "weekly" && periodParam !== "monthly") {
+        return res.status(400).json({
+          error: "Invalid period. Expected 'weekly' or 'monthly'.",
+        });
+      }
+
+      const clampedLimit = Math.min(Math.max(limitParam, 1), 100);
+
+      const evolutionService = new EvolutionService();
+      const result = await evolutionService.calculateEvolutionLeaderboard(
+        periodParam,
+        clampedLimit,
+      );
+
+      res.json(result);
+    }),
+  );
+
   // ── GET /weekly-mvp — Weekly MVP rankings ──
 
   router.get(

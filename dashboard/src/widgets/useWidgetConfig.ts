@@ -25,6 +25,7 @@ const DEFAULT_CONFIG: WidgetConfig[] = [
   { id: 'sse-status',                visible: true, order: 17, size: '1x1' },
   { id: 'pipeline-summary',          visible: true, order: 18, size: '2x1' },
   { id: 'kpi-summary',               visible: true, order: 19, size: '1x1' },
+  { id: 'evolution-leaderboard',     visible: true, order: 20, size: '2x1' },
 ];
 
 function load(): WidgetConfig[] {

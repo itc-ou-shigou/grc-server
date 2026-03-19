@@ -17,6 +17,7 @@ import {
   json,
   timestamp,
   text,
+  datetime,
   uniqueIndex,
   index,
 } from "drizzle-orm/mysql-core";
@@ -187,3 +188,18 @@ export const evolutionEventsTable = mysqlTable(
     index("events_idx_created_at").on(table.createdAt),
   ],
 );
+
+// ── Asset Votes ─────────────────────────────────
+
+export const assetVotesTable = mysqlTable("asset_votes", {
+  id: char("id", { length: 36 }).primaryKey(),
+  assetId: char("asset_id", { length: 36 }).notNull(),
+  assetType: mysqlEnum("asset_type", ["gene", "capsule"]).notNull(),
+  voterNodeId: varchar("voter_node_id", { length: 255 }).notNull(),
+  vote: mysqlEnum("vote", ["upvote", "downvote"]).notNull(),
+  reason: text("reason"),
+  createdAt: datetime("created_at").default(sql`NOW()`),
+}, (table) => [
+  uniqueIndex("uk_asset_voter").on(table.assetId, table.voterNodeId),
+  index("idx_asset_id").on(table.assetId),
+]);

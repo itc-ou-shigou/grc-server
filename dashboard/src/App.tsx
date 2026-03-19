@@ -13,6 +13,7 @@ import { Assets } from './pages/evolution/Assets';
 import { AssetDetail } from './pages/evolution/AssetDetail';
 import { Nodes } from './pages/evolution/Nodes';
 import { Pipeline } from './pages/evolution/Pipeline';
+import { Leaderboard } from './pages/evolution/Leaderboard';
 import { Releases } from './pages/update/Releases';
 import { UpdateStats } from './pages/update/UpdateStats';
 import { Insights } from './pages/telemetry/Insights';
@@ -71,6 +72,7 @@ export function App() {
               <Route path="/manage/model-keys/distribute" element={<AdminRoute><ModelKeyDistribute /></AdminRoute>} />
               <Route path="/evolution/nodes" element={<AdminRoute><Nodes /></AdminRoute>} />
               <Route path="/evolution/pipeline" element={<AdminRoute><Pipeline /></AdminRoute>} />
+              <Route path="/evolution/leaderboard" element={<Leaderboard />} />
               <Route path="/community/moderation" element={<AdminRoute><Moderation /></AdminRoute>} />
               {/* Employee & Role Management (admin) */}
               <Route path="/employees" element={<AdminRoute><Employees /></AdminRoute>} />

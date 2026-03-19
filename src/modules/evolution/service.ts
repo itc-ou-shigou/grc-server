@@ -6,7 +6,7 @@
  */
 
 import { v4 as uuidv4 } from "uuid";
-import { eq, or, sql, desc, and, gte, lte } from "drizzle-orm";
+import { eq, or, sql, desc, and, gte, lte, ne } from "drizzle-orm";
 import pino from "pino";
 import { getDb } from "../../shared/db/connection.js";
 import {
@@ -496,6 +496,18 @@ export class EvolutionService implements IEvolutionService {
         );
       }
 
+      // Signal-based matching: use JSON_CONTAINS in SQL for accurate DB-level filtering
+      if (hasSignalFilter) {
+        const signalConditions = params.signals!.map((sig) =>
+          sql`JSON_CONTAINS(${genesTable.signalsMatch}, ${JSON.stringify(sig)})`,
+        );
+        if (signalConditions.length === 1) {
+          geneConditions.push(signalConditions[0]!);
+        } else {
+          geneConditions.push(sql`(${sql.join(signalConditions, sql` OR `)})`);
+        }
+      }
+
       const geneWhere =
         geneConditions.length > 0 ? and(...geneConditions) : sql`1=1`;
 
@@ -506,37 +518,45 @@ export class EvolutionService implements IEvolutionService {
         .where(geneWhere);
       totalGenes = Number(countResult[0]?.count ?? 0);
 
-      // Fetch rows
-      const geneRows = await db
-        .select()
-        .from(genesTable)
-        .where(geneWhere)
-        .orderBy(desc(genesTable.updatedAt))
-        .limit(limit)
-        .offset(offset);
+      if (hasSignalFilter) {
+        // When signals are provided, score genes by number of matching signals
+        // and sort by score descending (best matches first)
+        const scoreParts = params.signals!.map((sig) =>
+          sql`IFNULL(JSON_CONTAINS(${genesTable.signalsMatch}, ${JSON.stringify(sig)}), 0)`,
+        );
+        const scoreExpr = scoreParts.length === 1
+          ? scoreParts[0]!
+          : sql`(${sql.join(scoreParts, sql` + `)})`;
 
-      let genesFetchedCount = 0;
-      for (const row of geneRows) {
-        genesFetchedCount++;
-        const r = row as unknown as Record<string, unknown>;
-        // Filter by signals if specified (post-filter — may reduce result count)
-        if (hasSignalFilter) {
-          const assetSignals =
-            (r.signalsMatch as string[] | null) ?? [];
-          const hasMatch = params.signals!.some((s) =>
-            assetSignals.includes(s),
-          );
-          if (!hasMatch) continue;
+        const geneRows = await db
+          .select({
+            gene: genesTable,
+            signalScore: sql<number>`${scoreExpr}`.as("signal_score"),
+          })
+          .from(genesTable)
+          .where(geneWhere)
+          .orderBy(sql`signal_score DESC`, desc(genesTable.updatedAt))
+          .limit(limit)
+          .offset(offset);
+
+        for (const row of geneRows) {
+          const r = row.gene as unknown as Record<string, unknown>;
+          results.push(rowToAsset(r, "gene"));
         }
-        results.push(rowToAsset(r, "gene"));
-      }
+      } else {
+        // No signal filter — standard query sorted by updatedAt
+        const geneRows = await db
+          .select()
+          .from(genesTable)
+          .where(geneWhere)
+          .orderBy(desc(genesTable.updatedAt))
+          .limit(limit)
+          .offset(offset);
 
-      // When signal filtering is active, the DB total is inaccurate because
-      // signals are filtered in-memory. Adjust the total to reflect the
-      // actual filtered count from this page (approximate).
-      if (hasSignalFilter && genesFetchedCount > 0) {
-        const matchRatio = results.length / genesFetchedCount;
-        totalGenes = Math.round(totalGenes * matchRatio);
+        for (const row of geneRows) {
+          const r = row as unknown as Record<string, unknown>;
+          results.push(rowToAsset(r, "gene"));
+        }
       }
     }
 
@@ -547,6 +567,11 @@ export class EvolutionService implements IEvolutionService {
       } else {
         // Exclude quarantined by default for A2A search
         capsuleConditions.push(sql`${capsulesTable.status} != 'quarantined'`);
+      }
+
+      // Filter capsules by parent gene asset ID
+      if (params.geneAssetId) {
+        capsuleConditions.push(eq(capsulesTable.geneAssetId, params.geneAssetId));
       }
 
       const capsuleWhere =
@@ -971,6 +996,434 @@ export class EvolutionService implements IEvolutionService {
         Number(promotedGenes?.count ?? 0) +
         Number(promotedCapsules?.count ?? 0),
       activeNodes: Number(activeNodesResult?.count ?? 0),
+    };
+  }
+
+  /**
+   * Calculate Evolution Leaderboard — comprehensive score ranking for nodes.
+   *
+   * Scoring formula:
+   *  - Gene published (approved+):        +15 each
+   *  - Capsule solidified (approved+):     +20 each
+   *  - Usage reports (used others' capsule): +5 each
+   *  - Upvotes received on own assets:     +8 each
+   *  - Downvotes received:                 -5 each
+   *  - Capsule with success_streak >= 3:   +25 bonus each
+   *  - Promoted capsule:                   +30 bonus each
+   *  - Quarantined asset:                  -10 penalty each
+   */
+  async calculateEvolutionLeaderboard(
+    period: "weekly" | "monthly" = "weekly",
+    limit = 10,
+  ): Promise<{
+    period: string;
+    startDate: string;
+    endDate: string;
+    rankings: Array<{
+      rank: number;
+      nodeId: string;
+      employeeName: string | null;
+      roleId: string | null;
+      score: number;
+      breakdown: {
+        genes_published: number;
+        capsules_solidified: number;
+        usage_reports_sent: number;
+        upvotes_received: number;
+        downvotes_received: number;
+        promoted_capsules: number;
+        quarantined_assets: number;
+        bonus_streaks: number;
+      };
+      badges: string[];
+    }>;
+  }> {
+    const db = getDb();
+
+    // ── Determine date range ──
+    const now = new Date();
+    let startDate: Date;
+    let endDate: Date;
+
+    if (period === "monthly") {
+      startDate = new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), 1));
+      endDate = new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth() + 1, 1));
+    } else {
+      // Weekly: last 7 days starting from Monday
+      const dayOfWeek = now.getUTCDay() || 7; // Monday=1..Sunday=7
+      startDate = new Date(now);
+      startDate.setUTCDate(now.getUTCDate() - dayOfWeek + 1);
+      startDate.setUTCHours(0, 0, 0, 0);
+      endDate = new Date(startDate);
+      endDate.setUTCDate(startDate.getUTCDate() + 7);
+    }
+
+    // ── 1. Genes published (approved or promoted) per node ──
+    const genesPublished = await db
+      .select({
+        nodeId: genesTable.nodeId,
+        count: sql<number>`COUNT(*)`,
+      })
+      .from(genesTable)
+      .where(
+        and(
+          gte(genesTable.createdAt, startDate),
+          lte(genesTable.createdAt, endDate),
+          or(eq(genesTable.status, "approved"), eq(genesTable.status, "promoted")),
+        ),
+      )
+      .groupBy(genesTable.nodeId);
+
+    // ── 2. Capsules solidified (approved or promoted) per node ──
+    const capsulesSolidified = await db
+      .select({
+        nodeId: capsulesTable.nodeId,
+        count: sql<number>`COUNT(*)`,
+      })
+      .from(capsulesTable)
+      .where(
+        and(
+          gte(capsulesTable.createdAt, startDate),
+          lte(capsulesTable.createdAt, endDate),
+          or(eq(capsulesTable.status, "approved"), eq(capsulesTable.status, "promoted")),
+        ),
+      )
+      .groupBy(capsulesTable.nodeId);
+
+    // ── 3. Usage reports where reporter used someone else's capsule (success) ──
+    const usageReports = await db
+      .select({
+        reporterNodeId: assetReportsTable.reporterNodeId,
+        count: sql<number>`COUNT(*)`,
+      })
+      .from(assetReportsTable)
+      .innerJoin(capsulesTable, eq(assetReportsTable.assetId, capsulesTable.assetId))
+      .where(
+        and(
+          gte(assetReportsTable.createdAt, startDate),
+          lte(assetReportsTable.createdAt, endDate),
+          eq(assetReportsTable.reportType, "success"),
+          ne(assetReportsTable.reporterNodeId, capsulesTable.nodeId),
+        ),
+      )
+      .groupBy(assetReportsTable.reporterNodeId);
+
+    // ── 4. Votes received on own assets ──
+    // Import assetVotesTable lazily — Impl-1 is adding it concurrently
+    let upvotesReceived: Array<{ nodeId: string | null; count: number }> = [];
+    let downvotesReceived: Array<{ nodeId: string | null; count: number }> = [];
+    try {
+      const { assetVotesTable } = await import("./schema.js");
+      if (assetVotesTable) {
+        // Upvotes on genes
+        const geneUpvotes = await db
+          .select({
+            nodeId: genesTable.nodeId,
+            count: sql<number>`COUNT(*)`,
+          })
+          .from(assetVotesTable)
+          .innerJoin(genesTable, eq(assetVotesTable.assetId, genesTable.assetId))
+          .where(
+            and(
+              gte(assetVotesTable.createdAt, startDate),
+              lte(assetVotesTable.createdAt, endDate),
+              eq(assetVotesTable.vote, "upvote"),
+            ),
+          )
+          .groupBy(genesTable.nodeId);
+
+        // Upvotes on capsules
+        const capsuleUpvotes = await db
+          .select({
+            nodeId: capsulesTable.nodeId,
+            count: sql<number>`COUNT(*)`,
+          })
+          .from(assetVotesTable)
+          .innerJoin(capsulesTable, eq(assetVotesTable.assetId, capsulesTable.assetId))
+          .where(
+            and(
+              gte(assetVotesTable.createdAt, startDate),
+              lte(assetVotesTable.createdAt, endDate),
+              eq(assetVotesTable.vote, "upvote"),
+            ),
+          )
+          .groupBy(capsulesTable.nodeId);
+
+        upvotesReceived = [...geneUpvotes, ...capsuleUpvotes];
+
+        // Downvotes on genes
+        const geneDownvotes = await db
+          .select({
+            nodeId: genesTable.nodeId,
+            count: sql<number>`COUNT(*)`,
+          })
+          .from(assetVotesTable)
+          .innerJoin(genesTable, eq(assetVotesTable.assetId, genesTable.assetId))
+          .where(
+            and(
+              gte(assetVotesTable.createdAt, startDate),
+              lte(assetVotesTable.createdAt, endDate),
+              eq(assetVotesTable.vote, "downvote"),
+            ),
+          )
+          .groupBy(genesTable.nodeId);
+
+        // Downvotes on capsules
+        const capsuleDownvotes = await db
+          .select({
+            nodeId: capsulesTable.nodeId,
+            count: sql<number>`COUNT(*)`,
+          })
+          .from(assetVotesTable)
+          .innerJoin(capsulesTable, eq(assetVotesTable.assetId, capsulesTable.assetId))
+          .where(
+            and(
+              gte(assetVotesTable.createdAt, startDate),
+              lte(assetVotesTable.createdAt, endDate),
+              eq(assetVotesTable.vote, "downvote"),
+            ),
+          )
+          .groupBy(capsulesTable.nodeId);
+
+        downvotesReceived = [...geneDownvotes, ...capsuleDownvotes];
+      }
+    } catch {
+      // assetVotesTable not yet available — votes will be zero
+      logger.debug("assetVotesTable not available — vote scores will be zero");
+    }
+
+    // ── 5. Capsules with success_streak >= 3 (bonus) ──
+    const streakBonuses = await db
+      .select({
+        nodeId: capsulesTable.nodeId,
+        count: sql<number>`COUNT(*)`,
+      })
+      .from(capsulesTable)
+      .where(
+        and(
+          gte(capsulesTable.createdAt, startDate),
+          lte(capsulesTable.createdAt, endDate),
+          gte(capsulesTable.successStreak, 3),
+        ),
+      )
+      .groupBy(capsulesTable.nodeId);
+
+    // ── 6. Promoted capsules (bonus) ──
+    const promotedCapsules = await db
+      .select({
+        nodeId: capsulesTable.nodeId,
+        count: sql<number>`COUNT(*)`,
+      })
+      .from(capsulesTable)
+      .where(
+        and(
+          gte(capsulesTable.createdAt, startDate),
+          lte(capsulesTable.createdAt, endDate),
+          eq(capsulesTable.status, "promoted"),
+        ),
+      )
+      .groupBy(capsulesTable.nodeId);
+
+    // ── 7. Quarantined assets (penalty) ──
+    const quarantinedGenes = await db
+      .select({
+        nodeId: genesTable.nodeId,
+        count: sql<number>`COUNT(*)`,
+      })
+      .from(genesTable)
+      .where(
+        and(
+          gte(genesTable.createdAt, startDate),
+          lte(genesTable.createdAt, endDate),
+          eq(genesTable.status, "quarantined"),
+        ),
+      )
+      .groupBy(genesTable.nodeId);
+
+    const quarantinedCapsules = await db
+      .select({
+        nodeId: capsulesTable.nodeId,
+        count: sql<number>`COUNT(*)`,
+      })
+      .from(capsulesTable)
+      .where(
+        and(
+          gte(capsulesTable.createdAt, startDate),
+          lte(capsulesTable.createdAt, endDate),
+          eq(capsulesTable.status, "quarantined"),
+        ),
+      )
+      .groupBy(capsulesTable.nodeId);
+
+    // ── 8. Trusted source check: capsules with success_rate >= 0.9 AND use_count >= 10 ──
+    const trustedCapsules = await db
+      .select({
+        nodeId: capsulesTable.nodeId,
+        count: sql<number>`COUNT(*)`,
+      })
+      .from(capsulesTable)
+      .where(
+        and(
+          gte(capsulesTable.successRate, 0.9),
+          gte(capsulesTable.useCount, 10),
+        ),
+      )
+      .groupBy(capsulesTable.nodeId);
+
+    // ── Merge all data into ranking map ──
+    type NodeBreakdown = {
+      genes_published: number;
+      capsules_solidified: number;
+      usage_reports_sent: number;
+      upvotes_received: number;
+      downvotes_received: number;
+      promoted_capsules: number;
+      quarantined_assets: number;
+      bonus_streaks: number;
+      has_trusted_capsule: boolean;
+    };
+
+    const rankMap = new Map<string, NodeBreakdown>();
+
+    const getEntry = (nodeId: string): NodeBreakdown => {
+      if (!rankMap.has(nodeId)) {
+        rankMap.set(nodeId, {
+          genes_published: 0,
+          capsules_solidified: 0,
+          usage_reports_sent: 0,
+          upvotes_received: 0,
+          downvotes_received: 0,
+          promoted_capsules: 0,
+          quarantined_assets: 0,
+          bonus_streaks: 0,
+          has_trusted_capsule: false,
+        });
+      }
+      return rankMap.get(nodeId)!;
+    };
+
+    for (const row of genesPublished) {
+      if (!row.nodeId) continue;
+      getEntry(row.nodeId).genes_published = Number(row.count);
+    }
+    for (const row of capsulesSolidified) {
+      if (!row.nodeId) continue;
+      getEntry(row.nodeId).capsules_solidified = Number(row.count);
+    }
+    for (const row of usageReports) {
+      if (!row.reporterNodeId) continue;
+      getEntry(row.reporterNodeId).usage_reports_sent = Number(row.count);
+    }
+    for (const row of upvotesReceived) {
+      if (!row.nodeId) continue;
+      const entry = getEntry(row.nodeId);
+      entry.upvotes_received += Number(row.count);
+    }
+    for (const row of downvotesReceived) {
+      if (!row.nodeId) continue;
+      const entry = getEntry(row.nodeId);
+      entry.downvotes_received += Number(row.count);
+    }
+    for (const row of streakBonuses) {
+      if (!row.nodeId) continue;
+      getEntry(row.nodeId).bonus_streaks = Number(row.count);
+    }
+    for (const row of promotedCapsules) {
+      if (!row.nodeId) continue;
+      getEntry(row.nodeId).promoted_capsules = Number(row.count);
+    }
+    for (const row of quarantinedGenes) {
+      if (!row.nodeId) continue;
+      const entry = getEntry(row.nodeId);
+      entry.quarantined_assets += Number(row.count);
+    }
+    for (const row of quarantinedCapsules) {
+      if (!row.nodeId) continue;
+      const entry = getEntry(row.nodeId);
+      entry.quarantined_assets += Number(row.count);
+    }
+    for (const row of trustedCapsules) {
+      if (!row.nodeId) continue;
+      getEntry(row.nodeId).has_trusted_capsule = true;
+    }
+
+    // ── Calculate scores ──
+    const scored = Array.from(rankMap.entries()).map(([nodeId, b]) => {
+      const score =
+        b.genes_published * 15 +
+        b.capsules_solidified * 20 +
+        b.usage_reports_sent * 5 +
+        b.upvotes_received * 8 +
+        b.downvotes_received * -5 +
+        b.bonus_streaks * 25 +
+        b.promoted_capsules * 30 +
+        b.quarantined_assets * -10;
+
+      return { nodeId, score, breakdown: b };
+    });
+
+    // Sort descending by score, take top N
+    scored.sort((a, b) => b.score - a.score);
+    const topN = scored.slice(0, limit);
+
+    // ── Enrich with node metadata ──
+    const nodeIds = topN.map((r) => r.nodeId);
+    const nodeMetadata = new Map<string, { employeeName: string | null; roleId: string | null }>();
+
+    if (nodeIds.length > 0) {
+      const nodeRows = await db
+        .select({
+          nodeId: nodesTable.nodeId,
+          employeeName: nodesTable.employeeName,
+          roleId: nodesTable.roleId,
+        })
+        .from(nodesTable)
+        .where(sql`${nodesTable.nodeId} IN (${sql.join(nodeIds.map((id) => sql`${id}`), sql`, `)})`);
+
+      for (const row of nodeRows) {
+        nodeMetadata.set(row.nodeId, {
+          employeeName: row.employeeName,
+          roleId: row.roleId,
+        });
+      }
+    }
+
+    // ── Build rankings with badges ──
+    const rankings = topN.map((r, index) => {
+      const rank = index + 1;
+      const badges: string[] = [];
+
+      if (r.breakdown.genes_published >= 5) badges.push("Gene Master");
+      if (r.breakdown.capsules_solidified >= 10) badges.push("Capsule Creator");
+      if (r.breakdown.usage_reports_sent >= 5) badges.push("Problem Solver");
+      if (rank === 1) badges.push("Top Contributor");
+      if (r.breakdown.has_trusted_capsule) badges.push("Trusted Source");
+
+      return {
+        rank,
+        nodeId: r.nodeId,
+        employeeName: nodeMetadata.get(r.nodeId)?.employeeName ?? null,
+        roleId: nodeMetadata.get(r.nodeId)?.roleId ?? null,
+        score: r.score,
+        breakdown: {
+          genes_published: r.breakdown.genes_published,
+          capsules_solidified: r.breakdown.capsules_solidified,
+          usage_reports_sent: r.breakdown.usage_reports_sent,
+          upvotes_received: r.breakdown.upvotes_received,
+          downvotes_received: r.breakdown.downvotes_received,
+          promoted_capsules: r.breakdown.promoted_capsules,
+          quarantined_assets: r.breakdown.quarantined_assets,
+          bonus_streaks: r.breakdown.bonus_streaks,
+        },
+        badges,
+      };
+    });
+
+    return {
+      period,
+      startDate: startDate.toISOString(),
+      endDate: endDate.toISOString(),
+      rankings,
     };
   }
 

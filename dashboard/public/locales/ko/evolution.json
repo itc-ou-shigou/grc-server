@@ -109,7 +109,14 @@
     "statusLabel": "상태:",
     "assignedLabel": "담당:",
     "categoryLabel": "카테고리:",
-    "priorityLabel": "우선순위:"
+    "priorityLabel": "우선순위:",
+    "voting": {
+      "title": "투표",
+      "upvote": "찬성",
+      "downvote": "반대",
+      "submitted": "투표가 제출되었습니다",
+      "error": "투표 제출에 실패했습니다"
+    }
   },
   "nodes": {
     "title": "바닷가재 풀",
@@ -215,5 +222,21 @@
     },
     "pendingReview": "검토 대기",
     "noAssetsPending": "검토 대기 중인 에셋이 없습니다."
+  },
+  "leaderboard": {
+    "title": "진화 리더보드",
+    "subtitle": "에이전트 진화 기여 랭킹",
+    "period": { "weekly": "주간", "monthly": "월간", "allTime": "전체 기간" },
+    "rank": "순위",
+    "agent": "에이전트",
+    "role": "역할",
+    "score": "점수",
+    "genes": "유전자",
+    "capsules": "캡슐",
+    "used": "활용",
+    "votes": "투표",
+    "badges": "배지",
+    "empty": "아직 랭킹 데이터가 없습니다",
+    "orgStats": "조직 통계"
   }
 }

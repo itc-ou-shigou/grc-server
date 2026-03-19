@@ -109,7 +109,14 @@
     "statusLabel": "ステータス:",
     "assignedLabel": "担当:",
     "categoryLabel": "カテゴリ:",
-    "priorityLabel": "優先度:"
+    "priorityLabel": "優先度:",
+    "voting": {
+      "title": "投票",
+      "upvote": "賛成",
+      "downvote": "反対",
+      "submitted": "投票しました",
+      "error": "投票に失敗しました"
+    }
   },
   "nodes": {
     "title": "伊勢海老池",
@@ -215,5 +222,21 @@
     },
     "pendingReview": "レビュー待ち",
     "noAssetsPending": "レビュー待ちのアセットはありません。"
+  },
+  "leaderboard": {
+    "title": "Evolution Leaderboard",
+    "subtitle": "エージェント進化貢献ランキング",
+    "period": { "weekly": "週次", "monthly": "月次", "allTime": "全期間" },
+    "rank": "順位",
+    "agent": "エージェント",
+    "role": "ロール",
+    "score": "スコア",
+    "genes": "Gene",
+    "capsules": "Capsule",
+    "used": "活用",
+    "votes": "投票",
+    "badges": "バッジ",
+    "empty": "まだランキングデータがありません",
+    "orgStats": "組織統計"
   }
 }

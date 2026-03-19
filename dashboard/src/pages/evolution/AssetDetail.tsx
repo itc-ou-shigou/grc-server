@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
-import { useQuery } from '@tanstack/react-query';
+import { useQuery, useMutation } from '@tanstack/react-query';
 import { DataTable, Column } from '../../components/DataTable';
 import { StatusBadge } from '../../components/StatusBadge';
 import { Modal } from '../../components/Modal';
@@ -19,6 +19,19 @@ export function AssetDetail() {
   const { data: usageData, isLoading: usageLoading } = useAssetUsage(id ?? '');
   const changeStatus = useChangeAssetStatus();
   const [actionModal, setActionModal] = useState<{ action: string; newStatus: string } | null>(null);
+
+  const voteMutation = useMutation({
+    mutationFn: (vote: 'upvote' | 'downvote') =>
+      apiClient.post('/a2a/evolution/vote', {
+        asset_id: data?.data?.assetId,
+        voter_node_id: data?.data?.nodeId,
+        vote,
+      }),
+  });
+
+  function handleVote(vote: 'upvote' | 'downvote') {
+    voteMutation.mutate(vote);
+  }
 
   if (isLoading) {
     return (
@@ -226,10 +239,20 @@ export function AssetDetail() {
       {/* Strategy / Trigger Data */}
       {isGene && asset.strategy && (
         <div className="card" style={{ marginBottom: '1.5rem' }}>
-          <div className="card-header"><h2 className="card-title">{t('assetDetail.strategy')}</h2></div>
-          <pre className="code-block" style={{ padding: '1rem', fontSize: '0.8rem', overflow: 'auto', maxHeight: '300px', background: 'var(--bg-secondary)', borderRadius: '0.25rem', margin: '0 1rem 1rem' }}>
-            {JSON.stringify(asset.strategy, null, 2)}
-          </pre>
+          <div className="card-header"><h2 className="card-title">📋 {t('assetDetail.strategy')}</h2></div>
+          <div style={{ padding: '0 1rem 1rem' }}>
+            {Array.isArray(asset.strategy) ? (
+              <ol style={{ margin: 0, paddingLeft: '1.5rem', lineHeight: 1.8 }}>
+                {asset.strategy.map((step: string, i: number) => (
+                  <li key={i} style={{ marginBottom: 4, fontSize: 14 }}>{step}</li>
+                ))}
+              </ol>
+            ) : (
+              <pre style={{ padding: 12, fontSize: 12, overflow: 'auto', maxHeight: 300, background: 'var(--bg-secondary)', borderRadius: 4 }}>
+                {JSON.stringify(asset.strategy, null, 2)}
+              </pre>
+            )}
+          </div>
         </div>
       )}
 
@@ -286,7 +309,7 @@ export function AssetDetail() {
 
       {/* Moderation Actions (admin only) */}
       {isAdmin && (
-        <div className="card">
+        <div className="card" style={{ marginBottom: '1.5rem' }}>
           <div className="card-header"><h2 className="card-title">{t('assetDetail.moderation')}</h2></div>
           <div className="action-group" style={{ padding: '1rem', display: 'flex', gap: '0.5rem' }}>
             {statusActions.map(({ label, newStatus }) => (
@@ -302,6 +325,37 @@ export function AssetDetail() {
           </div>
         </div>
       )}
+
+      {/* Voting Section */}
+      <div className="card" style={{ marginBottom: '1.5rem' }}>
+        <div className="card-header">
+          <h2 className="card-title">{t('assetDetail.voting.title')}</h2>
+        </div>
+        <div style={{ padding: '1rem', display: 'flex', gap: 12, alignItems: 'center' }}>
+          <button
+            className="btn btn-default"
+            onClick={() => handleVote('upvote')}
+            disabled={voteMutation.isPending}
+            style={{ display: 'flex', alignItems: 'center', gap: 6 }}
+          >
+            👍 {t('assetDetail.voting.upvote')}
+          </button>
+          <button
+            className="btn btn-default"
+            onClick={() => handleVote('downvote')}
+            disabled={voteMutation.isPending}
+            style={{ display: 'flex', alignItems: 'center', gap: 6 }}
+          >
+            👎 {t('assetDetail.voting.downvote')}
+          </button>
+          {voteMutation.isSuccess && (
+            <span className="text-success text-sm">{t('assetDetail.voting.submitted')}</span>
+          )}
+          {voteMutation.isError && (
+            <span className="text-danger text-sm">{t('assetDetail.voting.error')}</span>
+          )}
+        </div>
+      </div>
 
       <Modal
         open={!!actionModal}

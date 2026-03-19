@@ -109,7 +109,14 @@
     "statusLabel": "状态:",
     "assignedLabel": "负责人:",
     "categoryLabel": "分类:",
-    "priorityLabel": "优先级:"
+    "priorityLabel": "优先级:",
+    "voting": {
+      "title": "投票",
+      "upvote": "赞成",
+      "downvote": "反对",
+      "submitted": "已提交投票",
+      "error": "投票提交失败"
+    }
   },
   "nodes": {
     "title": "龙虾池",
@@ -215,5 +222,21 @@
     },
     "pendingReview": "待审核",
     "noAssetsPending": "没有待审核的资产。"
+  },
+  "leaderboard": {
+    "title": "进化排行榜",
+    "subtitle": "代理进化贡献排名",
+    "period": { "weekly": "每周", "monthly": "每月", "allTime": "全部时间" },
+    "rank": "排名",
+    "agent": "代理",
+    "role": "角色",
+    "score": "分数",
+    "genes": "基因",
+    "capsules": "胶囊",
+    "used": "使用",
+    "votes": "投票",
+    "badges": "徽章",
+    "empty": "暂无排名数据",
+    "orgStats": "组织统计"
   }
 }

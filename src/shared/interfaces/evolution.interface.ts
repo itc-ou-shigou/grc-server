@@ -33,6 +33,7 @@ export interface IEvolutionSearchParams {
   signals?: string[];
   status?: AssetStatus;
   type?: AssetType;
+  geneAssetId?: string;
   limit?: number;
   offset?: number;
 }

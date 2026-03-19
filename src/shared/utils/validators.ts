@@ -77,6 +77,8 @@ export const a2aPublishSchema = z.object({
 export const a2aSearchSchema = z.object({
   signals: z.array(z.string()).optional(),
   status: z.enum(["pending", "approved", "promoted", "quarantined"]).optional(),
+  type: z.enum(["gene", "capsule"]).optional(),
+  gene_asset_id: z.string().min(1).max(255).optional(),
   limit: z.coerce.number().int().min(1).max(100).default(20),
   offset: z.coerce.number().int().min(0).default(0),
 });

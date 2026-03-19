@@ -109,7 +109,14 @@
     "statusLabel": "Status:",
     "assignedLabel": "Assigned:",
     "categoryLabel": "Category:",
-    "priorityLabel": "Priority:"
+    "priorityLabel": "Priority:",
+    "voting": {
+      "title": "Vote",
+      "upvote": "Upvote",
+      "downvote": "Downvote",
+      "submitted": "Vote submitted",
+      "error": "Failed to submit vote"
+    }
   },
   "nodes": {
     "title": "Lobster Pool",
@@ -215,5 +222,21 @@
     },
     "pendingReview": "Pending Review",
     "noAssetsPending": "No assets pending review."
+  },
+  "leaderboard": {
+    "title": "Evolution Leaderboard",
+    "subtitle": "Agent Evolution Contribution Ranking",
+    "period": { "weekly": "Weekly", "monthly": "Monthly", "allTime": "All Time" },
+    "rank": "Rank",
+    "agent": "Agent",
+    "role": "Role",
+    "score": "Score",
+    "genes": "Genes",
+    "capsules": "Capsules",
+    "used": "Used",
+    "votes": "Votes",
+    "badges": "Badges",
+    "empty": "No ranking data yet",
+    "orgStats": "Org Stats"
   }
 }

@@ -20,7 +20,8 @@ export type WidgetId =
   | 'review-tasks'
   | 'sse-status'
   | 'pipeline-summary'
-  | 'kpi-summary';
+  | 'kpi-summary'
+  | 'evolution-leaderboard';
 
 export type WidgetSize = '1x1' | '2x1' | '1x2' | '2x2' | '3x1' | '3x2';
 

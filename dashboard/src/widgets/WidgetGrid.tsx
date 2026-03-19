@@ -20,6 +20,7 @@ import { ReviewTasksWidget } from './ReviewTasksWidget';
 import { SSEStatusWidget } from './SSEStatusWidget';
 import { PipelineSummaryWidget } from './PipelineSummaryWidget';
 import { KPISummaryWidget } from './KPISummaryWidget';
+import { EvolutionLeaderboardWidget } from './EvolutionLeaderboardWidget';
 import { useWidgetConfig } from './useWidgetConfig';
 import type { WidgetId } from './types';
 import { WIDGET_SIZE_COLS } from './types';
@@ -49,6 +50,7 @@ const WIDGET_LABELS: Record<WidgetId, string> = {
   'sse-status':                'SSE Status',
   'pipeline-summary':          'Pipeline Summary',
   'kpi-summary':               'KPI Summary',
+  'evolution-leaderboard':     'Evolution Leaderboard',
 };
 
 interface CustomizePanelProps {
@@ -354,6 +356,8 @@ export function WidgetGrid() {
         return <PipelineSummaryWidget />;
       case 'kpi-summary':
         return <KPISummaryWidget />;
+      case 'evolution-leaderboard':
+        return <EvolutionLeaderboardWidget />;
       default:
         return null;
     }

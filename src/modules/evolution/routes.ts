@@ -8,6 +8,7 @@
 import { Router } from "express";
 import type { Express, Request, Response } from "express";
 import { z } from "zod";
+import { v4 as uuidv4 } from "uuid";
 import pino from "pino";
 import type { GrcConfig } from "../../config.js";
 import { createAuthMiddleware, requireScopes } from "../../shared/middleware/auth.js";
@@ -15,6 +16,7 @@ import { createAdminAuthMiddleware } from "../../shared/middleware/admin-auth.js
 import {
   asyncHandler,
   BadRequestError,
+  ConflictError,
   NotFoundError,
 } from "../../shared/middleware/error-handler.js";
 import { rateLimitMiddleware } from "../../shared/middleware/rate-limit.js";
@@ -27,7 +29,7 @@ import {
 import { eq, and, sql } from "drizzle-orm";
 import { getDb } from "../../shared/db/connection.js";
 import { EvolutionService, upsertNode } from "./service.js";
-import { nodesTable } from "./schema.js";
+import { nodesTable, assetVotesTable } from "./schema.js";
 import { a2aRelayQueueTable } from "../relay/schema.js";
 import { nodeConfigSSE } from "./node-config-sse.js";
 import { RolesService } from "../roles/service.js";
@@ -62,6 +64,13 @@ const a2aDecisionSchema = z.object({
 const a2aRevokeSchema = z.object({
   asset_id: z.string().min(1),
   node_id: nodeIdSchema,
+});
+
+const a2aVoteSchema = z.object({
+  asset_id: z.string().min(1),
+  voter_node_id: nodeIdSchema,
+  vote: z.enum(["upvote", "downvote"]),
+  reason: z.string().optional(),
 });
 
 const trendingQuerySchema = z.object({
@@ -323,6 +332,66 @@ export async function register(app: Express, config: GrcConfig): Promise<void> {
   );
 
   // ────────────────────────────────────────────
+  // POST /a2a/vote — Vote on an asset (gene/capsule)
+  // ────────────────────────────────────────────
+  router.post(
+    "/vote",
+    authRequired,
+    rateLimitMiddleware,
+    asyncHandler(async (req: Request, res: Response) => {
+      const body = a2aVoteSchema.parse(req.body);
+      const db = getDb();
+
+      // Look up the asset to determine type and owner
+      const asset = await service.fetchAsset(body.asset_id);
+      if (!asset) {
+        throw new NotFoundError("Asset");
+      }
+
+      // Cannot vote on your own asset
+      if (asset.nodeId === body.voter_node_id) {
+        throw new BadRequestError("Cannot vote on your own asset");
+      }
+
+      // Check unique constraint — one vote per asset per voter
+      const existing = await db
+        .select({ id: assetVotesTable.id })
+        .from(assetVotesTable)
+        .where(
+          and(
+            eq(assetVotesTable.assetId, body.asset_id),
+            eq(assetVotesTable.voterNodeId, body.voter_node_id),
+          ),
+        )
+        .limit(1);
+
+      if (existing.length > 0) {
+        throw new ConflictError("Already voted on this asset");
+      }
+
+      const voteId = uuidv4();
+      await db.insert(assetVotesTable).values({
+        id: voteId,
+        assetId: body.asset_id,
+        assetType: asset.type as "gene" | "capsule",
+        voterNodeId: body.voter_node_id,
+        vote: body.vote,
+        reason: body.reason ?? null,
+      });
+
+      logger.info(
+        { assetId: body.asset_id, voterNodeId: body.voter_node_id, vote: body.vote },
+        "Asset vote recorded",
+      );
+
+      res.status(201).json({
+        ok: true,
+        vote_id: voteId,
+      });
+    }),
+  );
+
+  // ────────────────────────────────────────────
   // POST /a2a/decision — Admin decision on asset
   // ────────────────────────────────────────────
   router.post(
@@ -383,6 +452,8 @@ export async function register(app: Express, config: GrcConfig): Promise<void> {
       const parsed = a2aSearchSchema.parse({
         signals,
         status: req.query.status,
+        type: req.query.type,
+        gene_asset_id: req.query.gene_asset_id,
         limit: req.query.limit,
         offset: req.query.offset,
       });
@@ -390,6 +461,8 @@ export async function register(app: Express, config: GrcConfig): Promise<void> {
       const result = await service.searchAssets({
         signals: parsed.signals,
         status: parsed.status,
+        type: parsed.type,
+        geneAssetId: parsed.gene_asset_id,
         limit: parsed.limit,
         offset: parsed.offset,
       });

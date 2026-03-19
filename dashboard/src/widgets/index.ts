@@ -9,5 +9,6 @@ export { ReviewTasksWidget } from './ReviewTasksWidget';
 export { SSEStatusWidget } from './SSEStatusWidget';
 export { PipelineSummaryWidget } from './PipelineSummaryWidget';
 export { KPISummaryWidget } from './KPISummaryWidget';
+export { EvolutionLeaderboardWidget } from './EvolutionLeaderboardWidget';
 export { useWidgetConfig } from './useWidgetConfig';
 export type { WidgetId, WidgetConfig, WidgetGridConfig, WidgetSize } from './types';

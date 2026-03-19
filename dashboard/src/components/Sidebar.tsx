@@ -113,6 +113,7 @@ const NAV_SECTIONS: NavSection[] = [
     items: [
       { labelKey: 'assets', path: '/evolution/assets' },
       { labelKey: 'pipeline', path: '/evolution/pipeline', adminOnly: true },
+      { labelKey: 'leaderboard', path: '/evolution/leaderboard' },
     ],
   },
   // ── 社区 ──

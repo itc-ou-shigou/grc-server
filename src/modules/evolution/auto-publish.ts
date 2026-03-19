@@ -30,55 +30,8 @@ export class AutoPublishService {
     deliverables?: unknown;
     resultSummary?: string | null;
   }): Promise<void> {
-    if (!task.assignedNodeId) return;
-    if (!task.resultSummary && !task.deliverables) return; // nothing to publish
-
-    try {
-      const payload = {
-        source: "task_completion",
-        task_code: task.taskCode,
-        task_title: task.title,
-        category: task.category,
-        creator_role: task.assignedRoleId,
-        result_summary:
-          typeof task.resultSummary === "string"
-            ? task.resultSummary.substring(0, 500)
-            : null,
-        completed_at: new Date().toISOString(),
-      };
-
-      // Use a deterministic asset_id based on task code
-      const assetId = `gene-task-${task.taskCode}`;
-      const contentHash = Buffer.from(JSON.stringify(payload))
-        .toString("base64url");
-
-      log.info(
-        { taskCode: task.taskCode, assetId },
-        "Auto-publishing gene for completed task",
-      );
-
-      // Attempt to publish a gene through the evolution service.
-      // ConflictError (duplicate) is expected if the task was already published.
-      try {
-        await this.evolutionService.publishAsset({
-          nodeId: task.assignedNodeId,
-          assetType: "gene",
-          assetId,
-          contentHash,
-          payload,
-          category: task.category ?? "operational",
-        });
-        log.info({ assetId }, "Gene auto-published successfully");
-      } catch (err: unknown) {
-        const error = err as { message?: string };
-        if (error.message?.includes("already exists")) {
-          log.debug({ assetId }, "Gene already published for this task — skipping");
-        } else {
-          throw err;
-        }
-      }
-    } catch (err) {
-      log.warn({ err, taskCode: task.taskCode }, "Auto-publish failed (non-fatal)");
-    }
+    // Auto-publish disabled — voting/curation flow replaces automatic gene creation.
+    log.debug({ taskCode: task.taskCode }, "Auto-publish disabled — skipping gene creation");
+    return;
   }
 }
