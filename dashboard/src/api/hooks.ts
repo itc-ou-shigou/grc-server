@@ -355,10 +355,18 @@ export function useAdminAssets(params?: {
   status?: string;
   category?: string;
 }) {
+  // Backend expects 'type' not 'asset_type', and 'limit' not 'page_size'
+  const apiParams: Record<string, string | number | boolean | undefined> = {
+    page: params?.page,
+    limit: params?.page_size,
+    type: params?.asset_type,
+    status: params?.status,
+    category: params?.category,
+  };
   return useQuery<PaginatedResponse<Asset>>({
     queryKey: ['admin', 'assets', params],
     queryFn: () =>
-      apiClient.get<PaginatedResponse<Asset>>('/api/v1/admin/evolution/assets', params as Record<string, string | number | boolean | undefined>),
+      apiClient.get<PaginatedResponse<Asset>>('/api/v1/admin/evolution/assets', apiParams),
   });
 }
 
