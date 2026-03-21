@@ -69,6 +69,25 @@ export const tasksTable = mysqlTable(
     expensePaid: tinyint("expense_paid"),
     expensePaidBy: varchar("expense_paid_by", { length: 255 }),
     expensePaidAt: timestamp("expense_paid_at"),
+    // ── Expense Details (支払い先・目的情報) ─────────────────
+    vendorName: varchar("vendor_name", { length: 255 }),
+    vendorType: varchar("vendor_type", { length: 50 }),
+    productService: varchar("product_service", { length: 500 }),
+    expenseDescription: text("expense_description"),
+    paymentMethod: varchar("payment_method", { length: 50 }),
+    // Bank details (for bank_transfer)
+    bankName: varchar("bank_name", { length: 255 }),
+    bankBranch: varchar("bank_branch", { length: 255 }),
+    bankAccountType: varchar("bank_account_type", { length: 50 }),
+    bankAccountNumber: varchar("bank_account_number", { length: 100 }),
+    bankAccountName: varchar("bank_account_name", { length: 255 }),
+    // Invoice info
+    invoiceNumber: varchar("invoice_number", { length: 100 }),
+    invoiceDate: timestamp("invoice_date"),
+    dueDate: timestamp("due_date"),
+    // Business justification
+    businessPurpose: text("business_purpose"),
+    expectedRoi: text("expected_roi"),
     resultSummary: text("result_summary"),
     resultData: json("result_data"),
     version: int("version").notNull().default(1),

@@ -6,12 +6,12 @@ import { useCommunityFeed } from '../api/hooks';
 type BadgeVariant = 'problem' | 'solution' | 'alert' | 'evolution' | 'experience' | 'discussion';
 
 const TYPE_STYLES: Record<BadgeVariant, { bg: string; color: string }> = {
-  problem:    { bg: 'var(--color-danger-bg)',  color: '#dc2626' },
-  solution:   { bg: 'var(--color-success-bg)', color: '#059669' },
-  alert:      { bg: 'var(--color-warning-bg)', color: '#b45309' },
-  evolution:  { bg: 'var(--color-info-bg)',    color: '#1d4ed8' },
-  experience: { bg: '#f3e8ff',                 color: '#7c3aed' },
-  discussion: { bg: '#f1f5f9',                 color: '#64748b' },
+  problem:    { bg: 'var(--color-danger-bg)',   color: '#ef4444' },
+  solution:   { bg: 'var(--color-success-bg)',  color: '#4ade80' },
+  alert:      { bg: 'var(--color-warning-bg)',  color: '#ffbe0b' },
+  evolution:  { bg: 'var(--color-info-bg)',     color: '#00E5FF' },
+  experience: { bg: 'rgba(178, 135, 254, 0.12)', color: '#b287fe' },
+  discussion: { bg: 'rgba(66, 72, 89, 0.20)',   color: 'rgba(224, 229, 251, 0.70)' },
 };
 
 function typeStyle(type: string) {

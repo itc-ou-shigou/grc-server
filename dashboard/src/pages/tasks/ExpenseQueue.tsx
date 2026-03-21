@@ -224,7 +224,7 @@ export function ExpenseQueue() {
         </div>
         <div style={{ display: 'flex', gap: '0.5rem' }}>
           {pendingCount > 0 && (
-            <span className="tag" style={{ fontSize: '0.875rem', background: 'var(--warning-bg, #fff3cd)' }}>
+            <span className="tag" style={{ fontSize: '0.875rem', background: 'var(--color-warning-bg)' }}>
               {pendingCount} 待审批
             </span>
           )}
@@ -297,7 +297,7 @@ export function ExpenseQueue() {
             <div
               style={{
                 padding: '0.75rem',
-                background: 'var(--surface-alt, #f5f5f5)',
+                background: 'rgba(29, 37, 59, 0.40)',
                 borderRadius: '6px',
                 marginTop: '0.75rem',
               }}

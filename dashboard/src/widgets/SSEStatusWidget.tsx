@@ -40,7 +40,7 @@ export function SSEStatusWidget() {
             width: 8,
             height: 8,
             borderRadius: '50%',
-            background: connected > 0 ? '#22c55e' : '#94a3b8',
+            background: connected > 0 ? '#4ade80' : 'rgba(224, 229, 251, 0.35)',
             marginRight: 6,
             verticalAlign: 'middle',
           }}
@@ -69,7 +69,7 @@ export function SSEStatusWidget() {
                   width: 6,
                   height: 6,
                   borderRadius: '50%',
-                  background: '#22c55e',
+                  background: '#4ade80',
                   flexShrink: 0,
                 }}
               />

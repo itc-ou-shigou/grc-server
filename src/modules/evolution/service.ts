@@ -295,14 +295,24 @@ export class EvolutionService implements IEvolutionService {
           successRate: 0,
         });
       } else {
+        // Extract capsule-specific fields from payload
+        const geneAssetId = (params.payload.gene_asset_id as string) ?? null;
+        const triggerData = (params.payload.trigger_data as Record<string, unknown>) ?? null;
+        const summary = (params.payload.summary as string) ?? null;
+        const chainId = (params.payload.chain_id as string) ?? null;
+
         await db.insert(capsulesTable).values({
           id,
           assetId: params.assetId,
+          geneAssetId,
           nodeId: params.nodeId,
           userId: params.userId ?? null,
           contentHash: params.contentHash,
+          triggerData,
+          summary,
           signature: params.signature ?? null,
           status: initialStatus,
+          chainId,
           schemaVersion: typeof params.schemaVersion === "number" ? params.schemaVersion : 1,
           useCount: 0,
           successRate: 0,

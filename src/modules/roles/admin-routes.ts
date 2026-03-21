@@ -125,6 +125,64 @@ export async function registerAdmin(app: Express, config: GrcConfig) {
     }),
   );
 
+  // ── GET /roles/skills — Skill catalog (filterable) ──
+  // NOTE: Must be registered BEFORE /roles/:id to avoid "skills" being treated as an id param.
+
+  const skillListQuerySchema = z.object({
+    tier: z.string().optional(),
+    search: z.string().optional(),
+  });
+
+  router.get(
+    "/roles/skills",
+    requireAuth, requireAdmin,
+    asyncHandler(async (req: Request, res: Response) => {
+      const query = skillListQuerySchema.parse(req.query);
+      const db = getDb();
+
+      const conditions: ReturnType<typeof eq>[] = [];
+
+      if (query.tier) {
+        const tiers = query.tier.split(",").map((t) => t.trim()) as ("P0" | "P1" | "P2" | "P3")[];
+        if (tiers.length === 1) {
+          conditions.push(eq(skillCatalogTable.tier, tiers[0]));
+        } else if (tiers.length > 1) {
+          conditions.push(inArray(skillCatalogTable.tier, tiers));
+        }
+      }
+
+      if (query.search) {
+        const pattern = `%${query.search}%`;
+        conditions.push(
+          or(
+            like(skillCatalogTable.name, pattern),
+            like(skillCatalogTable.description, pattern),
+          )!,
+        );
+      }
+
+      const whereClause = conditions.length > 0 ? and(...conditions) : undefined;
+
+      const rows = await db
+        .select()
+        .from(skillCatalogTable)
+        .where(whereClause)
+        .orderBy(
+          sql`FIELD(${skillCatalogTable.tier}, 'P0', 'P1', 'P2', 'P3')`,
+          desc(skillCatalogTable.roleCount),
+        );
+
+      const data = rows.map((row) => ({
+        ...row,
+        capabilities: row.capabilities ? JSON.parse(row.capabilities) : [],
+        slashCommands: row.slashCommands ? JSON.parse(row.slashCommands) : [],
+        departments: row.departments ? JSON.parse(row.departments) : [],
+      }));
+
+      res.json({ data, total: data.length });
+    }),
+  );
+
   // ── GET /roles/:id — Get single template ──
 
   router.get(
@@ -379,67 +437,6 @@ export async function registerAdmin(app: Express, config: GrcConfig) {
       );
 
       res.json({ data: { nodeId, fileName, updated: true } });
-    }),
-  );
-
-  // ── GET /roles/skills — Skill catalog (filterable) ──
-
-  const skillListQuerySchema = z.object({
-    tier: z.string().optional(),   // comma-separated, e.g. "P0,P1"
-    search: z.string().optional(), // text search in name/description
-  });
-
-  router.get(
-    "/roles/skills",
-    requireAuth, requireAdmin,
-    asyncHandler(async (req: Request, res: Response) => {
-      const query = skillListQuerySchema.parse(req.query);
-      const db = getDb();
-
-      const conditions: ReturnType<typeof eq>[] = [];
-
-      // Tier filter
-      if (query.tier) {
-        const tiers = query.tier.split(",").map((t) => t.trim()) as ("P0" | "P1" | "P2" | "P3")[];
-        if (tiers.length === 1) {
-          conditions.push(eq(skillCatalogTable.tier, tiers[0]));
-        } else if (tiers.length > 1) {
-          conditions.push(inArray(skillCatalogTable.tier, tiers));
-        }
-      }
-
-      // Text search
-      if (query.search) {
-        const pattern = `%${query.search}%`;
-        conditions.push(
-          or(
-            like(skillCatalogTable.name, pattern),
-            like(skillCatalogTable.description, pattern),
-          )!,
-        );
-      }
-
-      const whereClause = conditions.length > 0 ? and(...conditions) : undefined;
-
-      // Custom sort: P0 first, then P1, P2, P3; within each tier by roleCount desc
-      const rows = await db
-        .select()
-        .from(skillCatalogTable)
-        .where(whereClause)
-        .orderBy(
-          sql`FIELD(${skillCatalogTable.tier}, 'P0', 'P1', 'P2', 'P3')`,
-          desc(skillCatalogTable.roleCount),
-        );
-
-      // Parse JSON string columns for the response
-      const data = rows.map((row) => ({
-        ...row,
-        capabilities: row.capabilities ? JSON.parse(row.capabilities) : [],
-        slashCommands: row.slashCommands ? JSON.parse(row.slashCommands) : [],
-        departments: row.departments ? JSON.parse(row.departments) : [],
-      }));
-
-      res.json({ data, total: data.length });
     }),
   );
 

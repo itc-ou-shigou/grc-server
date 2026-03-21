@@ -45,10 +45,10 @@ const PHASES: Array<{ id: RoadmapPhase; label: string; color: string }> = [
 ];
 
 const PRIORITY_CONFIG: Record<MoSCoW, { label: string; bg: string; color: string }> = {
-  must:   { label: 'Must',   bg: '#fee2e2', color: '#dc2626' },
-  should: { label: 'Should', bg: '#fef3c7', color: '#d97706' },
-  could:  { label: 'Could',  bg: '#dbeafe', color: '#2563eb' },
-  wont:   { label: "Won't",  bg: '#f3f4f6', color: '#6b7280' },
+  must:   { label: 'Must',   bg: 'rgba(239, 68, 68, 0.12)',  color: '#ef4444' },
+  should: { label: 'Should', bg: 'rgba(255, 190, 11, 0.12)', color: '#ffbe0b' },
+  could:  { label: 'Could',  bg: 'rgba(0, 229, 255, 0.12)',  color: '#00E5FF' },
+  wont:   { label: "Won't",  bg: 'rgba(66, 72, 89, 0.20)',   color: 'rgba(224, 229, 251, 0.55)' },
 };
 
 // ── Subcomponents ──────────────────────────────────────────────────────────
@@ -79,7 +79,7 @@ function ProgressBar({ value }: { value: number }) {
         <span>進捗</span>
         <span style={{ fontWeight: 600 }}>{value}%</span>
       </div>
-      <div style={{ height: 5, background: 'var(--color-border, #e2e8f0)', borderRadius: 3, overflow: 'hidden' }}>
+      <div style={{ height: 5, background: 'var(--color-border)', borderRadius: 3, overflow: 'hidden' }}>
         <div style={{ height: '100%', width: `${value}%`, background: color, borderRadius: 3, transition: 'width 0.3s' }} />
       </div>
     </div>
@@ -90,8 +90,8 @@ function ItemCard({ item }: { item: RoadmapItem }) {
   return (
     <div
       style={{
-        background: 'var(--color-content-bg, #fff)',
-        border: '1px solid var(--color-border, #e2e8f0)',
+        background: 'var(--color-content-bg)',
+        border: '1px solid var(--color-border)',
         borderRadius: 8,
         padding: '12px',
         marginBottom: 8,
@@ -159,7 +159,7 @@ function CreateModal({ open, onClose, onSubmit, loading }: CreateModalProps) {
     >
       <div
         style={{
-          background: 'var(--color-content-bg, #fff)',
+          background: 'var(--color-content-bg)',
           borderRadius: 8,
           padding: '24px',
           width: 480,
@@ -295,10 +295,10 @@ function KanbanView({ items }: { items: RoadmapItem[] }) {
             key={phase.id}
             style={{
               minWidth: 220,
-              background: 'var(--color-bg, #f8fafc)',
+              background: 'var(--color-bg)',
               borderRadius: 8,
               padding: '12px 10px',
-              border: '1px solid var(--color-border, #e2e8f0)',
+              border: '1px solid var(--color-border)',
             }}
           >
             <div
@@ -323,7 +323,7 @@ function KanbanView({ items }: { items: RoadmapItem[] }) {
               <span
                 style={{
                   background: phase.color,
-                  color: '#fff',
+                  color: '#080e1d',
                   borderRadius: 12,
                   padding: '1px 8px',
                   fontSize: 11,
@@ -364,7 +364,7 @@ function ListView({ items }: { items: RoadmapItem[] }) {
     <div className="card" style={{ overflowX: 'auto' }}>
       <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: 13 }}>
         <thead>
-          <tr style={{ borderBottom: '2px solid var(--color-border, #e2e8f0)' }}>
+          <tr style={{ borderBottom: '2px solid var(--color-border)' }}>
             {['タイトル', 'フェーズ', '優先度', '進捗', '開始日', '終了日', '担当'].map((h) => (
               <th
                 key={h}
@@ -397,8 +397,8 @@ function ListView({ items }: { items: RoadmapItem[] }) {
               <tr
                 key={item.id}
                 style={{
-                  borderBottom: '1px solid var(--color-border-light, #f1f5f9)',
-                  background: idx % 2 === 0 ? 'transparent' : 'var(--color-bg, #f8fafc)',
+                  borderBottom: '1px solid var(--color-border-light)',
+                  background: idx % 2 === 0 ? 'transparent' : 'rgba(12, 19, 36, 0.30)',
                 }}
               >
                 <td style={{ padding: '10px 12px', fontWeight: 500 }}>{item.title}</td>
@@ -418,7 +418,7 @@ function ListView({ items }: { items: RoadmapItem[] }) {
                 </td>
                 <td style={{ padding: '10px 12px', minWidth: 120 }}>
                   <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-                    <div style={{ flex: 1, height: 6, background: 'var(--color-border, #e2e8f0)', borderRadius: 3, overflow: 'hidden' }}>
+                    <div style={{ flex: 1, height: 6, background: 'var(--color-border)', borderRadius: 3, overflow: 'hidden' }}>
                       <div style={{ height: '100%', width: `${item.progress}%`, background: barColor, borderRadius: 3 }} />
                     </div>
                     <span style={{ fontSize: 11, fontWeight: 600, color: barColor, minWidth: 30 }}>
@@ -480,7 +480,7 @@ export function Roadmap() {
           <div
             style={{
               display: 'flex',
-              border: '1px solid var(--color-border, #e2e8f0)',
+              border: '1px solid var(--color-border)',
               borderRadius: 6,
               overflow: 'hidden',
             }}
@@ -491,8 +491,8 @@ export function Roadmap() {
                 padding: '6px 14px',
                 fontSize: 12,
                 fontWeight: 600,
-                background: viewMode === 'kanban' ? 'var(--color-primary, #3b82f6)' : 'var(--color-content-bg, #fff)',
-                color: viewMode === 'kanban' ? '#fff' : 'var(--color-text-secondary)',
+                background: viewMode === 'kanban' ? 'var(--color-primary)' : 'rgba(29, 37, 59, 0.60)',
+                color: viewMode === 'kanban' ? '#080e1d' : 'var(--color-text-secondary)',
                 border: 'none',
                 cursor: 'pointer',
               }}
@@ -505,8 +505,8 @@ export function Roadmap() {
                 padding: '6px 14px',
                 fontSize: 12,
                 fontWeight: 600,
-                background: viewMode === 'list' ? 'var(--color-primary, #3b82f6)' : 'var(--color-content-bg, #fff)',
-                color: viewMode === 'list' ? '#fff' : 'var(--color-text-secondary)',
+                background: viewMode === 'list' ? 'var(--color-primary)' : 'rgba(29, 37, 59, 0.60)',
+                color: viewMode === 'list' ? '#080e1d' : 'var(--color-text-secondary)',
                 border: 'none',
                 cursor: 'pointer',
               }}

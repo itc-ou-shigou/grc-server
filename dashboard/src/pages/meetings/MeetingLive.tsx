@@ -244,7 +244,7 @@ export function MeetingLive() {
                       padding: '0.5rem 0.75rem',
                       marginBottom: '0.25rem',
                       borderRadius: '0.375rem',
-                      backgroundColor: isSystem ? '#f3f4f6' : '#fff',
+                      backgroundColor: isSystem ? 'rgba(29, 37, 59, 0.50)' : 'rgba(12, 19, 36, 0.50)',
                       borderLeft: `3px solid ${typeColor(entry.type)}`,
                       fontSize: '0.875rem',
                     }}
@@ -300,8 +300,8 @@ export function MeetingLive() {
                 padding: '0.5rem',
                 marginBottom: '0.25rem',
                 borderRadius: '0.375rem',
-                backgroundColor: p.status === 'speaking' ? '#ecfdf5' : p.status === 'left' ? '#f9fafb' : '#fff',
-                border: '1px solid #e5e7eb',
+                backgroundColor: p.status === 'speaking' ? 'rgba(74, 222, 128, 0.10)' : p.status === 'left' ? 'rgba(66, 72, 89, 0.20)' : 'rgba(12, 19, 36, 0.40)',
+                border: '1px solid rgba(66, 72, 89, 0.20)',
               }}
             >
               <div style={{ fontWeight: 600, fontSize: '0.85rem' }}>{p.displayName}</div>

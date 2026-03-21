@@ -125,8 +125,8 @@ function NodeKeyCard({
       style={{
         padding: 16,
         borderRadius: 8,
-        border: '1px solid var(--color-border, #e2e8f0)',
-        background: 'var(--color-bg-card, #fff)',
+        border: '1px solid var(--color-border)',
+        background: 'rgba(12, 19, 36, 0.40)',
       }}
     >
       {/* Header */}
@@ -146,7 +146,7 @@ function NodeKeyCard({
       </div>
 
       {/* Info */}
-      <div style={{ fontSize: 12, color: 'var(--color-text-muted, #64748b)', marginBottom: 12 }}>
+      <div style={{ fontSize: 12, color: 'var(--color-text-muted)', marginBottom: 12 }}>
         {employee.employeeEmail && <div>{employee.employeeEmail}</div>}
         <div style={{ fontFamily: 'monospace', fontSize: 11 }}>
           {employee.nodeId?.substring(0, 12)}...

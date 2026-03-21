@@ -58,6 +58,20 @@
     "kpi": "KPI 대시보드",
     "skillCatalog": "스킬 카탈로그"
   },
+  "topnav": {
+    "overview": "개요",
+    "lobsterNodes": "랍스터풀",
+    "tasks": "작업",
+    "meetings": "회의",
+    "platform": "조직",
+    "roles": "역할",
+    "employees": "직원",
+    "skills": "스킬",
+    "marketing": "마케팅",
+    "evolution": "진화",
+    "community": "커뮤니티",
+    "settings": "설정"
+  },
   "footer": {
     "settings": "설정",
     "logout": "로그아웃",

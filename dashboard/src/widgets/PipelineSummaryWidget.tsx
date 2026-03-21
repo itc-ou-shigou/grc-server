@@ -19,11 +19,11 @@ interface PipelineSummaryResponse {
 // ── Helpers ────────────────────────────────────────────────────────────────
 
 const STAGE_COLORS: Record<string, string> = {
-  lead:        '#94a3b8',
-  qualified:   '#3b82f6',
-  proposal:    '#8b5cf6',
-  negotiation: '#f59e0b',
-  closed_won:  '#10b981',
+  lead:        'rgba(224, 229, 251, 0.55)',
+  qualified:   '#81ecff',
+  proposal:    '#b287fe',
+  negotiation: '#ffbe0b',
+  closed_won:  '#4ade80',
   closed_lost: '#ef4444',
 };
 
@@ -95,7 +95,7 @@ export function PipelineSummaryWidget() {
       {/* Stage bars */}
       <div style={{ marginBottom: 14 }}>
         {data.stages.map((stage) => {
-          const color = STAGE_COLORS[stage.stage] ?? '#94a3b8';
+          const color = STAGE_COLORS[stage.stage] ?? 'rgba(224, 229, 251, 0.55)';
           const label = STAGE_LABELS[stage.stage] ?? stage.stage;
           const pct = maxCount > 0 ? Math.round((stage.count / maxCount) * 100) : 0;
           return (
@@ -114,7 +114,7 @@ export function PipelineSummaryWidget() {
                   {stage.count}件 &nbsp;{formatYen(stage.total_value)}
                 </span>
               </div>
-              <div style={{ height: 6, background: 'var(--color-border, #e2e8f0)', borderRadius: 3, overflow: 'hidden' }}>
+              <div style={{ height: 6, background: 'var(--color-border)', borderRadius: 3, overflow: 'hidden' }}>
                 <div
                   style={{
                     height: '100%',

@@ -58,6 +58,20 @@
     "kpi": "KPIダッシュボード",
     "skillCatalog": "スキルカタログ"
   },
+  "topnav": {
+    "overview": "概要",
+    "lobsterNodes": "龍蝦池",
+    "tasks": "タスク",
+    "meetings": "会議",
+    "platform": "組織",
+    "roles": "ロール",
+    "employees": "社員",
+    "skills": "スキル",
+    "marketing": "マーケティング",
+    "evolution": "進化",
+    "community": "コミュニティ",
+    "settings": "設定"
+  },
   "footer": {
     "settings": "設定",
     "logout": "ログアウト",

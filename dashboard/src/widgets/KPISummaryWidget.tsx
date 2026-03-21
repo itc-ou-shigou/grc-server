@@ -125,7 +125,7 @@ export function KPISummaryWidget() {
                   {kpi.achievement_rate.toFixed(0)}%
                 </span>
               </div>
-              <div style={{ height: 5, background: 'var(--color-border, #e2e8f0)', borderRadius: 3, overflow: 'hidden' }}>
+              <div style={{ height: 5, background: 'var(--color-border)', borderRadius: 3, overflow: 'hidden' }}>
                 <div
                   style={{
                     height: '100%',

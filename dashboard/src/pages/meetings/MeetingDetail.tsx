@@ -88,8 +88,8 @@ function TranscriptBubble({ entry }: { entry: MeetingTranscriptEntry }) {
         padding: '0.75rem 1rem',
         marginBottom: '0.5rem',
         borderRadius: '0.5rem',
-        backgroundColor: isSystem ? '#f3f4f6' : '#fff',
-        border: `1px solid ${isSystem ? '#d1d5db' : '#e5e7eb'}`,
+        backgroundColor: isSystem ? 'rgba(29, 37, 59, 0.50)' : 'rgba(12, 19, 36, 0.50)',
+        border: `1px solid ${isSystem ? 'rgba(66, 72, 89, 0.30)' : 'rgba(66, 72, 89, 0.20)'}`,
         borderLeft: `3px solid ${typeColor(entry.type)}`,
       }}
     >
@@ -188,7 +188,7 @@ export function MeetingDetail() {
           {meeting.status === 'active' && (
             <button
               className="btn btn-sm"
-              style={{ backgroundColor: 'var(--color-success)', color: '#fff' }}
+              style={{ backgroundColor: 'var(--color-success)', color: '#080e1d' }}
               onClick={() => navigate(`/meetings/${id}/live`)}
             >
               Live View

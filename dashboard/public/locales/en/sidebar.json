@@ -58,6 +58,20 @@
     "kpi": "KPI Dashboard",
     "skillCatalog": "Skill Catalog"
   },
+  "topnav": {
+    "overview": "Overview",
+    "lobsterNodes": "Lobster Pool",
+    "tasks": "Tasks",
+    "meetings": "Meetings",
+    "platform": "Platform",
+    "roles": "Roles",
+    "employees": "Employees",
+    "skills": "Skills",
+    "marketing": "Marketing",
+    "evolution": "Evolution",
+    "community": "Community",
+    "settings": "Settings"
+  },
   "footer": {
     "settings": "Settings",
     "logout": "Logout",

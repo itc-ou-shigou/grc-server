@@ -181,7 +181,7 @@ export function MeetingList() {
           {(row as unknown as Meeting).status === 'active' && (
             <button
               className="btn btn-sm"
-              style={{ backgroundColor: 'var(--color-success)', color: '#fff' }}
+              style={{ backgroundColor: 'var(--color-success)', color: '#080e1d' }}
               onClick={() => navigate(`/meetings/${row.id}/live`)}
             >
               Live

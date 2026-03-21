@@ -30,10 +30,10 @@ interface CreateCampaignBody {
 // ── Constants ──────────────────────────────────────────────────────────────
 
 const CHANNEL_COLORS: Record<string, string> = {
-  email: '#3b82f6',
-  social: '#8b5cf6',
-  content: '#10b981',
-  event: '#f59e0b',
+  email:   '#81ecff',
+  social:  '#b287fe',
+  content: '#4ade80',
+  event:   '#ffbe0b',
 };
 
 const CHANNEL_LABELS: Record<string, string> = {
@@ -66,13 +66,13 @@ function toDateNum(dateStr: string): number {
 // ── Subcomponents ──────────────────────────────────────────────────────────
 
 function CampaignBar({ campaign }: { campaign: Campaign }) {
-  const color = CHANNEL_COLORS[campaign.channel] ?? '#6b7280';
+  const color = CHANNEL_COLORS[campaign.channel] ?? 'rgba(224, 229, 251, 0.55)';
   return (
     <div
       title={`${campaign.title} (${campaign.start_date} ~ ${campaign.end_date})`}
       style={{
         background: color,
-        color: '#fff',
+        color: '#080e1d',
         fontSize: 10,
         fontWeight: 600,
         borderRadius: 3,
@@ -133,7 +133,7 @@ function CreateModal({ open, onClose, onSubmit, loading }: CreateModalProps) {
     >
       <div
         style={{
-          background: 'var(--color-content-bg, #fff)',
+          background: 'var(--color-content-bg)',
           borderRadius: 8,
           padding: '24px',
           width: 420,
@@ -363,8 +363,8 @@ export function CampaignCalendar() {
               display: 'grid',
               gridTemplateColumns: 'repeat(7, 1fr)',
               gap: 1,
-              background: 'var(--color-border, #e2e8f0)',
-              border: '1px solid var(--color-border, #e2e8f0)',
+              background: 'var(--color-border)',
+              border: '1px solid var(--color-border)',
               borderRadius: 6,
               overflow: 'hidden',
             }}
@@ -374,7 +374,7 @@ export function CampaignCalendar() {
               <div
                 key={name}
                 style={{
-                  background: 'var(--color-bg, #f8fafc)',
+                  background: 'var(--color-bg)',
                   padding: '8px 4px',
                   textAlign: 'center',
                   fontSize: 12,
@@ -402,10 +402,10 @@ export function CampaignCalendar() {
                   key={idx}
                   style={{
                     background: cell.day === null
-                      ? 'var(--color-bg, #f8fafc)'
+                      ? 'rgba(8, 14, 29, 0.60)'
                       : isToday
-                      ? 'var(--color-primary-bg, #eff6ff)'
-                      : 'var(--color-content-bg, #fff)',
+                      ? 'rgba(129, 236, 255, 0.08)'
+                      : 'rgba(12, 19, 36, 0.40)',
                     minHeight: 80,
                     padding: '4px 6px',
                     verticalAlign: 'top',
@@ -418,11 +418,11 @@ export function CampaignCalendar() {
                           fontSize: 12,
                           fontWeight: isToday ? 700 : 400,
                           color: isToday
-                            ? 'var(--color-primary, #3b82f6)'
+                            ? 'var(--color-primary)'
                             : dayOfWeek === 0
                             ? '#ef4444'
                             : dayOfWeek === 6
-                            ? '#3b82f6'
+                            ? '#81ecff'
                             : 'var(--color-text)',
                           marginBottom: 2,
                         }}
@@ -435,8 +435,8 @@ export function CampaignCalendar() {
                               justifyContent: 'center',
                               width: 20,
                               height: 20,
-                              background: 'var(--color-primary, #3b82f6)',
-                              color: '#fff',
+                              background: 'var(--color-primary)',
+                              color: '#080e1d',
                               borderRadius: '50%',
                               fontSize: 11,
                             }}
@@ -474,9 +474,9 @@ export function CampaignCalendar() {
                   alignItems: 'center',
                   gap: 12,
                   padding: '8px 12px',
-                  background: 'var(--color-bg, #f8fafc)',
+                  background: 'var(--color-bg)',
                   borderRadius: 6,
-                  borderLeft: `3px solid ${CHANNEL_COLORS[c.channel] ?? '#6b7280'}`,
+                  borderLeft: `3px solid ${CHANNEL_COLORS[c.channel] ?? 'rgba(224, 229, 251, 0.55)'}`,
                 }}
               >
                 <div style={{ flex: 1 }}>
@@ -487,8 +487,8 @@ export function CampaignCalendar() {
                 </div>
                 <span
                   style={{
-                    background: CHANNEL_COLORS[c.channel] ?? '#6b7280',
-                    color: '#fff',
+                    background: CHANNEL_COLORS[c.channel] ?? 'rgba(224, 229, 251, 0.55)',
+                    color: '#080e1d',
                     borderRadius: 4,
                     padding: '2px 8px',
                     fontSize: 11,
@@ -501,7 +501,7 @@ export function CampaignCalendar() {
                   style={{
                     fontSize: 11,
                     color: 'var(--color-text-secondary)',
-                    background: 'var(--color-border-light, #f1f5f9)',
+                    background: 'var(--color-border-light)',
                     borderRadius: 4,
                     padding: '2px 8px',
                   }}

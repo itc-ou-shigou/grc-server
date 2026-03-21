@@ -28,13 +28,13 @@ const STATUS_LABELS: Record<string, string> = {
 };
 
 const STATUS_COLORS: Record<string, { bg: string; border: string; text: string }> = {
-  pending: { bg: '#f5f5f5', border: '#ccc', text: '#666' },
-  in_progress: { bg: '#e3f2fd', border: '#2196f3', text: '#1565c0' },
-  review: { bg: '#fff3e0', border: '#ff9800', text: '#e65100' },
-  approved: { bg: '#e8f5e9', border: '#4caf50', text: '#2e7d32' },
-  completed: { bg: '#e8f5e9', border: '#4caf50', text: '#2e7d32' },
-  blocked: { bg: '#fce4ec', border: '#f44336', text: '#c62828' },
-  cancelled: { bg: '#fafafa', border: '#999', text: '#666' },
+  pending:     { bg: 'rgba(66, 72, 89, 0.20)',  border: 'rgba(66, 72, 89, 0.40)',  text: 'rgba(224, 229, 251, 0.55)' },
+  in_progress: { bg: 'rgba(0, 229, 255, 0.10)',  border: '#81ecff',                text: '#81ecff' },
+  review:      { bg: 'rgba(255, 190, 11, 0.10)', border: '#ffbe0b',                text: '#ffbe0b' },
+  approved:    { bg: 'rgba(74, 222, 128, 0.10)', border: '#4ade80',                text: '#4ade80' },
+  completed:   { bg: 'rgba(74, 222, 128, 0.10)', border: '#4ade80',                text: '#4ade80' },
+  blocked:     { bg: 'rgba(239, 68, 68, 0.10)',  border: '#ef4444',                text: '#ef4444' },
+  cancelled:   { bg: 'rgba(66, 72, 89, 0.15)',   border: 'rgba(66, 72, 89, 0.30)', text: 'rgba(224, 229, 251, 0.40)' },
 };
 
 function StatusNode({
@@ -59,9 +59,9 @@ function StatusNode({
         borderRadius: '20px',
         fontSize: '0.8rem',
         fontWeight: isCurrent ? 700 : 500,
-        background: isCurrent ? colors.bg : isPast ? colors.bg : '#fafafa',
-        border: `2px solid ${isCurrent ? colors.border : isPast ? colors.border : '#ddd'}`,
-        color: isCurrent ? colors.text : isPast ? colors.text : '#999',
+        background: isCurrent ? colors.bg : isPast ? colors.bg : 'rgba(29, 37, 59, 0.40)',
+        border: `2px solid ${isCurrent ? colors.border : isPast ? colors.border : 'rgba(66, 72, 89, 0.30)'}`,
+        color: isCurrent ? colors.text : isPast ? colors.text : 'rgba(224, 229, 251, 0.40)',
         opacity: isPast || isCurrent ? 1 : 0.6,
         boxShadow: isCurrent ? `0 0 0 3px ${colors.border}33` : 'none',
         transition: 'all 0.2s ease',

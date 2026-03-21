@@ -1,0 +1,21 @@
+CREATE TABLE IF NOT EXISTS orchestration_sessions (
+  id CHAR(36) PRIMARY KEY NOT NULL,
+  task_id CHAR(36) NOT NULL,
+  team_name VARCHAR(100) NOT NULL,
+  template VARCHAR(50) DEFAULT NULL,
+  status ENUM('queued','spawning','running','collecting','completed','failed','aborted') NOT NULL DEFAULT 'queued',
+  execution_mode VARCHAR(20) NOT NULL DEFAULT 'auto',
+  agent_count INT DEFAULT 0,
+  agents_json JSON DEFAULT NULL,
+  complexity_score INT DEFAULT NULL,
+  model_tier VARCHAR(10) DEFAULT NULL,
+  leader_node_id VARCHAR(255) DEFAULT NULL,
+  result_json JSON DEFAULT NULL,
+  error_message TEXT DEFAULT NULL,
+  started_at TIMESTAMP NULL DEFAULT NULL,
+  completed_at TIMESTAMP NULL DEFAULT NULL,
+  created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  updated_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+  INDEX idx_orch_task_id (task_id),
+  INDEX idx_orch_status (status)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;

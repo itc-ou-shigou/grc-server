@@ -670,7 +670,7 @@ function BudgetsTab({ budgets, onChange }: BudgetsTabProps) {
       <div style={{ overflowX: 'auto' }}>
         <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: 13 }}>
           <thead>
-            <tr style={{ borderBottom: '2px solid var(--border, #e5e7eb)' }}>
+            <tr style={{ borderBottom: '2px solid var(--color-border)' }}>
               <th style={{ textAlign: 'left', padding: '8px 12px', fontWeight: 600 }}>Department</th>
               <th style={{ textAlign: 'left', padding: '8px 12px', fontWeight: 600 }}>Annual</th>
               <th style={{ textAlign: 'left', padding: '8px 12px', fontWeight: 600 }}>Q1</th>
@@ -683,7 +683,7 @@ function BudgetsTab({ budgets, onChange }: BudgetsTabProps) {
             {DEPARTMENTS.map((dept) => {
               const b = budgets[dept];
               return (
-                <tr key={dept} style={{ borderBottom: '1px solid var(--border, #e5e7eb)' }}>
+                <tr key={dept} style={{ borderBottom: '1px solid var(--color-border)' }}>
                   <td style={{ padding: '8px 12px' }}>
                     <span style={{ fontWeight: 500, textTransform: 'capitalize' }}>{dept}</span>
                   </td>
@@ -1178,7 +1178,7 @@ export function Strategy() {
           gap: 2,
           marginTop: 24,
           marginBottom: 24,
-          borderBottom: '2px solid var(--border, #e5e7eb)',
+          borderBottom: '2px solid var(--color-border)',
           paddingBottom: 0,
         }}
         role="tablist"
@@ -1438,7 +1438,7 @@ function AiGenerateModal({ onClose, onApply, generateStrategy }: AiGenerateModal
           <div
             style={{
               background: 'var(--bg-subtle, #f8f8fc)',
-              border: '1px solid var(--border, #e5e7eb)',
+              border: '1px solid var(--color-border)',
               borderRadius: 6,
               padding: '0.875rem',
               marginTop: '0.5rem',
@@ -1477,7 +1477,7 @@ function AiGenerateModal({ onClose, onApply, generateStrategy }: AiGenerateModal
                   {t('shortTerm.title', 'Quarterly Objectives')}
                 </span>
                 {(preview.shortTermObjectives as Array<{ quarter?: string; goals?: string[]; kpis?: Array<{ name?: string; target?: string; owner?: string }> }>).map((q, qi) => (
-                  <div key={qi} style={{ background: 'var(--bg, #fff)', borderRadius: 4, padding: '0.5rem', marginBottom: '0.375rem', border: '1px solid var(--border-light, #eee)' }}>
+                  <div key={qi} style={{ background: 'rgba(12, 19, 36, 0.50)', borderRadius: 4, padding: '0.5rem', marginBottom: '0.375rem', border: '1px solid rgba(66, 72, 89, 0.20)' }}>
                     <strong style={{ fontSize: '0.8125rem' }}>{q.quarter ?? `Q${qi + 1}`}</strong>
                     {Array.isArray(q.goals) && q.goals.length > 0 && (
                       <ul style={{ margin: '0.25rem 0 0', paddingLeft: '1.25rem', fontSize: '0.8125rem' }}>
@@ -1500,7 +1500,7 @@ function AiGenerateModal({ onClose, onApply, generateStrategy }: AiGenerateModal
                 <span className="form-label" style={{ display: 'block', fontSize: '0.75rem', marginBottom: '0.375rem' }}>
                   {t('midTerm.title', 'Annual Objectives')}
                 </span>
-                <div style={{ background: 'var(--bg, #fff)', borderRadius: 4, padding: '0.5rem', border: '1px solid var(--border-light, #eee)', fontSize: '0.8125rem' }}>
+                <div style={{ background: 'rgba(12, 19, 36, 0.50)', borderRadius: 4, padding: '0.5rem', border: '1px solid rgba(66, 72, 89, 0.20)', fontSize: '0.8125rem' }}>
                   {(preview.midTermObjectives as Record<string, unknown>).revenueTarget ? (
                     <p style={{ margin: '0 0 0.25rem' }}>
                       <strong>{t('midTerm.revenueTarget', 'Revenue Target')}:</strong>{' '}
@@ -1522,7 +1522,7 @@ function AiGenerateModal({ onClose, onApply, generateStrategy }: AiGenerateModal
                 <span className="form-label" style={{ display: 'block', fontSize: '0.75rem', marginBottom: '0.375rem' }}>
                   {t('longTerm.title', '3-5 Year Vision')}
                 </span>
-                <div style={{ background: 'var(--bg, #fff)', borderRadius: 4, padding: '0.5rem', border: '1px solid var(--border-light, #eee)', fontSize: '0.8125rem' }}>
+                <div style={{ background: 'rgba(12, 19, 36, 0.50)', borderRadius: 4, padding: '0.5rem', border: '1px solid rgba(66, 72, 89, 0.20)', fontSize: '0.8125rem' }}>
                   {(preview.longTermObjectives as Record<string, unknown>).vision ? (
                     <p style={{ margin: '0 0 0.25rem', fontStyle: 'italic' }}>
                       {String((preview.longTermObjectives as Record<string, unknown>).vision)}
@@ -1559,7 +1559,7 @@ function AiGenerateModal({ onClose, onApply, generateStrategy }: AiGenerateModal
                 </span>
                 <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.375rem' }}>
                   {(preview.departmentBudgets as Array<{ department?: string; annual?: number }>).map((b, i) => (
-                    <span key={i} style={{ background: 'var(--bg, #fff)', border: '1px solid var(--border-light, #eee)', borderRadius: 4, padding: '0.25rem 0.5rem', fontSize: '0.75rem' }}>
+                    <span key={i} style={{ background: 'rgba(12, 19, 36, 0.50)', border: '1px solid rgba(66, 72, 89, 0.20)', borderRadius: 4, padding: '0.25rem 0.5rem', fontSize: '0.75rem' }}>
                       {b.department}: ${typeof b.annual === 'number' ? b.annual.toLocaleString() : b.annual}
                     </span>
                   ))}
@@ -1575,7 +1575,7 @@ function AiGenerateModal({ onClose, onApply, generateStrategy }: AiGenerateModal
                 </span>
                 <div style={{ fontSize: '0.75rem' }}>
                   {(preview.departmentKpis as Array<{ department?: string; kpi?: string; target?: string }>).map((k, i) => (
-                    <span key={i} style={{ display: 'inline-block', background: 'var(--bg, #fff)', border: '1px solid var(--border-light, #eee)', borderRadius: 4, padding: '0.25rem 0.5rem', marginRight: '0.375rem', marginBottom: '0.25rem' }}>
+                    <span key={i} style={{ display: 'inline-block', background: 'rgba(12, 19, 36, 0.50)', border: '1px solid rgba(66, 72, 89, 0.20)', borderRadius: 4, padding: '0.25rem 0.5rem', marginRight: '0.375rem', marginBottom: '0.25rem' }}>
                       {k.department} — {k.kpi}: {k.target}
                     </span>
                   ))}

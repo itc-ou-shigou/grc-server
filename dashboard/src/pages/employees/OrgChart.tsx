@@ -125,7 +125,7 @@ export function OrgChart() {
                   className="card"
                   style={{ minWidth: '220px', maxWidth: '300px', flex: '1 1 220px' }}
                 >
-                  <div style={{ borderBottom: '1px solid var(--border, #e5e7eb)', paddingBottom: '0.75rem', marginBottom: '0.75rem' }}>
+                  <div style={{ borderBottom: '1px solid var(--color-border)', paddingBottom: '0.75rem', marginBottom: '0.75rem' }}>
                     <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '0.25rem' }}>
                       <span style={{ fontWeight: 600, fontSize: '0.875rem' }}>
                         {role?.name ?? roleId}
@@ -154,7 +154,7 @@ export function OrgChart() {
                             gap: '0.5rem',
                             padding: '0.375rem 0.5rem',
                             borderRadius: '0.25rem',
-                            background: 'var(--surface-alt, #f9fafb)',
+                            background: 'rgba(12, 19, 36, 0.40)',
                           }}
                         >
                           <span

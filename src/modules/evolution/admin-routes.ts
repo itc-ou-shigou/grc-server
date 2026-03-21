@@ -442,6 +442,7 @@ export async function registerAdmin(app: Express, config: GrcConfig) {
           "--network", "bridge"];
         if (body.employeeName) dockerArgs.push("-e", `employee_name=${body.employeeName}`);
         if (body.employeeCode) dockerArgs.push("-e", `employee_code=${body.employeeCode}`);
+        if (body.employeeEmail) dockerArgs.push("-e", `employee_email=${body.employeeEmail}`);
         dockerArgs.push("-v", `${body.workspacePath}:/home/winclaw/.winclaw/workspace`);
         // Persist device identity inside workspace dir so each node has unique identity
         const identityPath = path.join(body.workspacePath, ".identity");
@@ -459,27 +460,30 @@ export async function registerAdmin(app: Express, config: GrcConfig) {
           return res.status(500).json({ error: "Docker run failed", detail: err.message });
         }
 
-        // Extract token from docker logs (poll up to 15 seconds)
+        // Extract token from docker logs or config file (poll up to 20 seconds)
         let token: string | null = null;
-        const TOKEN_REGEX = /Token:\s+(winclaw-node-[a-f0-9]+)/;
-        for (let i = 0; i < 30; i++) {
+        const CONFIG_TOKEN_REGEX = /"token"\s*:\s*"(winclaw-node-[a-f0-9]+|[a-f0-9]{24,})"/;
+        for (let i = 0; i < 40; i++) {
           await new Promise(r => setTimeout(r, 500));
           try {
-            const logs = execFileSync("docker", ["logs", containerId], { encoding: "utf-8", stdio: ["pipe", "pipe", "pipe"] });
-            const match = logs.match(TOKEN_REGEX);
-            if (match) {
-              token = match[1];
+            // Method 1: Read token from config file inside container
+            const configJson = execFileSync("docker", ["exec", containerId, "sh", "-c", "cat /home/winclaw/.winclaw/winclaw.json 2>/dev/null"], { encoding: "utf-8", stdio: ["pipe", "pipe", "pipe"] });
+            const configMatch = configJson.match(CONFIG_TOKEN_REGEX);
+            if (configMatch) {
+              token = configMatch[1];
               break;
             }
-          } catch { /* container may still be starting */ }
+          } catch { /* container may still be starting or restarting */ }
         }
 
         if (!token) {
-          logger.warn({ containerId }, "Could not extract token from docker logs");
-          return res.status(500).json({ error: "Failed to extract gateway token from container logs" });
+          // Fallback: container started but token not found - use port-only URL
+          logger.warn({ containerId }, "Could not extract token from container config, using port-only URL");
         }
 
-        const gatewayUrl = `http://localhost:${body.gatewayPort}/chat?token=${token}`;
+        const gatewayUrl = token
+          ? `http://localhost:${body.gatewayPort}/chat?token=${token}`
+          : `http://localhost:${body.gatewayPort}/chat`;
 
         // Wait for the node to register with GRC (poll up to 20 seconds)
         const db = getDb();
@@ -512,6 +516,7 @@ export async function registerAdmin(app: Express, config: GrcConfig) {
               gatewayUrl,
               gatewayPort: body.gatewayPort,
               workspacePath: body.workspacePath,
+              ...(body.employeeEmail && { employeeEmail: body.employeeEmail }),
             })
             .where(eq(nodesTable.nodeId, nodeId));
 
@@ -562,6 +567,7 @@ export async function registerAdmin(app: Express, config: GrcConfig) {
             WINCLAW_GATEWAY_TOKEN: winclawToken,
             ...(body.employeeName && { employee_name: body.employeeName }),
             ...(body.employeeCode && { employee_code: body.employeeCode }),
+            ...(body.employeeEmail && { employee_email: body.employeeEmail }),
           },
           cpu: 2,
           memory: 2,
@@ -826,6 +832,7 @@ export async function registerAdmin(app: Express, config: GrcConfig) {
           "-e", `WINCLAW_GRC_URL=http://host.docker.internal:${grcPort}`];
         if (node.employeeName) dockerArgs.push("-e", `employee_name=${node.employeeName}`);
         if (node.employeeId) dockerArgs.push("-e", `employee_code=${node.employeeId}`);
+        if (node.employeeEmail) dockerArgs.push("-e", `employee_email=${node.employeeEmail}`);
         if (node.workspacePath) {
           dockerArgs.push("-v", `${node.workspacePath}:/home/winclaw/.winclaw/workspace`);
           dockerArgs.push("-v", `${identityPath}:/home/winclaw/.winclaw/identity`);
@@ -936,6 +943,7 @@ export async function registerAdmin(app: Express, config: GrcConfig) {
               WINCLAW_GRC_URL: grcUrl,
               ...(node.employeeName && { employee_name: node.employeeName }),
               ...(node.employeeId && { employee_code: node.employeeId }),
+              ...(node.employeeEmail && { employee_email: node.employeeEmail }),
             },
             cpu: 2,
             memory: 2,

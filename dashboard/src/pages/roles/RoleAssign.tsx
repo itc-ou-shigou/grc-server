@@ -158,7 +158,7 @@ export function RoleAssign() {
         </div>
 
         {alreadyAssigned.length > 0 && (
-          <div style={{ marginTop: '1rem', paddingTop: '1rem', borderTop: '1px solid var(--border, #e5e7eb)' }}>
+          <div style={{ marginTop: '1rem', paddingTop: '1rem', borderTop: '1px solid var(--color-border)' }}>
             <div className="text-muted" style={{ fontSize: '0.75rem', marginBottom: '0.5rem' }}>
               Currently assigned ({alreadyAssigned.length})
             </div>
@@ -174,7 +174,7 @@ export function RoleAssign() {
                       gap: '0.375rem',
                       padding: '0.25rem 0.625rem',
                       borderRadius: '9999px',
-                      background: 'var(--surface-alt, #f3f4f6)',
+                      background: 'rgba(29, 37, 59, 0.50)',
                       fontSize: '0.8125rem',
                     }}
                   >

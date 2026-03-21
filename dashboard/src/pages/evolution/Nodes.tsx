@@ -54,11 +54,11 @@ interface RestartTarget {
 const inputStyle: React.CSSProperties = {
   width: '100%',
   padding: '8px 12px',
-  border: '1px solid var(--color-border, #d1d5db)',
+  border: '1px solid var(--color-border)',
   borderRadius: '6px',
   fontSize: '14px',
-  background: 'var(--color-bg, #fff)',
-  color: 'var(--color-text, #111827)',
+  background: 'rgba(12, 19, 36, 0.60)',
+  color: 'var(--color-text)',
   boxSizing: 'border-box',
 };
 
@@ -251,12 +251,12 @@ export function Nodes() {
         return (
           <span style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
             <span style={{ fontSize: '14px' }}>&#128194;</span>
-            <code style={{ fontSize: '11px', background: 'var(--color-bg-secondary, #f3f4f6)', padding: '2px 5px', borderRadius: '4px', maxWidth: '160px', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', display: 'inline-block', verticalAlign: 'middle' }} title={path}>
+            <code style={{ fontSize: '11px', background: 'rgba(12, 19, 36, 0.60)', padding: '2px 5px', borderRadius: '4px', maxWidth: '160px', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', display: 'inline-block', verticalAlign: 'middle' }} title={path}>
               {path}
             </code>
             <button
               title={t('nodes.table.copyWorkspacePath')}
-              style={{ background: 'none', border: 'none', cursor: 'pointer', padding: '2px', fontSize: '14px', lineHeight: 1, color: 'var(--color-text-secondary, #6b7280)', flexShrink: 0 }}
+              style={{ background: 'none', border: 'none', cursor: 'pointer', padding: '2px', fontSize: '14px', lineHeight: 1, color: 'var(--color-text-secondary)', flexShrink: 0 }}
               onClick={(e) => {
                 e.stopPropagation();
                 navigator.clipboard.writeText(explorerCmd).catch(() => { /* ignore */ });
@@ -566,10 +566,10 @@ export function Nodes() {
             <div style={{
               marginTop: '14px',
               padding: '12px',
-              background: '#fef2f2',
-              border: '1px solid #fecaca',
+              background: 'rgba(239, 68, 68, 0.10)',
+              border: '1px solid rgba(239, 68, 68, 0.25)',
               borderRadius: '6px',
-              color: '#dc2626',
+              color: '#ef4444',
               fontSize: '13px',
             }}>
               {t('nodes.create.failed', { error: (provisionNode.error as Error)?.message ?? 'Unknown error' })}
@@ -606,8 +606,8 @@ export function Nodes() {
         {restartTarget && (
           <div>
             <div style={{
-              background: 'var(--color-warning-bg, #fffbeb)',
-              border: '1px solid var(--color-warning-border, #fde68a)',
+              background: 'var(--color-warning-bg)',
+              border: '1px solid rgba(255, 190, 11, 0.30)',
               borderRadius: '8px',
               padding: '16px',
               marginBottom: '16px',
@@ -620,7 +620,7 @@ export function Nodes() {
                 <strong style={{ color: 'var(--color-warning-text, #92400e)' }}>
                   {t('nodes.restart.confirm')}
                 </strong>
-                <p style={{ margin: '4px 0 0', fontSize: '14px', color: 'var(--color-text-secondary, #6b7280)' }}>
+                <p style={{ margin: '4px 0 0', fontSize: '14px', color: 'var(--color-text-secondary)' }}>
                   {restartTarget.provisioningMode === 'local_docker'
                     ? t('nodes.restart.warningLocal')
                     : t('nodes.restart.warningRemote')}
@@ -632,7 +632,7 @@ export function Nodes() {
               <table style={{ width: '100%', fontSize: '14px', borderCollapse: 'collapse' }}>
                 <tbody>
                   <tr>
-                    <td style={{ padding: '6px 12px 6px 0', color: 'var(--color-text-secondary, #6b7280)', whiteSpace: 'nowrap' }}>{t('nodes.delete.displayName')}</td>
+                    <td style={{ padding: '6px 12px 6px 0', color: 'var(--color-text-secondary)', whiteSpace: 'nowrap' }}>{t('nodes.delete.displayName')}</td>
                     <td style={{ padding: '6px 0' }}>{restartTarget.displayName}</td>
                   </tr>
                 </tbody>
@@ -643,10 +643,10 @@ export function Nodes() {
               <div style={{
                 marginTop: '12px',
                 padding: '12px',
-                background: '#fef2f2',
-                border: '1px solid #fecaca',
+                background: 'rgba(239, 68, 68, 0.10)',
+                border: '1px solid rgba(239, 68, 68, 0.25)',
                 borderRadius: '6px',
-                color: '#dc2626',
+                color: '#ef4444',
                 fontSize: '13px',
               }}>
                 {t('nodes.restart.failed', { error: (restartNode.error as Error)?.message ?? 'Unknown error' })}
@@ -698,7 +698,7 @@ export function Nodes() {
                 <strong style={{ color: 'var(--color-danger, #dc2626)' }}>
                   {t('nodes.delete.warningTitle')}
                 </strong>
-                <p style={{ margin: '4px 0 0', fontSize: '14px', color: 'var(--color-text-secondary, #6b7280)' }}>
+                <p style={{ margin: '4px 0 0', fontSize: '14px', color: 'var(--color-text-secondary)' }}>
                   {deleteWarningDescription(deleteTarget.provisioningMode)}
                 </p>
               </div>
@@ -707,28 +707,28 @@ export function Nodes() {
             <table style={{ width: '100%', fontSize: '14px', borderCollapse: 'collapse' }}>
               <tbody>
                 <tr>
-                  <td style={{ padding: '6px 12px 6px 0', color: 'var(--color-text-secondary, #6b7280)', whiteSpace: 'nowrap' }}>{t('nodes.delete.nodeId')}</td>
+                  <td style={{ padding: '6px 12px 6px 0', color: 'var(--color-text-secondary)', whiteSpace: 'nowrap' }}>{t('nodes.delete.nodeId')}</td>
                   <td style={{ padding: '6px 0' }}>
-                    <code style={{ fontSize: '12px', background: 'var(--color-bg-secondary, #f3f4f6)', padding: '2px 6px', borderRadius: '4px' }}>
+                    <code style={{ fontSize: '12px', background: 'rgba(12, 19, 36, 0.60)', padding: '2px 6px', borderRadius: '4px' }}>
                       {deleteTarget.nodeId}
                     </code>
                   </td>
                 </tr>
                 {deleteTarget.displayName && (
                   <tr>
-                    <td style={{ padding: '6px 12px 6px 0', color: 'var(--color-text-secondary, #6b7280)' }}>{t('nodes.delete.displayName')}</td>
+                    <td style={{ padding: '6px 12px 6px 0', color: 'var(--color-text-secondary)' }}>{t('nodes.delete.displayName')}</td>
                     <td style={{ padding: '6px 0' }}>{deleteTarget.displayName}</td>
                   </tr>
                 )}
                 {deleteTarget.employeeName && (
                   <tr>
-                    <td style={{ padding: '6px 12px 6px 0', color: 'var(--color-text-secondary, #6b7280)' }}>{t('nodes.delete.employee')}</td>
+                    <td style={{ padding: '6px 12px 6px 0', color: 'var(--color-text-secondary)' }}>{t('nodes.delete.employee')}</td>
                     <td style={{ padding: '6px 0' }}>{deleteTarget.employeeName}</td>
                   </tr>
                 )}
                 {deleteTarget.roleId && (
                   <tr>
-                    <td style={{ padding: '6px 12px 6px 0', color: 'var(--color-text-secondary, #6b7280)' }}>{t('nodes.delete.role')}</td>
+                    <td style={{ padding: '6px 12px 6px 0', color: 'var(--color-text-secondary)' }}>{t('nodes.delete.role')}</td>
                     <td style={{ padding: '6px 0' }}>
                       <StatusBadge status={deleteTarget.roleId} />
                     </td>
@@ -736,7 +736,7 @@ export function Nodes() {
                 )}
                 {deleteTarget.platform && (
                   <tr>
-                    <td style={{ padding: '6px 12px 6px 0', color: 'var(--color-text-secondary, #6b7280)' }}>{t('nodes.delete.platform')}</td>
+                    <td style={{ padding: '6px 12px 6px 0', color: 'var(--color-text-secondary)' }}>{t('nodes.delete.platform')}</td>
                     <td style={{ padding: '6px 0' }}>{deleteTarget.platform}</td>
                   </tr>
                 )}
@@ -747,10 +747,10 @@ export function Nodes() {
               <div style={{
                 marginTop: '12px',
                 padding: '12px',
-                background: '#fef2f2',
-                border: '1px solid #fecaca',
+                background: 'rgba(239, 68, 68, 0.10)',
+                border: '1px solid rgba(239, 68, 68, 0.25)',
                 borderRadius: '6px',
-                color: '#dc2626',
+                color: '#ef4444',
                 fontSize: '13px',
               }}>
                 {t('nodes.delete.failedToDelete', { error: (deleteNode.error as Error)?.message ?? 'Unknown error' })}

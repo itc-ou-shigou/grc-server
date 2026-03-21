@@ -206,7 +206,7 @@ function OtpInput({ value, onChange, disabled }: OtpInputProps) {
             border: `2px solid ${value[i] ? 'var(--color-primary)' : 'var(--color-border)'}`,
             borderRadius: 'var(--radius-md)',
             outline: 'none',
-            background: '#fff',
+            background: 'rgba(12, 19, 36, 0.60)',
             color: 'var(--color-text)',
             transition: 'border-color 0.15s',
             fontFamily: 'var(--font-mono)',
@@ -423,11 +423,12 @@ export function AuthGuard({ children }: { children: ReactNode }) {
           style={{
             width: '100%',
             maxWidth: 420,
-            background: '#fff',
+            background: 'rgba(12, 19, 36, 0.95)',
             borderRadius: 16,
-            boxShadow: '0 20px 60px rgba(0,0,0,0.3)',
+            boxShadow: '0 20px 60px rgba(0,0,0,0.6), 0 0 40px rgba(129, 236, 255, 0.08)',
             overflow: 'hidden',
             animation: 'auth-fade-in 0.35s ease both',
+            border: '1px solid rgba(66, 72, 89, 0.20)',
           }}
         >
           {/* Header */}
@@ -500,7 +501,7 @@ export function AuthGuard({ children }: { children: ReactNode }) {
                 style={{
                   flex: 1,
                   padding: '12px 0',
-                  background: tab === t ? '#fff' : 'transparent',
+                  background: tab === t ? 'rgba(129, 236, 255, 0.08)' : 'transparent',
                   border: 'none',
                   borderBottom: tab === t ? '2px solid var(--color-primary)' : '2px solid transparent',
                   color: tab === t ? 'var(--color-primary)' : 'var(--color-text-secondary)',
@@ -871,7 +872,7 @@ function StepIndicator({ current }: { current: RegisterStep }) {
                 style={{
                   flex: 1,
                   height: 2,
-                  background: done ? '#059669' : 'var(--color-border)',
+                  background: done ? '#4ade80' : 'var(--color-border)',
                   margin: '0 6px',
                   marginBottom: 18,
                   transition: 'background 0.2s',

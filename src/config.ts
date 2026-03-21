@@ -73,6 +73,7 @@ export interface GrcConfig {
     meetings: boolean;
     "model-keys": boolean;
     messaging: boolean;
+    orchestrator: boolean;
   };
 
   smtp: {
@@ -278,6 +279,7 @@ export function loadConfig(): GrcConfig {
       meetings: envBool("GRC_MODULE_MEETINGS", true),
       "model-keys": envBool("GRC_MODULE_MODEL_KEYS", true),
       messaging: envBool("GRC_MODULE_MESSAGING", true),
+      orchestrator: envBool("GRC_MODULE_ORCHESTRATOR", false),
     },
 
     admin: {

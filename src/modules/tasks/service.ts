@@ -28,6 +28,7 @@ import {
   nodeConfigSSE,
   type TaskSSEEvent,
 } from "../evolution/node-config-sse.js";
+import { orchestratorService } from "../orchestrator/service.js";
 
 const logger = pino({ name: "module:tasks:service" });
 
@@ -281,6 +282,22 @@ export class TasksService {
     notes?: string;
     expenseAmount?: string;
     expenseCurrency?: string;
+    // Expense details
+    vendorName?: string;
+    vendorType?: string;
+    productService?: string;
+    expenseDescription?: string;
+    paymentMethod?: string;
+    bankName?: string;
+    bankBranch?: string;
+    bankAccountType?: string;
+    bankAccountNumber?: string;
+    bankAccountName?: string;
+    invoiceNumber?: string;
+    invoiceDate?: Date;
+    dueDate?: Date;
+    businessPurpose?: string;
+    expectedRoi?: string;
   }) {
     const db = getDb();
     const id = uuidv4();
@@ -312,6 +329,22 @@ export class TasksService {
       expenseAmount: data.expenseAmount ?? null,
       expenseCurrency: data.expenseCurrency ?? null,
       expenseApproved,
+      // Expense details
+      vendorName: data.vendorName ?? null,
+      vendorType: data.vendorType ?? null,
+      productService: data.productService ?? null,
+      expenseDescription: data.expenseDescription ?? null,
+      paymentMethod: data.paymentMethod ?? null,
+      bankName: data.bankName ?? null,
+      bankBranch: data.bankBranch ?? null,
+      bankAccountType: data.bankAccountType ?? null,
+      bankAccountNumber: data.bankAccountNumber ?? null,
+      bankAccountName: data.bankAccountName ?? null,
+      invoiceNumber: data.invoiceNumber ?? null,
+      invoiceDate: data.invoiceDate ?? null,
+      dueDate: data.dueDate ?? null,
+      businessPurpose: data.businessPurpose ?? null,
+      expectedRoi: data.expectedRoi ?? null,
       version: 1,
     });
 
@@ -363,6 +396,22 @@ export class TasksService {
       notes?: string;
       expenseAmount?: string;
       expenseCurrency?: string;
+      // Expense details
+      vendorName?: string;
+      vendorType?: string;
+      productService?: string;
+      expenseDescription?: string;
+      paymentMethod?: string;
+      bankName?: string;
+      bankBranch?: string;
+      bankAccountType?: string;
+      bankAccountNumber?: string;
+      bankAccountName?: string;
+      invoiceNumber?: string;
+      invoiceDate?: Date;
+      dueDate?: Date;
+      businessPurpose?: string;
+      expectedRoi?: string;
       resultSummary?: string;
       resultData?: unknown;
       version: number;
@@ -408,6 +457,22 @@ export class TasksService {
     if (data.expenseCurrency !== undefined) updateSet.expenseCurrency = data.expenseCurrency;
     if (data.resultSummary !== undefined) updateSet.resultSummary = data.resultSummary;
     if (data.resultData !== undefined) updateSet.resultData = data.resultData;
+    // Expense details
+    if (data.vendorName !== undefined) updateSet.vendorName = data.vendorName;
+    if (data.vendorType !== undefined) updateSet.vendorType = data.vendorType;
+    if (data.productService !== undefined) updateSet.productService = data.productService;
+    if (data.expenseDescription !== undefined) updateSet.expenseDescription = data.expenseDescription;
+    if (data.paymentMethod !== undefined) updateSet.paymentMethod = data.paymentMethod;
+    if (data.bankName !== undefined) updateSet.bankName = data.bankName;
+    if (data.bankBranch !== undefined) updateSet.bankBranch = data.bankBranch;
+    if (data.bankAccountType !== undefined) updateSet.bankAccountType = data.bankAccountType;
+    if (data.bankAccountNumber !== undefined) updateSet.bankAccountNumber = data.bankAccountNumber;
+    if (data.bankAccountName !== undefined) updateSet.bankAccountName = data.bankAccountName;
+    if (data.invoiceNumber !== undefined) updateSet.invoiceNumber = data.invoiceNumber;
+    if (data.invoiceDate !== undefined) updateSet.invoiceDate = data.invoiceDate;
+    if (data.dueDate !== undefined) updateSet.dueDate = data.dueDate;
+    if (data.businessPurpose !== undefined) updateSet.businessPurpose = data.businessPurpose;
+    if (data.expectedRoi !== undefined) updateSet.expectedRoi = data.expectedRoi;
 
     await db
       .update(tasksTable)
@@ -562,6 +627,35 @@ export class TasksService {
           { taskId: id, restoredTo: prevAssignee },
           "Post-review: restored original assignee",
         );
+      }
+    }
+
+    // Orchestrator hook: evaluate multi-agent execution
+    if (newStatus === "in_progress" && currentStatus === "pending") {
+      try {
+        const decision = await orchestratorService.evaluateTask({
+          id: task.id,
+          title: task.title,
+          description: task.description,
+          category: task.category,
+          priority: task.priority,
+          dependsOn: task.dependsOn,
+          deliverables: task.deliverables,
+          notes: task.notes,
+          assignedNodeId: task.assignedNodeId,
+        });
+
+        if (decision.useMultiAgent) {
+          const sessionId = await orchestratorService.spawnSwarm(
+            { id: task.id, title: task.title, description: task.description },
+            decision,
+          );
+          logger.info({ taskId: id, sessionId, template: decision.template }, "Task escalated to multi-agent swarm");
+          // Continue with normal status update - task will be in_progress, session tracker handles the rest
+        }
+      } catch (err) {
+        logger.warn({ taskId: id, err }, "Orchestrator evaluation failed, continuing with single-agent");
+        // Graceful degradation - continue with normal execution
       }
     }
 
@@ -1027,6 +1121,54 @@ export class TasksService {
 
     logger.info({ taskId, approvedBy }, "Expense approved");
 
+    // ── SSE Notification: Notify assignee/creator that expense has been approved ──
+    const sseEvent: TaskSSEEvent = {
+      event_type: "expense_approved",
+      task_id: taskId,
+      task_code: task.taskCode,
+      title: task.title,
+      amount: task.expenseAmount,
+      currency: task.expenseCurrency,
+      approved_by: approvedBy,
+      approved_at: new Date().toISOString(),
+      creator_role_id: task.assignedRoleId ?? undefined,
+    };
+
+    // Notify the assigned node
+    if (task.assignedNodeId) {
+      nodeConfigSSE.pushTaskEvent(task.assignedNodeId, sseEvent);
+      logger.info({ taskId, nodeId: task.assignedNodeId }, "SSE expense_approved pushed to assigned node");
+    } else if (task.assignedRoleId) {
+      // Role-based assignment — find connected nodes with this role and push to all
+      const connectedNodeIds = nodeConfigSSE.getConnectedNodeIds();
+      if (connectedNodeIds.length > 0) {
+        const nodesWithRole = await db
+          .select({ nodeId: nodesTable.nodeId })
+          .from(nodesTable)
+          .where(
+            and(
+              eq(nodesTable.roleId, task.assignedRoleId),
+              inArray(nodesTable.nodeId, connectedNodeIds),
+            ),
+          );
+        for (const node of nodesWithRole) {
+          nodeConfigSSE.pushTaskEvent(node.nodeId, sseEvent);
+        }
+        if (nodesWithRole.length > 0) {
+          logger.info(
+            { taskId, roleId: task.assignedRoleId, nodeCount: nodesWithRole.length },
+            "SSE expense_approved pushed to nodes by role",
+          );
+        }
+      }
+    }
+
+    // Also notify the creator if different from assignee
+    if (task.creatorNodeId && task.creatorNodeId !== task.assignedNodeId) {
+      nodeConfigSSE.pushTaskEvent(task.creatorNodeId, sseEvent);
+      logger.info({ taskId, creatorNodeId: task.creatorNodeId }, "SSE expense_approved pushed to creator node");
+    }
+
     const updated = await db
       .select()
       .from(tasksTable)
@@ -1088,6 +1230,55 @@ export class TasksService {
     });
 
     logger.info({ taskId, rejectedBy, reason }, "Expense rejected");
+
+    // ── SSE Notification: Notify assignee/creator that expense has been rejected ──
+    const sseEvent: TaskSSEEvent = {
+      event_type: "expense_rejected",
+      task_id: taskId,
+      task_code: task.taskCode,
+      title: task.title,
+      amount: task.expenseAmount,
+      currency: task.expenseCurrency,
+      rejected_by: rejectedBy,
+      rejected_at: new Date().toISOString(),
+      reason: reason ?? undefined,
+      creator_role_id: task.assignedRoleId ?? undefined,
+    };
+
+    // Notify the assigned node
+    if (task.assignedNodeId) {
+      nodeConfigSSE.pushTaskEvent(task.assignedNodeId, sseEvent);
+      logger.info({ taskId, nodeId: task.assignedNodeId }, "SSE expense_rejected pushed to assigned node");
+    } else if (task.assignedRoleId) {
+      // Role-based assignment — find connected nodes with this role and push to all
+      const connectedNodeIds = nodeConfigSSE.getConnectedNodeIds();
+      if (connectedNodeIds.length > 0) {
+        const nodesWithRole = await db
+          .select({ nodeId: nodesTable.nodeId })
+          .from(nodesTable)
+          .where(
+            and(
+              eq(nodesTable.roleId, task.assignedRoleId),
+              inArray(nodesTable.nodeId, connectedNodeIds),
+            ),
+          );
+        for (const node of nodesWithRole) {
+          nodeConfigSSE.pushTaskEvent(node.nodeId, sseEvent);
+        }
+        if (nodesWithRole.length > 0) {
+          logger.info(
+            { taskId, roleId: task.assignedRoleId, nodeCount: nodesWithRole.length },
+            "SSE expense_rejected pushed to nodes by role",
+          );
+        }
+      }
+    }
+
+    // Also notify the creator if different from assignee
+    if (task.creatorNodeId && task.creatorNodeId !== task.assignedNodeId) {
+      nodeConfigSSE.pushTaskEvent(task.creatorNodeId, sseEvent);
+      logger.info({ taskId, creatorNodeId: task.creatorNodeId }, "SSE expense_rejected pushed to creator node");
+    }
 
     const updated = await db
       .select()
@@ -1152,6 +1343,54 @@ export class TasksService {
     });
 
     logger.info({ taskId, paidBy }, "Expense marked as paid");
+
+    // ── SSE Notification: Notify assignee/creator that expense has been paid ──
+    const sseEvent: TaskSSEEvent = {
+      event_type: "expense_paid",
+      task_id: taskId,
+      task_code: task.taskCode,
+      title: task.title,
+      amount: task.expenseAmount,
+      currency: task.expenseCurrency,
+      paid_by: paidBy,
+      paid_at: new Date().toISOString(),
+      creator_role_id: task.assignedRoleId ?? undefined,
+    };
+
+    // Notify the assigned node
+    if (task.assignedNodeId) {
+      nodeConfigSSE.pushTaskEvent(task.assignedNodeId, sseEvent);
+      logger.info({ taskId, nodeId: task.assignedNodeId }, "SSE expense_paid pushed to assigned node");
+    } else if (task.assignedRoleId) {
+      // Role-based assignment — find connected nodes with this role and push to all
+      const connectedNodeIds = nodeConfigSSE.getConnectedNodeIds();
+      if (connectedNodeIds.length > 0) {
+        const nodesWithRole = await db
+          .select({ nodeId: nodesTable.nodeId })
+          .from(nodesTable)
+          .where(
+            and(
+              eq(nodesTable.roleId, task.assignedRoleId),
+              inArray(nodesTable.nodeId, connectedNodeIds),
+            ),
+          );
+        for (const node of nodesWithRole) {
+          nodeConfigSSE.pushTaskEvent(node.nodeId, sseEvent);
+        }
+        if (nodesWithRole.length > 0) {
+          logger.info(
+            { taskId, roleId: task.assignedRoleId, nodeCount: nodesWithRole.length },
+            "SSE expense_paid pushed to nodes by role",
+          );
+        }
+      }
+    }
+
+    // Also notify the creator if different from assignee
+    if (task.creatorNodeId && task.creatorNodeId !== task.assignedNodeId) {
+      nodeConfigSSE.pushTaskEvent(task.creatorNodeId, sseEvent);
+      logger.info({ taskId, creatorNodeId: task.creatorNodeId }, "SSE expense_paid pushed to creator node");
+    }
 
     const updated = await db
       .select()

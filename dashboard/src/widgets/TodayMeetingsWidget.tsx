@@ -43,12 +43,12 @@ export function TodayMeetingsWidget() {
           {meetings.slice(0, 5).map((m) => (
             <li key={m.id} style={{
               display: 'flex', alignItems: 'center', gap: 8,
-              padding: '6px 0', borderBottom: '1px solid var(--color-border, #e2e8f0)',
+              padding: '6px 0', borderBottom: '1px solid var(--color-border)',
             }}>
               <span style={{
                 fontSize: 11, padding: '2px 6px', borderRadius: 4,
-                background: m.status === 'active' ? '#dcfce7' : '#f0f9ff',
-                color: m.status === 'active' ? '#166534' : '#1e40af',
+                background: m.status === 'active' ? 'rgba(74, 222, 128, 0.12)' : 'rgba(0, 229, 255, 0.10)',
+                color: m.status === 'active' ? '#4ade80' : '#81ecff',
               }}>
                 {m.status === 'active' ? 'LIVE' : '予定'}
               </span>
@@ -58,7 +58,7 @@ export function TodayMeetingsWidget() {
               {m.status === 'active' && (
                 <Link to={`/meetings/${m.id}/live`} style={{
                   fontSize: 11, padding: '2px 8px', borderRadius: 4,
-                  background: 'var(--color-primary, #3b82f6)', color: '#fff', textDecoration: 'none',
+                  background: 'var(--color-primary)', color: '#080e1d', textDecoration: 'none',
                 }}>
                   参加
                 </Link>

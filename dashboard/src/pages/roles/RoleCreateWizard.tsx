@@ -292,7 +292,7 @@ export function RoleCreateWizard() {
             <div
               style={{
                 display: 'flex',
-                borderBottom: '1px solid var(--border, #e5e7eb)',
+                borderBottom: '1px solid var(--color-border)',
                 overflowX: 'auto',
               }}
             >
@@ -303,11 +303,11 @@ export function RoleCreateWizard() {
                   style={{
                     padding: '0.625rem 1rem',
                     border: 'none',
-                    borderBottom: activeTab === tab.key ? '2px solid var(--color-primary, #6366f1)' : '2px solid transparent',
+                    borderBottom: activeTab === tab.key ? '2px solid var(--color-primary)' : '2px solid transparent',
                     background: 'none',
                     cursor: 'pointer',
                     fontWeight: activeTab === tab.key ? 600 : 400,
-                    color: activeTab === tab.key ? 'var(--color-primary, #6366f1)' : 'inherit',
+                    color: activeTab === tab.key ? 'var(--color-primary)' : 'inherit',
                     whiteSpace: 'nowrap',
                     fontSize: '0.875rem',
                   }}
@@ -320,7 +320,7 @@ export function RoleCreateWizard() {
                         width: '6px',
                         height: '6px',
                         borderRadius: '50%',
-                        background: 'var(--color-primary, #6366f1)',
+                        background: 'var(--color-primary)',
                         marginLeft: '0.375rem',
                         verticalAlign: 'middle',
                       }}

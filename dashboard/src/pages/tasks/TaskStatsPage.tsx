@@ -73,7 +73,7 @@ function BreakdownBar({ label, count, total, color }: BreakdownBarProps) {
       <div
         style={{
           height: '8px',
-          background: 'var(--surface-alt, #eee)',
+          background: 'rgba(66, 72, 89, 0.20)',
           borderRadius: '4px',
           overflow: 'hidden',
         }}

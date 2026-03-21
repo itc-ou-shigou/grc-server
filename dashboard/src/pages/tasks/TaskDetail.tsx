@@ -382,7 +382,7 @@ export function TaskDetail() {
 
           {/* Expense lifecycle actions */}
           {isAdmin && (expensePendingApproval || expenseAwaitingPayment) && (
-            <div style={{ marginTop: '1rem', paddingTop: '0.75rem', borderTop: '1px solid var(--border, #e2e2e2)' }}>
+            <div style={{ marginTop: '1rem', paddingTop: '0.75rem', borderTop: '1px solid var(--color-border)' }}>
               <div style={{ fontWeight: 600, marginBottom: '0.5rem', fontSize: '0.875rem' }}>经费操作</div>
               <div className="action-group">
                 {expensePendingApproval && (
@@ -425,13 +425,13 @@ export function TaskDetail() {
           )}
 
           {/* Expense lifecycle progress */}
-          <div style={{ marginTop: '1rem', paddingTop: '0.75rem', borderTop: '1px solid var(--border, #e2e2e2)' }}>
+          <div style={{ marginTop: '1rem', paddingTop: '0.75rem', borderTop: '1px solid var(--color-border)' }}>
             <div style={{ fontWeight: 600, marginBottom: '0.5rem', fontSize: '0.875rem' }}>经费流程</div>
             <div style={{ display: 'flex', gap: '0.25rem', alignItems: 'center', flexWrap: 'wrap' }}>
               <span
                 className="tag"
                 style={{
-                  background: 'var(--primary-bg, #e3f2fd)',
+                  background: 'var(--color-info-bg)',
                   fontWeight: 600,
                 }}
               >
@@ -442,12 +442,12 @@ export function TaskDetail() {
                 className="tag"
                 style={{
                   background: expensePendingApproval
-                    ? 'var(--warning-bg, #fff3cd)'
+                    ? 'var(--color-warning-bg)'
                     : expenseIsApproved || expenseIsRejected
-                    ? 'var(--primary-bg, #e3f2fd)'
-                    : 'var(--surface-alt, #f5f5f5)',
+                    ? 'var(--color-info-bg)'
+                    : 'rgba(66, 72, 89, 0.20)',
                   fontWeight: expensePendingApproval ? 700 : 400,
-                  outline: expensePendingApproval ? '2px solid var(--warning, #ffc107)' : 'none',
+                  outline: expensePendingApproval ? '2px solid var(--color-warning)' : 'none',
                 }}
               >
                 ② 审批
@@ -457,12 +457,12 @@ export function TaskDetail() {
                 className="tag"
                 style={{
                   background: expenseAwaitingPayment
-                    ? 'var(--warning-bg, #fff3cd)'
+                    ? 'var(--color-warning-bg)'
                     : expenseIsPaid
-                    ? 'var(--primary-bg, #e3f2fd)'
-                    : 'var(--surface-alt, #f5f5f5)',
+                    ? 'var(--color-info-bg)'
+                    : 'rgba(66, 72, 89, 0.20)',
                   fontWeight: expenseAwaitingPayment ? 700 : 400,
-                  outline: expenseAwaitingPayment ? '2px solid var(--warning, #ffc107)' : 'none',
+                  outline: expenseAwaitingPayment ? '2px solid var(--color-warning)' : 'none',
                 }}
               >
                 ③ 付款
@@ -472,8 +472,8 @@ export function TaskDetail() {
                 className="tag"
                 style={{
                   background: expenseIsPaid
-                    ? 'var(--success-bg, #d4edda)'
-                    : 'var(--surface-alt, #f5f5f5)',
+                    ? 'var(--color-success-bg)'
+                    : 'rgba(66, 72, 89, 0.20)',
                   fontWeight: expenseIsPaid ? 700 : 400,
                 }}
               >
@@ -522,7 +522,7 @@ export function TaskDetail() {
               key={c.id}
               style={{
                 padding: '0.75rem',
-                background: 'var(--surface-alt, #f5f5f5)',
+                background: 'rgba(29, 37, 59, 0.40)',
                 borderRadius: '6px',
               }}
             >

@@ -72,7 +72,7 @@ function KPICard({ kpi, onRecord }: { kpi: KPI; onRecord: (kpi: KPI) => void }) 
             style={{
               fontSize: 10,
               fontWeight: 600,
-              background: 'var(--color-bg, #f8fafc)',
+              background: 'var(--color-bg)',
               color: 'var(--color-text-secondary)',
               borderRadius: 4,
               padding: '1px 6px',
@@ -118,7 +118,7 @@ function KPICard({ kpi, onRecord }: { kpi: KPI; onRecord: (kpi: KPI) => void }) 
 
       {/* Progress bar */}
       <div>
-        <div style={{ height: 8, background: 'var(--color-border, #e2e8f0)', borderRadius: 4, overflow: 'hidden' }}>
+        <div style={{ height: 8, background: 'var(--color-border)', borderRadius: 4, overflow: 'hidden' }}>
           <div
             style={{
               height: '100%',
@@ -185,7 +185,7 @@ function CreateKPIModal({ open, onClose, onSubmit, loading }: CreateKPIModalProp
     >
       <div
         style={{
-          background: 'var(--color-content-bg, #fff)',
+          background: 'var(--color-content-bg)',
           borderRadius: 8,
           padding: '24px',
           width: 460,
@@ -309,7 +309,7 @@ function RecordValueModal({ kpi, onClose, onSubmit, loading }: RecordValueModalP
     >
       <div
         style={{
-          background: 'var(--color-content-bg, #fff)',
+          background: 'var(--color-content-bg)',
           borderRadius: 8,
           padding: '24px',
           width: 380,
@@ -447,7 +447,7 @@ export function KPIDashboard() {
           display: 'flex',
           gap: 4,
           marginBottom: 20,
-          borderBottom: '2px solid var(--color-border, #e2e8f0)',
+          borderBottom: '2px solid var(--color-border)',
           flexWrap: 'wrap',
         }}
       >
@@ -461,8 +461,8 @@ export function KPIDashboard() {
               fontWeight: activeCategory === cat ? 700 : 500,
               background: 'none',
               border: 'none',
-              borderBottom: activeCategory === cat ? '2px solid var(--color-primary, #3b82f6)' : '2px solid transparent',
-              color: activeCategory === cat ? 'var(--color-primary, #3b82f6)' : 'var(--color-text-secondary)',
+              borderBottom: activeCategory === cat ? '2px solid var(--color-primary)' : '2px solid transparent',
+              color: activeCategory === cat ? 'var(--color-primary)' : 'var(--color-text-secondary)',
               cursor: 'pointer',
               marginBottom: -2,
               transition: 'color 0.15s',
@@ -474,7 +474,7 @@ export function KPIDashboard() {
                 style={{
                   marginLeft: 6,
                   fontSize: 10,
-                  background: 'var(--color-bg, #f8fafc)',
+                  background: 'var(--color-bg)',
                   borderRadius: 10,
                   padding: '1px 6px',
                 }}

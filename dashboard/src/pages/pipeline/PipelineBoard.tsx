@@ -41,11 +41,11 @@ type PipelineStage =
 // ── Constants ──────────────────────────────────────────────────────────────
 
 const STAGES: Array<{ id: PipelineStage; label: string; color: string }> = [
-  { id: 'lead',        label: 'Lead',        color: '#94a3b8' },
-  { id: 'qualified',   label: 'Qualified',   color: '#3b82f6' },
-  { id: 'proposal',    label: 'Proposal',    color: '#8b5cf6' },
-  { id: 'negotiation', label: 'Negotiation', color: '#f59e0b' },
-  { id: 'closed_won',  label: 'Closed Won',  color: '#10b981' },
+  { id: 'lead',        label: 'Lead',        color: 'rgba(224, 229, 251, 0.55)' },
+  { id: 'qualified',   label: 'Qualified',   color: '#81ecff' },
+  { id: 'proposal',    label: 'Proposal',    color: '#b287fe' },
+  { id: 'negotiation', label: 'Negotiation', color: '#ffbe0b' },
+  { id: 'closed_won',  label: 'Closed Won',  color: '#4ade80' },
   { id: 'closed_lost', label: 'Closed Lost', color: '#ef4444' },
 ];
 
@@ -80,8 +80,8 @@ function DealCard({ deal, onStageChange, stageChanging }: DealCardProps) {
   return (
     <div
       style={{
-        background: 'var(--color-content-bg, #fff)',
-        border: '1px solid var(--color-border, #e2e8f0)',
+        background: 'var(--color-content-bg)',
+        border: '1px solid var(--color-border)',
         borderRadius: 8,
         padding: '12px',
         marginBottom: 8,
@@ -116,8 +116,8 @@ function DealCard({ deal, onStageChange, stageChanging }: DealCardProps) {
             padding: '5px 0',
             fontSize: 11,
             fontWeight: 600,
-            background: 'var(--color-bg, #f8fafc)',
-            border: '1px solid var(--color-border, #e2e8f0)',
+            background: 'var(--color-bg)',
+            border: '1px solid var(--color-border)',
             borderRadius: 4,
             cursor: 'pointer',
             color: 'var(--color-text-secondary)',
@@ -177,7 +177,7 @@ function CreateModal({ open, onClose, onSubmit, loading }: CreateModalProps) {
     >
       <div
         style={{
-          background: 'var(--color-content-bg, #fff)',
+          background: 'var(--color-content-bg)',
           borderRadius: 8,
           padding: '24px',
           width: 480,
@@ -408,10 +408,10 @@ export function PipelineBoard() {
                 key={stage.id}
                 style={{
                   minWidth: 200,
-                  background: 'var(--color-bg, #f8fafc)',
+                  background: 'var(--color-bg)',
                   borderRadius: 8,
                   padding: '12px 10px',
-                  border: '1px solid var(--color-border, #e2e8f0)',
+                  border: '1px solid var(--color-border)',
                 }}
               >
                 {/* Column header */}
@@ -442,7 +442,7 @@ export function PipelineBoard() {
                   <span
                     style={{
                       background: stage.color,
-                      color: '#fff',
+                      color: '#080e1d',
                       borderRadius: 12,
                       padding: '1px 8px',
                       fontSize: 11,

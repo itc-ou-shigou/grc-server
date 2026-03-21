@@ -36,7 +36,7 @@ export function MessageQueueWidget() {
       {pending > 0 && (
         <div style={{
           marginTop: 12, padding: '8px 12px', borderRadius: 6,
-          background: '#fef3c7', color: '#92400e', fontSize: 13,
+          background: 'rgba(255, 190, 11, 0.12)', color: '#ffbe0b', fontSize: 13,
         }}>
           {pending}件の未処理メッセージ
         </div>

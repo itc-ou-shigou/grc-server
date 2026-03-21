@@ -59,6 +59,25 @@ const createTaskSchema = z.object({
   notes: z.string().nullable().optional(),
   expense_amount: z.string().max(30).nullable().optional(),
   expense_currency: z.string().max(10).nullable().optional(),
+  // Expense details (支払い先・目的情報)
+  vendor_name: z.string().max(255).nullable().optional(),
+  vendor_type: z.enum(["supplier", "contractor", "subscription", "other"]).nullable().optional(),
+  product_service: z.string().max(500).nullable().optional(),
+  expense_description: z.string().nullable().optional(),
+  payment_method: z.enum(["bank_transfer", "credit_card", "cash", "other"]).nullable().optional(),
+  // Bank details
+  bank_name: z.string().max(255).nullable().optional(),
+  bank_branch: z.string().max(255).nullable().optional(),
+  bank_account_type: z.enum(["ordinary", "checking"]).nullable().optional(),
+  bank_account_number: z.string().max(100).nullable().optional(),
+  bank_account_name: z.string().max(255).nullable().optional(),
+  // Invoice info
+  invoice_number: z.string().max(100).nullable().optional(),
+  invoice_date: z.string().datetime().nullable().optional(),
+  due_date: z.string().datetime().nullable().optional(),
+  // Business justification
+  business_purpose: z.string().nullable().optional(),
+  expected_roi: z.string().nullable().optional(),
 });
 
 const updateTaskSchema = z.object({
@@ -76,6 +95,22 @@ const updateTaskSchema = z.object({
   notes: z.string().optional(),
   expense_amount: z.string().max(30).optional(),
   expense_currency: z.string().max(10).optional(),
+  // Expense details
+  vendor_name: z.string().max(255).optional(),
+  vendor_type: z.enum(["supplier", "contractor", "subscription", "other"]).optional(),
+  product_service: z.string().max(500).optional(),
+  expense_description: z.string().optional(),
+  payment_method: z.enum(["bank_transfer", "credit_card", "cash", "other"]).optional(),
+  bank_name: z.string().max(255).optional(),
+  bank_branch: z.string().max(255).optional(),
+  bank_account_type: z.enum(["ordinary", "checking"]).optional(),
+  bank_account_number: z.string().max(100).optional(),
+  bank_account_name: z.string().max(255).optional(),
+  invoice_number: z.string().max(100).optional(),
+  invoice_date: z.string().datetime().nullable().optional(),
+  due_date: z.string().datetime().nullable().optional(),
+  business_purpose: z.string().optional(),
+  expected_roi: z.string().optional(),
   result_summary: z.string().optional(),
   result_data: z.record(z.unknown()).optional(),
   version: z.number().int().min(1),
@@ -264,6 +299,22 @@ export async function registerAdmin(app: Express, config: GrcConfig) {
         notes: body.notes ?? undefined,
         expenseAmount: body.expense_amount ?? undefined,
         expenseCurrency: body.expense_currency ?? undefined,
+        // Expense details
+        vendorName: body.vendor_name ?? undefined,
+        vendorType: body.vendor_type ?? undefined,
+        productService: body.product_service ?? undefined,
+        expenseDescription: body.expense_description ?? undefined,
+        paymentMethod: body.payment_method ?? undefined,
+        bankName: body.bank_name ?? undefined,
+        bankBranch: body.bank_branch ?? undefined,
+        bankAccountType: body.bank_account_type ?? undefined,
+        bankAccountNumber: body.bank_account_number ?? undefined,
+        bankAccountName: body.bank_account_name ?? undefined,
+        invoiceNumber: body.invoice_number ?? undefined,
+        invoiceDate: body.invoice_date ? new Date(body.invoice_date) : undefined,
+        dueDate: body.due_date ? new Date(body.due_date) : undefined,
+        businessPurpose: body.business_purpose ?? undefined,
+        expectedRoi: body.expected_roi ?? undefined,
       });
 
       res.status(201).json({ data: task });
@@ -299,6 +350,26 @@ export async function registerAdmin(app: Express, config: GrcConfig) {
           notes: body.notes,
           expenseAmount: body.expense_amount,
           expenseCurrency: body.expense_currency,
+          // Expense details
+          vendorName: body.vendor_name,
+          vendorType: body.vendor_type,
+          productService: body.product_service,
+          expenseDescription: body.expense_description,
+          paymentMethod: body.payment_method,
+          bankName: body.bank_name,
+          bankBranch: body.bank_branch,
+          bankAccountType: body.bank_account_type,
+          bankAccountNumber: body.bank_account_number,
+          bankAccountName: body.bank_account_name,
+          invoiceNumber: body.invoice_number,
+          invoiceDate: body.invoice_date !== undefined
+            ? (body.invoice_date !== null ? new Date(body.invoice_date) : undefined)
+            : undefined,
+          dueDate: body.due_date !== undefined
+            ? (body.due_date !== null ? new Date(body.due_date) : undefined)
+            : undefined,
+          businessPurpose: body.business_purpose,
+          expectedRoi: body.expected_roi,
           resultSummary: body.result_summary,
           resultData: body.result_data,
           version: body.version,

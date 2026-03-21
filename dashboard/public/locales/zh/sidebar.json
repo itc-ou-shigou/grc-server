@@ -58,6 +58,20 @@
     "kpi": "KPI仪表板",
     "skillCatalog": "技能目录"
   },
+  "topnav": {
+    "overview": "概览",
+    "lobsterNodes": "龙虾池",
+    "tasks": "任务",
+    "meetings": "会议",
+    "platform": "组织",
+    "roles": "角色",
+    "employees": "员工",
+    "skills": "技能",
+    "marketing": "营销",
+    "evolution": "进化",
+    "community": "社区",
+    "settings": "设置"
+  },
   "footer": {
     "settings": "设置",
     "logout": "退出登录",

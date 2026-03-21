@@ -120,6 +120,11 @@ export async function loadModules(
         name: "messaging",
         register: m.register,
       })),
+    orchestrator: () =>
+      import("./modules/orchestrator/routes.js").then((m) => ({
+        name: "orchestrator",
+        register: m.register,
+      })),
   };
 
   const adminModuleMap: Record<
@@ -140,6 +145,7 @@ export async function loadModules(
     "a2a-gateway": () => import("./modules/a2a-gateway/admin-routes.js"),
     meetings: () => import("./modules/meetings/admin-routes.js"),
     "model-keys": () => import("./modules/model-keys/admin-routes.js"),
+    orchestrator: () => import("./modules/orchestrator/admin-routes.js"),
   };
 
   const loaded: string[] = [];

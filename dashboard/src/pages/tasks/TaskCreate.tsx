@@ -349,7 +349,7 @@ export function TaskCreate() {
             <div
               style={{
                 padding: '1rem',
-                background: 'var(--surface-alt, #f5f5f5)',
+                background: 'rgba(29, 37, 59, 0.40)',
                 borderRadius: '6px',
                 marginBottom: '1rem',
                 display: 'grid',

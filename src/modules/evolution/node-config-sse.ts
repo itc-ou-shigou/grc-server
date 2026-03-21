@@ -22,13 +22,20 @@ export interface MeetingSSEEvent {
 }
 
 export interface TaskSSEEvent {
-  event_type: "task_assigned" | "task_feedback" | "task_completed" | "task_approved";
+  event_type:
+    | "task_assigned"
+    | "task_feedback"
+    | "task_completed"
+    | "task_approved"
+    | "expense_approved"
+    | "expense_rejected"
+    | "expense_paid";
   task_id: string;
   task_code: string;
   title: string;
-  priority: string;
-  category: string;
-  status: string;
+  priority?: string;
+  category?: string;
+  status?: string;
   description?: string;
   deliverables?: string[];
   assigned_role_id?: string;
@@ -36,6 +43,16 @@ export interface TaskSSEEvent {
   creator_role_id?: string;
   feedback?: string;
   result_summary?: string;
+  // Expense-specific fields
+  amount?: string | null;
+  currency?: string | null;
+  approved_by?: string;
+  approved_at?: string;
+  rejected_by?: string;
+  rejected_at?: string;
+  reason?: string;
+  paid_by?: string;
+  paid_at?: string;
 }
 
 export interface RelaySSEEvent {
