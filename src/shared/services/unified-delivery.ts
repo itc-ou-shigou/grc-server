@@ -103,7 +103,7 @@ export class UnifiedDelivery {
         ),
       )
       .orderBy(
-        sql`FIELD(${a2aRelayQueueTable.priority}, 'critical', 'high', 'normal', 'low')`,
+        sql`CASE ${a2aRelayQueueTable.priority} WHEN 'critical' THEN 0 WHEN 'high' THEN 1 WHEN 'normal' THEN 2 WHEN 'low' THEN 3 ELSE 4 END`,
         a2aRelayQueueTable.createdAt,
       );
 

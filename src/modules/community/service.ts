@@ -789,7 +789,7 @@ export class CommunityService implements ICommunityService {
       await tx
         .update(communityChannelsTable)
         .set({
-          subscriberCount: sql`GREATEST(${communityChannelsTable.subscriberCount} - 1, 0)`,
+          subscriberCount: sql`MAX(${communityChannelsTable.subscriberCount} - 1, 0)`,
         })
         .where(eq(communityChannelsTable.id, channelId));
 

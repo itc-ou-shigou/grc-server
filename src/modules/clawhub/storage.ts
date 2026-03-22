@@ -1,11 +1,13 @@
 /**
- * ClawHub+ Module -- Azure Blob Storage Layer
+ * ClawHub+ Module -- Storage Factory
  *
- * Handles tarball upload, download, SAS URL generation,
- * SHA-256 checksum computation, and deletion for skill packages.
+ * Provides a unified SkillStorage interface with two backends:
+ *   - Azure Blob Storage (when accountName + accountKey are configured)
+ *   - Local filesystem (Desktop / Electron mode)
  *
- * Uses Azure Blob Storage with Shared Key credential for
- * generating time-limited SAS URLs (1-hour expiry).
+ * Backward-compatible: the top-level exported functions
+ * (uploadTarball, getTarballUrl, deleteTarball, computeSha256)
+ * delegate to whichever backend was selected by initStorage().
  */
 
 import {
@@ -18,25 +20,54 @@ import {
 import { createHash } from "node:crypto";
 import pino from "pino";
 import type { GrcConfig } from "../../config.js";
+import * as localStorage from "./storage-local.js";
 
 const logger = pino({ name: "module:clawhub:storage" });
+
+// ── Interface ─────────────────────────────────────────────────
+
+/**
+ * Unified storage interface for skill tarballs.
+ * Implemented by both Azure and local backends.
+ */
+export interface SkillStorage {
+  uploadTarball(slug: string, version: string, buffer: Buffer): Promise<string>;
+  getTarballUrl(slug: string, version: string): Promise<string>;
+  deleteTarball(slug: string, version: string): Promise<void>;
+  computeSha256(buffer: Buffer): string;
+  /** true when using local filesystem storage (Desktop mode) */
+  isLocal: boolean;
+}
+
+// ── Azure Backend (kept inline to minimise diff) ──────────────
 
 let containerClient: ContainerClient | null = null;
 let credential: StorageSharedKeyCredential | null = null;
 let containerName = "skills";
 
-/**
- * Build the object key (blob name) path for a skill tarball.
- * Format: skills/{slug}/{version}.tar.gz
- */
 function objectKey(slug: string, version: string): string {
   return `skills/${slug}/${version}.tar.gz`;
 }
 
-/**
- * Initialize the Azure Blob Storage client and ensure the target container exists.
- */
-export async function initStorage(config: GrcConfig["azure"]): Promise<void> {
+function getContainerClient(): ContainerClient {
+  if (!containerClient) {
+    throw new Error(
+      "Azure Blob storage not initialized. Call initStorage() first.",
+    );
+  }
+  return containerClient;
+}
+
+function getCredential(): StorageSharedKeyCredential {
+  if (!credential) {
+    throw new Error(
+      "Azure Blob storage not initialized. Call initStorage() first.",
+    );
+  }
+  return credential;
+}
+
+async function azureInit(config: GrcConfig["azure"]): Promise<void> {
   credential = new StorageSharedKeyCredential(
     config.accountName,
     config.accountKey,
@@ -50,7 +81,6 @@ export async function initStorage(config: GrcConfig["azure"]): Promise<void> {
   containerName = config.containerName;
   containerClient = blobServiceClient.getContainerClient(containerName);
 
-  // Ensure the container exists (createIfNotExists is idempotent)
   const createResponse = await containerClient.createIfNotExists();
   if (createResponse.succeeded) {
     logger.info({ container: containerName }, "Created Azure Blob container");
@@ -59,47 +89,11 @@ export async function initStorage(config: GrcConfig["azure"]): Promise<void> {
   }
 }
 
-/**
- * Get the initialized container client. Throws if not initialized.
- */
-function getContainerClient(): ContainerClient {
-  if (!containerClient) {
-    throw new Error(
-      "Azure Blob storage not initialized. Call initStorage() first.",
-    );
-  }
-  return containerClient;
-}
-
-/**
- * Get the initialized credential. Throws if not initialized.
- */
-function getCredential(): StorageSharedKeyCredential {
-  if (!credential) {
-    throw new Error(
-      "Azure Blob storage not initialized. Call initStorage() first.",
-    );
-  }
-  return credential;
-}
-
-/**
- * Compute the SHA-256 hash of a buffer.
- * Returns a lowercase hex string (64 characters).
- */
-export function computeSha256(buffer: Buffer): string {
+function azureComputeSha256(buffer: Buffer): string {
   return createHash("sha256").update(buffer).digest("hex");
 }
 
-/**
- * Upload a skill tarball to Azure Blob Storage.
- *
- * @param slug - The skill slug
- * @param version - The semver version string
- * @param buffer - The tarball file buffer
- * @returns The blob storage path (containerName/key)
- */
-export async function uploadTarball(
+async function azureUploadTarball(
   slug: string,
   version: string,
   buffer: Buffer,
@@ -119,15 +113,7 @@ export async function uploadTarball(
   return url;
 }
 
-/**
- * Generate a SAS download URL for a skill tarball.
- * The URL is valid for 1 hour.
- *
- * @param slug - The skill slug
- * @param version - The semver version string
- * @returns SAS URL string
- */
-export async function getTarballUrl(
+async function azureGetTarballUrl(
   slug: string,
   version: string,
 ): Promise<string> {
@@ -153,13 +139,7 @@ export async function getTarballUrl(
   return `${blobClient.url}?${sasToken}`;
 }
 
-/**
- * Delete a skill tarball from Azure Blob Storage.
- *
- * @param slug - The skill slug
- * @param version - The semver version string
- */
-export async function deleteTarball(
+async function azureDeleteTarball(
   slug: string,
   version: string,
 ): Promise<void> {
@@ -169,4 +149,95 @@ export async function deleteTarball(
   const blobClient = cc.getBlobClient(key);
   await blobClient.deleteIfExists();
   logger.info({ slug, version, key }, "Tarball deleted from Azure Blob");
+}
+
+// ── Factory ───────────────────────────────────────────────────
+
+let _storage: SkillStorage | null = null;
+
+/**
+ * Initialize the skill storage backend.
+ *
+ * When valid Azure credentials (accountName AND accountKey) are provided,
+ * the Azure Blob Storage backend is used. Otherwise, local filesystem
+ * storage is selected automatically (Desktop mode).
+ *
+ * @param azureConfig - Azure storage configuration (may have empty strings)
+ */
+export async function initStorage(
+  azureConfig?: GrcConfig["azure"],
+): Promise<void> {
+  if (azureConfig?.accountName && azureConfig?.accountKey) {
+    // ---- Azure backend ----
+    await azureInit(azureConfig);
+    _storage = {
+      uploadTarball: azureUploadTarball,
+      getTarballUrl: azureGetTarballUrl,
+      deleteTarball: azureDeleteTarball,
+      computeSha256: azureComputeSha256,
+      isLocal: false,
+    };
+    logger.info("Skill storage backend: Azure Blob Storage");
+  } else {
+    // ---- Local filesystem backend ----
+    localStorage.initLocalStorage();
+    _storage = {
+      uploadTarball: localStorage.uploadTarball,
+      getTarballUrl: localStorage.getTarballUrl,
+      deleteTarball: localStorage.deleteTarball,
+      computeSha256: localStorage.computeSha256,
+      isLocal: true,
+    };
+    logger.info("Skill storage backend: local filesystem");
+  }
+}
+
+/**
+ * Get the active storage instance.
+ * Throws if initStorage() has not been called.
+ */
+export function getStorage(): SkillStorage {
+  if (!_storage) {
+    throw new Error(
+      "Skill storage not initialized. Call initStorage() first.",
+    );
+  }
+  return _storage;
+}
+
+// ── Backward-compatible named exports ─────────────────────────
+//
+// service.ts imports these directly:
+//   import { uploadTarball, deleteTarball, computeSha256, getTarballUrl } from "./storage.js";
+//
+// These thin wrappers delegate to whichever backend was selected.
+
+export function computeSha256(buffer: Buffer): string {
+  if (!_storage) {
+    // Fallback: computeSha256 is a pure function, safe to call before init
+    return createHash("sha256").update(buffer).digest("hex");
+  }
+  return _storage.computeSha256(buffer);
+}
+
+export async function uploadTarball(
+  slug: string,
+  version: string,
+  buffer: Buffer,
+): Promise<string> {
+  return getStorage().uploadTarball(slug, version, buffer);
+}
+
+export async function getTarballUrl(
+  slug: string,
+  version: string,
+): Promise<string> {
+  return getStorage().getTarballUrl(slug, version);
+}
+
+export async function deleteTarball(
+  slug: string,
+  version: string,
+): Promise<void> {
+  return getStorage().deleteTarball(slug, version);
 }

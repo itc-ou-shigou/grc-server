@@ -168,7 +168,7 @@ export async function registerAdmin(app: Express, config: GrcConfig) {
         .from(skillCatalogTable)
         .where(whereClause)
         .orderBy(
-          sql`FIELD(${skillCatalogTable.tier}, 'P0', 'P1', 'P2', 'P3')`,
+          sql`CASE ${skillCatalogTable.tier} WHEN 'P0' THEN 0 WHEN 'P1' THEN 1 WHEN 'P2' THEN 2 WHEN 'P3' THEN 3 ELSE 4 END`,
           desc(skillCatalogTable.roleCount),
         );
 

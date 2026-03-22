@@ -9,6 +9,7 @@
  */
 
 import { Router } from "express";
+import fs from "node:fs";
 import multer from "multer";
 import { z } from "zod";
 import type { Express, Request, Response } from "express";
@@ -38,7 +39,8 @@ import {
 import { getRecommender } from "./recommender.js";
 import type { RecommendationStrategy } from "./recommender.js";
 import { initSearchIndex } from "./search.js";
-import { initStorage } from "./storage.js";
+import { initStorage, getStorage } from "./storage.js";
+import { getTarballPath } from "./storage-local.js";
 
 const logger = pino({ name: "module:clawhub" });
 
@@ -272,7 +274,9 @@ export async function register(app: Express, config: GrcConfig): Promise<void> {
   /**
    * GET /api/v1/skills/:slug/download/:version
    * Download a skill tarball.
-   * Records the download and redirects to a presigned MinIO URL.
+   * Records the download, then:
+   *   - Local mode: streams the file directly from disk
+   *   - Azure mode: redirects to a presigned SAS URL (302)
    * Anonymous access allowed (public auth).
    */
   router.get(
@@ -285,9 +289,23 @@ export async function register(app: Express, config: GrcConfig): Promise<void> {
       const userId = req.auth?.sub;
       const nodeId = req.auth?.node_id;
 
+      // Record the download and increment counter (shared logic)
       const { downloadUrl } = await downloadSkill(slug, version, userId, nodeId);
 
-      res.redirect(302, downloadUrl);
+      const storage = getStorage();
+      if (storage.isLocal) {
+        // Local mode: serve the tarball file directly
+        const filePath = getTarballPath(slug, version);
+        if (!fs.existsSync(filePath)) {
+          return res.status(404).json({ error: "Tarball not found" });
+        }
+        res.setHeader("Content-Type", "application/gzip");
+        res.setHeader("Content-Disposition", `attachment; filename="${slug}-${version}.tar.gz"`);
+        return fs.createReadStream(filePath).pipe(res);
+      } else {
+        // Azure mode: redirect to SAS URL
+        return res.redirect(302, downloadUrl);
+      }
     }),
   );
 

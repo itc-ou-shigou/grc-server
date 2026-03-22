@@ -144,7 +144,7 @@ export class MessagingService {
         ),
       )
       .orderBy(
-        sql`FIELD(${messageQueueTable.priority}, 'critical', 'high', 'normal', 'low')`,
+        sql`CASE ${messageQueueTable.priority} WHEN 'critical' THEN 0 WHEN 'high' THEN 1 WHEN 'normal' THEN 2 WHEN 'low' THEN 3 ELSE 4 END`,
         messageQueueTable.createdAt,
       )
       .limit(limit);
