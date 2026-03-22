@@ -464,30 +464,27 @@ export async function registerAdmin(app: Express, config: GrcConfig) {
           return res.status(500).json({ error: "Docker run failed", detail: err.message });
         }
 
-        // Extract token from docker logs or config file (poll up to 20 seconds)
+        // Extract token from docker logs (poll up to 15 seconds)
         let token: string | null = null;
-        const CONFIG_TOKEN_REGEX = /"token"\s*:\s*"(winclaw-node-[a-f0-9]+|[a-f0-9]{24,})"/;
-        for (let i = 0; i < 40; i++) {
+        const TOKEN_REGEX = /Token:\s+(winclaw-node-[a-f0-9]+)/;
+        for (let i = 0; i < 30; i++) {
           await new Promise(r => setTimeout(r, 500));
           try {
-            // Method 1: Read token from config file inside container
-            const configJson = execFileSync("docker", ["exec", containerId, "sh", "-c", "cat /home/winclaw/.winclaw/winclaw.json 2>/dev/null"], { encoding: "utf-8", stdio: ["pipe", "pipe", "pipe"] });
-            const configMatch = configJson.match(CONFIG_TOKEN_REGEX);
-            if (configMatch) {
-              token = configMatch[1];
+            const logs = execFileSync("docker", ["logs", containerId], { encoding: "utf-8", stdio: ["pipe", "pipe", "pipe"] });
+            const match = logs.match(TOKEN_REGEX);
+            if (match) {
+              token = match[1];
               break;
             }
-          } catch { /* container may still be starting or restarting */ }
+          } catch { /* container may still be starting */ }
         }
 
         if (!token) {
-          // Fallback: container started but token not found - use port-only URL
-          logger.warn({ containerId }, "Could not extract token from container config, using port-only URL");
+          logger.warn({ containerId }, "Could not extract token from docker logs");
+          return res.status(500).json({ error: "Failed to extract gateway token from container logs" });
         }
 
-        const gatewayUrl = token
-          ? `http://localhost:${body.gatewayPort}/chat?token=${token}`
-          : `http://localhost:${body.gatewayPort}/chat`;
+        const gatewayUrl = `http://localhost:${body.gatewayPort}/chat?token=${token}`;
 
         // Wait for the node to register with GRC (poll up to 20 seconds)
         const db = getDb();
@@ -520,7 +517,6 @@ export async function registerAdmin(app: Express, config: GrcConfig) {
               gatewayUrl,
               gatewayPort: body.gatewayPort,
               workspacePath: body.workspacePath,
-              ...(body.employeeEmail && { employeeEmail: body.employeeEmail }),
             })
             .where(eq(nodesTable.nodeId, nodeId));
 
@@ -571,7 +567,6 @@ export async function registerAdmin(app: Express, config: GrcConfig) {
             WINCLAW_GATEWAY_TOKEN: winclawToken,
             ...(body.employeeName && { employee_name: body.employeeName }),
             ...(body.employeeCode && { employee_code: body.employeeCode }),
-            ...(body.employeeEmail && { employee_email: body.employeeEmail }),
           },
           cpu: 2,
           memory: 2,
@@ -855,11 +850,26 @@ export async function registerAdmin(app: Express, config: GrcConfig) {
           execFileSync("docker", ["stop", node.containerId], { encoding: "utf-8" });
           execFileSync("docker", ["rm", node.containerId], { encoding: "utf-8" });
         } catch (err: any) {
-          logger.warn({ err: err.message, containerId: node.containerId }, "Failed to stop/remove old container");
+          logger.warn({ err: err.message, containerId: node.containerId }, "Failed to stop/remove old container by ID, trying by port");
+          // Fallback: find container by gateway port and stop it
+          if (node.gatewayPort) {
+            try {
+              const portContainers = execFileSync("docker", ["ps", "-q", "--filter", `publish=${node.gatewayPort}`], { encoding: "utf-8" }).trim();
+              if (portContainers) {
+                for (const cid of portContainers.split("\n").filter(Boolean)) {
+                  try {
+                    execFileSync("docker", ["stop", cid], { encoding: "utf-8" });
+                    execFileSync("docker", ["rm", cid], { encoding: "utf-8" });
+                    logger.info({ containerId: cid, port: node.gatewayPort }, "Stopped container found by port fallback");
+                  } catch { /* best effort */ }
+                }
+              }
+            } catch { /* non-fatal */ }
+          }
         }
 
         // Re-run with same config
-        const grcPort = process.env.PORT || "3200";
+        const grcPort = process.env.GRC_API_PORT || "3100";
         const dockerArgs = ["run", "-d", "--pull", "always", "-p", `${node.gatewayPort}:18789`,
           "-e", `WINCLAW_GRC_URL=http://host.docker.internal:${grcPort}`];
         if (node.employeeName) dockerArgs.push("-e", `employee_name=${node.employeeName}`);
@@ -874,7 +884,6 @@ export async function registerAdmin(app: Express, config: GrcConfig) {
         }
         dockerArgs.push("itccloudsoft/winclaw-node:latest");
 
-        // Delete old node record — new container will auto-register with GRC
         // Save role/key data from old node BEFORE deletion
         const preservedData = {
           roleId: node.roleId,
@@ -889,6 +898,7 @@ export async function registerAdmin(app: Express, config: GrcConfig) {
           employeeEmail: node.employeeEmail,
         };
 
+        // Delete old node record — new container will auto-register with GRC
         await db.delete(nodesTable).where(eq(nodesTable.nodeId, nodeId));
 
         let newContainerId: string;
@@ -1005,7 +1015,6 @@ export async function registerAdmin(app: Express, config: GrcConfig) {
               WINCLAW_GRC_URL: grcUrl,
               ...(node.employeeName && { employee_name: node.employeeName }),
               ...(node.employeeId && { employee_code: node.employeeId }),
-              ...(node.employeeEmail && { employee_email: node.employeeEmail }),
             },
             cpu: 2,
             memory: 2,
@@ -1066,7 +1075,22 @@ export async function registerAdmin(app: Express, config: GrcConfig) {
           execFileSync("docker", ["rm", node.containerId], { encoding: "utf-8" });
           logger.info({ containerId: node.containerId }, "Docker container stopped and removed");
         } catch (err: any) {
-          logger.warn({ err: err.message, containerId: node.containerId }, "Failed to remove Docker container");
+          logger.warn({ err: err.message, containerId: node.containerId }, "Failed to remove Docker container by ID, trying by port");
+          // Fallback: find container by gateway port and stop it
+          if (node.gatewayPort) {
+            try {
+              const portContainers = execFileSync("docker", ["ps", "-q", "--filter", `publish=${node.gatewayPort}`], { encoding: "utf-8" }).trim();
+              if (portContainers) {
+                for (const cid of portContainers.split("\n").filter(Boolean)) {
+                  try {
+                    execFileSync("docker", ["stop", cid], { encoding: "utf-8" });
+                    execFileSync("docker", ["rm", cid], { encoding: "utf-8" });
+                    logger.info({ containerId: cid, port: node.gatewayPort }, "Stopped container found by port fallback");
+                  } catch { /* best effort */ }
+                }
+              }
+            } catch { /* non-fatal */ }
+          }
         }
       } else if (node.provisioningMode === "daytona_sandbox" && node.sandboxId) {
         const DAYTONA_API_KEY = process.env.DAYTONA_API_KEY || "dtn_a92ccd0521fdaf9bc2c173087e23a3a52edc2d67fbb6a3508871a614a474b023";

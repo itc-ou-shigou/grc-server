@@ -263,7 +263,7 @@ export function AssetDetail() {
             </p>
           </div>
           <div style={{ padding: '0.75rem 1rem 1rem' }}>
-            {asset.signalsMatch && asset.signalsMatch.length > 0 ? (
+            {Array.isArray(asset.signalsMatch) && asset.signalsMatch.length > 0 ? (
               <div style={{ display: 'flex', gap: '0.4rem', flexWrap: 'wrap' }}>
                 {asset.signalsMatch.map((s) => (
                   <span key={s} className="badge badge-info" style={{ fontSize: 13, padding: '4px 10px' }}>{s}</span>
@@ -324,7 +324,7 @@ export function AssetDetail() {
         )}
 
         {/* Validation Card */}
-        {asset.validation && asset.validation.length > 0 && (
+        {Array.isArray(asset.validation) && asset.validation.length > 0 && (
           <div className="card" style={{ marginBottom: '1.5rem' }}>
             <div className="card-header"><h2 className="card-title">✅ {t('assetDetail.validationCommands')}</h2></div>
             <div style={{ padding: '0 1rem 1rem' }}>

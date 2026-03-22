@@ -9,7 +9,6 @@ import { v4 as uuidv4 } from "uuid";
 import { eq, or, sql, desc, and, gte, lte, ne } from "drizzle-orm";
 import pino from "pino";
 import { getDb } from "../../shared/db/connection.js";
-import { getCurrentDialect } from "../../shared/db/dialect.js";
 import {
   nodesTable,
   genesTable,
@@ -32,6 +31,7 @@ import {
   ConflictError,
   ForbiddenError,
 } from "../../shared/middleware/error-handler.js";
+import { getCurrentDialect } from "../../shared/db/dialect.js";
 
 const logger = pino({ name: "module:evolution:service" });
 
@@ -49,7 +49,11 @@ function rowToAsset(
     userId: (row.userId as string) ?? undefined,
     category: (row.category as string) ?? undefined,
     status: row.status as AssetStatus,
-    signalsMatch: (row.signalsMatch as string[] | null) ?? [],
+    signalsMatch: Array.isArray(row.signalsMatch)
+      ? row.signalsMatch as string[]
+      : typeof row.signalsMatch === 'string'
+        ? (() => { try { const p = JSON.parse(row.signalsMatch); return Array.isArray(p) ? p : []; } catch { return []; } })()
+        : [],
     contentHash: row.contentHash as string,
     signature: (row.signature as string) ?? undefined,
     useCount: row.useCount as number,
@@ -296,24 +300,14 @@ export class EvolutionService implements IEvolutionService {
           successRate: 0,
         });
       } else {
-        // Extract capsule-specific fields from payload
-        const geneAssetId = (params.payload.gene_asset_id as string) ?? null;
-        const triggerData = (params.payload.trigger_data as Record<string, unknown>) ?? null;
-        const summary = (params.payload.summary as string) ?? null;
-        const chainId = (params.payload.chain_id as string) ?? null;
-
         await db.insert(capsulesTable).values({
           id,
           assetId: params.assetId,
-          geneAssetId,
           nodeId: params.nodeId,
           userId: params.userId ?? null,
           contentHash: params.contentHash,
-          triggerData,
-          summary,
           signature: params.signature ?? null,
           status: initialStatus,
-          chainId,
           schemaVersion: typeof params.schemaVersion === "number" ? params.schemaVersion : 1,
           useCount: 0,
           successRate: 0,
