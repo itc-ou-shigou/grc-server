@@ -333,7 +333,7 @@ input, select, textarea {
    ============================================================ */
 .page {
   padding: 24px;
-  max-width: 1400px;
+  max-width: 100%;
 }
 
 .page-header {
@@ -513,7 +513,7 @@ input, select, textarea {
 }
 
 .data-table-scroll {
-  overflow-x: auto;
+  overflow-x: hidden;
   border-radius: var(--radius-md);
   border: 1px solid var(--color-border);
 }
