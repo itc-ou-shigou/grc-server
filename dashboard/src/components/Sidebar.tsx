@@ -122,10 +122,10 @@ const NAV_SECTIONS: NavSection[] = [
   {
     categoryKey: 'settings',
     items: [
+      { labelKey: 'modelKeys',    path: '/manage/model-keys',            exact: true, adminOnly: true },
+      { labelKey: 'keyDistribute',path: '/manage/model-keys/distribute', adminOnly: true },
       { labelKey: 'releases',     path: '/update/releases' },
       { labelKey: 'updateStats',  path: '/update/stats' },
-      { labelKey: 'modelKeys',    path: '/manage/model-keys',           exact: true, adminOnly: true },
-      { labelKey: 'keyDistribute',path: '/manage/model-keys/distribute', adminOnly: true },
       { labelKey: 'relayLog',     path: '/relay',                        adminOnly: true },
     ],
   },

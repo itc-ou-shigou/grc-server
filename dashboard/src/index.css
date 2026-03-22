@@ -690,6 +690,40 @@ input, select, textarea {
 }
 
 /* ============================================================
+   Tab Bar
+   ============================================================ */
+.tab-bar {
+  display: flex;
+  gap: 8px;
+  border-bottom: 1px solid rgba(66, 72, 89, 0.20);
+  padding-bottom: 0;
+}
+
+.tab-btn {
+  padding: 8px 18px;
+  background: none;
+  border: none;
+  border-bottom: 2px solid transparent;
+  margin-bottom: -1px;
+  font-size: 13px;
+  font-weight: 500;
+  color: rgba(224, 229, 251, 0.50);
+  cursor: pointer;
+  transition: color var(--transition), border-color var(--transition);
+  white-space: nowrap;
+}
+
+.tab-btn:hover {
+  color: var(--color-text);
+}
+
+.tab-btn.active {
+  color: var(--color-primary);
+  border-bottom-color: var(--color-primary);
+  font-weight: 600;
+}
+
+/* ============================================================
    Form Inputs
    ============================================================ */
 .input {
