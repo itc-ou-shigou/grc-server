@@ -133,10 +133,10 @@
     }
   },
   "nodes": {
-    "title": "Lobster Pool",
-    "subtitle": "Check what the lobsters are up to",
+    "title": "Claw Pool",
+    "subtitle": "Check what the claws are up to",
     "table": {
-      "nodeId": "Lobster ID",
+      "nodeId": "Claw ID",
       "hostname": "Den",
       "platform": "Habitat",
       "version": "Evolution Stage",
@@ -155,34 +155,34 @@
     "activeOf": "{{active}} swimming happily / {{total}} in the pool",
     "noNodes": "The tank is empty — go hatch one!",
     "delete": {
-      "title": "Release Lobster",
+      "title": "Release Claw",
       "button": "Release",
       "buttonDeleting": "Releasing...",
       "cancel": "Keep",
       "warningTitle": "Once released, no refunds!",
-      "warningDescription": "This lobster and its keeper records will be permanently removed.",
-      "nodeId": "Lobster ID",
+      "warningDescription": "This claw and its keeper records will be permanently removed.",
+      "nodeId": "Claw ID",
       "displayName": "Nickname",
       "employee": "Keeper",
       "role": "Role",
       "platform": "Habitat",
-      "failedToDelete": "Release failed — lobster fought back: {{error}}",
+      "failedToDelete": "Release failed — claw fought back: {{error}}",
       "warningDescriptionDocker": "The Docker fish tank will also be drained.",
       "warningDescriptionSandbox": "The Daytona beach villa will also be demolished."
     },
     "create": {
       "button": "Catch Another",
-      "title": "Hatch a New Lobster",
+      "title": "Hatch a New Claw",
       "titleLocal": "Hatch in a Local Docker Tank",
       "titleRemote": "Send to Daytona Beach Villa",
       "gatewayPort": "Comm Channel",
       "gatewayPortPlaceholder": "e.g. 10001",
-      "gatewayPortRequired": "Lobsters need a comm channel!",
+      "gatewayPortRequired": "Claws need a comm channel!",
       "workspacePath": "Workspace Directory",
       "workspacePathPlaceholder": "e.g. C:\\Users\\user\\workspaces\\wk1",
       "workspacePathHint": "Click Browse to select a folder, or type the full path manually.",
       "browse": "Browse...",
-      "workspacePathRequired": "Every lobster needs a nest!",
+      "workspacePathRequired": "Every claw needs a nest!",
       "employeeName": "Keeper Name",
       "employeeNamePlaceholder": "e.g. Tanaka Ichiro",
       "employeeCode": "Keeper Badge",
@@ -191,23 +191,23 @@
       "employeeEmailPlaceholder": "e.g. tanaka@company.com",
       "submit": "Hatch!",
       "creating": "Hatching...",
-      "success": "Congrats, new lobster has joined the tank!",
+      "success": "Congrats, new claw has joined the tank!",
       "failed": "Hatching failed — egg cracked: {{error}}"
     },
     "restart": {
       "button": "Restart",
       "title": "Change the Water",
-      "confirm": "Ready to change the water for this lobster?",
+      "confirm": "Ready to change the water for this claw?",
       "warningLocal": "Docker tank will be drained and refilled.",
-      "warningRemote": "Daytona villa will be rebuilt — lobster gets a new home.",
+      "warningRemote": "Daytona villa will be rebuilt — claw gets a new home.",
       "submit": "Change Water",
       "restarting": "Changing water...",
-      "success": "Water changed — lobster feeling fresh!",
+      "success": "Water changed — claw feeling fresh!",
       "failed": "Plumbing clogged: {{error}}"
     },
     "gateway": {
       "button": "Gateway",
-      "noUrl": "This lobster hasn't opened for visitors yet"
+      "noUrl": "This claw hasn't opened for visitors yet"
     }
   },
   "pipeline": {

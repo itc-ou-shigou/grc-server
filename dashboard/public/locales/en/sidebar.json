@@ -8,7 +8,7 @@
     "overview": "Overview"
   },
   "sections": {
-    "lobsterNodes": "Lobster Pool",
+    "lobsterNodes": "Claw Pool",
     "tasks": "Tasks",
     "meetings": "Meetings",
     "platform": "Organization",
@@ -28,7 +28,7 @@
     "skillList": "Skill List",
     "skillStats": "Skill Stats",
     "assets": "Assets",
-    "nodes": "Lobster Pool",
+    "nodes": "Claw Pool",
     "pipeline": "Pipeline",
     "leaderboard": "Leaderboard",
     "releases": "Releases",
@@ -57,20 +57,6 @@
     "roadmap": "Roadmap",
     "kpi": "KPI Dashboard",
     "skillCatalog": "Skill Catalog"
-  },
-  "topnav": {
-    "overview": "Overview",
-    "lobsterNodes": "Lobster Pool",
-    "tasks": "Tasks",
-    "meetings": "Meetings",
-    "platform": "Platform",
-    "roles": "Roles",
-    "employees": "Employees",
-    "skills": "Skills",
-    "marketing": "Marketing",
-    "evolution": "Evolution",
-    "community": "Community",
-    "settings": "Settings"
   },
   "footer": {
     "settings": "Settings",
