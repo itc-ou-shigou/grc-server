@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { apiClient } from '../../api/client';
 
@@ -74,6 +75,7 @@ interface DealCardProps {
 }
 
 function DealCard({ deal, onStageChange, stageChanging }: DealCardProps) {
+  const { t } = useTranslation('marketing');
   const next = nextStage(deal.stage);
   const stageInfo = STAGES.find((s) => s.id === deal.stage);
 
@@ -107,7 +109,7 @@ function DealCard({ deal, onStageChange, stageChanging }: DealCardProps) {
         </span>
       </div>
       <div style={{ fontSize: 11, color: 'var(--color-text-muted)', marginBottom: 10 }}>
-        締切: {deal.expected_close_date}
+        {t('pipeline.deadline', { date: deal.expected_close_date, defaultValue: `Closing: ${deal.expected_close_date}` })}
       </div>
       {next && (
         <button
@@ -125,7 +127,7 @@ function DealCard({ deal, onStageChange, stageChanging }: DealCardProps) {
           disabled={stageChanging}
           onClick={() => onStageChange(deal.id, next)}
         >
-          {STAGES.find((s) => s.id === next)?.label} へ進める &#8594;
+          {t(`pipeline.stages.${next}`)} &#8594;
         </button>
       )}
     </div>
@@ -142,6 +144,7 @@ interface CreateModalProps {
 }
 
 function CreateModal({ open, onClose, onSubmit, loading }: CreateModalProps) {
+  const { t } = useTranslation('marketing');
   const [form, setForm] = useState<CreateDealBody>({
     company_name: '',
     deal_title: '',
@@ -187,7 +190,7 @@ function CreateModal({ open, onClose, onSubmit, loading }: CreateModalProps) {
         onClick={(e) => e.stopPropagation()}
       >
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 20 }}>
-          <h2 style={{ margin: 0, fontSize: 18, fontWeight: 700 }}>新規商談</h2>
+          <h2 style={{ margin: 0, fontSize: 18, fontWeight: 700 }}>{t('pipeline.modal.title')}</h2>
           <button
             onClick={onClose}
             style={{ background: 'none', border: 'none', fontSize: 20, cursor: 'pointer', color: 'var(--color-text-secondary)' }}
@@ -198,7 +201,7 @@ function CreateModal({ open, onClose, onSubmit, loading }: CreateModalProps) {
         <form onSubmit={handleSubmit}>
           <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12 }}>
             <div className="form-group">
-              <label className="form-label">会社名 *</label>
+              <label className="form-label">{t('pipeline.modal.companyLabel')}</label>
               <input
                 className="input"
                 type="text"
@@ -208,7 +211,7 @@ function CreateModal({ open, onClose, onSubmit, loading }: CreateModalProps) {
               />
             </div>
             <div className="form-group">
-              <label className="form-label">商談タイトル *</label>
+              <label className="form-label">{t('pipeline.modal.nameLabel')}</label>
               <input
                 className="input"
                 type="text"
@@ -218,7 +221,7 @@ function CreateModal({ open, onClose, onSubmit, loading }: CreateModalProps) {
               />
             </div>
             <div className="form-group">
-              <label className="form-label">商談金額 (¥) *</label>
+              <label className="form-label">{t('pipeline.modal.valueLabel')}</label>
               <input
                 className="input"
                 type="number"
@@ -229,7 +232,7 @@ function CreateModal({ open, onClose, onSubmit, loading }: CreateModalProps) {
               />
             </div>
             <div className="form-group">
-              <label className="form-label">確率 (%) *</label>
+              <label className="form-label">{t('pipeline.modal.probabilityLabel')}</label>
               <input
                 className="input"
                 type="number"
@@ -241,7 +244,7 @@ function CreateModal({ open, onClose, onSubmit, loading }: CreateModalProps) {
               />
             </div>
             <div className="form-group">
-              <label className="form-label">期待クローズ日 *</label>
+              <label className="form-label">{t('pipeline.modal.closeDateLabel', { defaultValue: 'Expected Close *' })}</label>
               <input
                 className="input"
                 type="date"
@@ -251,24 +254,24 @@ function CreateModal({ open, onClose, onSubmit, loading }: CreateModalProps) {
               />
             </div>
             <div className="form-group">
-              <label className="form-label">ステージ</label>
+              <label className="form-label">{t('pipeline.modal.stageLabel')}</label>
               <select
                 className="input"
                 value={form.stage}
                 onChange={(e) => handleChange('stage', e.target.value as PipelineStage)}
               >
                 {STAGES.map((s) => (
-                  <option key={s.id} value={s.id}>{s.label}</option>
+                  <option key={s.id} value={s.id}>{t(`pipeline.stages.${s.id}`)}</option>
                 ))}
               </select>
             </div>
           </div>
           <div style={{ display: 'flex', gap: 8, justifyContent: 'flex-end', marginTop: 12 }}>
             <button type="button" className="btn btn-default" onClick={onClose}>
-              キャンセル
+              {t('pipeline.modal.cancel')}
             </button>
             <button type="submit" className="btn btn-primary" disabled={loading}>
-              {loading ? '作成中...' : '作成'}
+              {loading ? t('pipeline.modal.creating') : t('pipeline.modal.create')}
             </button>
           </div>
         </form>
@@ -280,6 +283,7 @@ function CreateModal({ open, onClose, onSubmit, loading }: CreateModalProps) {
 // ── Main Component ─────────────────────────────────────────────────────────
 
 export function PipelineBoard() {
+  const { t } = useTranslation('marketing');
   const [showModal, setShowModal] = useState(false);
   const queryClient = useQueryClient();
 
@@ -323,12 +327,12 @@ export function PipelineBoard() {
     <div className="page">
       <div className="page-header">
         <div>
-          <h1 className="page-title">パイプラインボード</h1>
-          <p className="page-subtitle">商談の進捗管理</p>
+          <h1 className="page-title">{t('pipeline.title')}</h1>
+          <p className="page-subtitle">{t('pipeline.subtitle')}</p>
         </div>
         <div className="action-group">
           <button className="btn btn-primary" onClick={() => setShowModal(true)}>
-            + 新規商談
+            {t('pipeline.newDeal')}
           </button>
         </div>
       </div>
@@ -347,7 +351,7 @@ export function PipelineBoard() {
           style={{ flex: '1 1 200px', padding: '14px 20px' }}
         >
           <div style={{ fontSize: 11, color: 'var(--color-text-muted)', marginBottom: 4, fontWeight: 500 }}>
-            総パイプライン
+            {t('pipeline.totalValue')}
           </div>
           <div style={{ fontSize: 22, fontWeight: 800, color: 'var(--color-text)' }}>
             {formatYen(totalPipeline)}
@@ -358,7 +362,7 @@ export function PipelineBoard() {
           style={{ flex: '1 1 200px', padding: '14px 20px' }}
         >
           <div style={{ fontSize: 11, color: 'var(--color-text-muted)', marginBottom: 4, fontWeight: 500 }}>
-            加重パイプライン
+            {t('pipeline.weightedValue')}
           </div>
           <div style={{ fontSize: 22, fontWeight: 800, color: '#3b82f6' }}>
             {formatYen(Math.round(weightedPipeline))}
@@ -369,23 +373,23 @@ export function PipelineBoard() {
           style={{ flex: '1 1 200px', padding: '14px 20px' }}
         >
           <div style={{ fontSize: 11, color: 'var(--color-text-muted)', marginBottom: 4, fontWeight: 500 }}>
-            総商談数
+            {t('pipeline.dealCount', { defaultValue: 'Total Deals' })}
           </div>
           <div style={{ fontSize: 22, fontWeight: 800, color: 'var(--color-text)' }}>
-            {deals.length}件
+            {deals.length}
           </div>
         </div>
       </div>
 
       {isLoading && (
         <div style={{ textAlign: 'center', padding: '48px', color: 'var(--color-text-muted)' }}>
-          読み込み中...
+          {t('pipeline.loading')}
         </div>
       )}
 
       {error && (
         <div style={{ textAlign: 'center', padding: '48px', color: 'var(--color-danger, #ef4444)' }}>
-          データの読み込みに失敗しました
+          {t('pipeline.loadError')}
         </div>
       )}
 
@@ -433,7 +437,7 @@ export function PipelineBoard() {
                         letterSpacing: '0.05em',
                       }}
                     >
-                      {stage.label}
+                      {t(`pipeline.stages.${stage.id}`)}
                     </div>
                     <div style={{ fontSize: 11, color: 'var(--color-text-muted)', marginTop: 2 }}>
                       {formatYen(stageTotal)}
@@ -465,7 +469,7 @@ export function PipelineBoard() {
                       borderRadius: 6,
                     }}
                   >
-                    商談なし
+                    {t('pipeline.emptyStage')}
                   </div>
                 )}
 

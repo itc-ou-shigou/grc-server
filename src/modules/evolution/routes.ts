@@ -122,12 +122,25 @@ export async function register(app: Express, config: GrcConfig): Promise<void> {
       if (body.employee_role) {
         nodeUpdateSet.roleId = body.employee_role;
       }
+      // Update gateway info from reconnecting Docker containers
+      if (body.gateway_port) {
+        nodeUpdateSet.gatewayPort = body.gateway_port;
+        const gwToken = body.gateway_token ?? "";
+        const gwUrl = gwToken
+          ? `http://localhost:${body.gateway_port}/chat?token=${gwToken}`
+          : `http://localhost:${body.gateway_port}/chat`;
+        nodeUpdateSet.gatewayUrl = gwUrl;
+      }
+      if (body.container_id) {
+        nodeUpdateSet.containerId = body.container_id.slice(0, 64);
+        nodeUpdateSet.provisioningMode = "local_docker";
+      }
       await getDb()
         .update(nodesTable)
         .set(nodeUpdateSet)
         .where(eq(nodesTable.nodeId, body.node_id));
 
-      logger.debug({ nodeId: body.node_id, role: body.employee_role }, "Hello received");
+      logger.debug({ nodeId: body.node_id, role: body.employee_role, gatewayPort: body.gateway_port, containerId: body.container_id }, "Hello received");
 
       // Propagate company context if this node has a role assigned
       const helloNode = await getDb()

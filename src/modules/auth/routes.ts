@@ -295,7 +295,7 @@ export async function register(app: Express, config: GrcConfig) {
   );
 
   // ── Anonymous Token ─────────────────────────────
-  // Anonymous sessions get an access token only — no refresh token.
+  // Anonymous sessions get an access token + refresh token for long-lived nodes.
 
   router.post(
     "/anonymous",
@@ -313,10 +313,14 @@ export async function register(app: Express, config: GrcConfig) {
       };
       const token = signToken(payload, config.jwt);
 
-      logger.info({ nodeId: body.node_id }, "Anonymous token issued");
+      // Issue refresh token so nodes can renew access without re-registering
+      const refreshToken = await authService.issueRefreshToken(user.id);
+
+      logger.info({ nodeId: body.node_id }, "Anonymous token issued with refresh token");
 
       res.json({
         token,
+        refreshToken,
         user: {
           id: user.id,
           tier: user.tier,

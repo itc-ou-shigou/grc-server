@@ -8,6 +8,7 @@ import { eq, desc, sql, and } from "drizzle-orm";
 import pino from "pino";
 import { getDb } from "../../shared/db/connection.js";
 import { agentCardsTable } from "./schema.js";
+import { nodesTable } from "../evolution/schema.js";
 import { NotFoundError } from "../../shared/middleware/error-handler.js";
 
 const logger = pino({ name: "module:a2a-gateway:service" });
@@ -101,8 +102,22 @@ export class AgentCardService {
     const whereClause = conditions.length > 0 ? and(...conditions) : undefined;
 
     const rows = await db
-      .select()
+      .select({
+        nodeId: agentCardsTable.nodeId,
+        agentCard: agentCardsTable.agentCard,
+        skills: agentCardsTable.skills,
+        capabilities: agentCardsTable.capabilities,
+        lastSeenAt: agentCardsTable.lastSeenAt,
+        status: agentCardsTable.status,
+        createdAt: agentCardsTable.createdAt,
+        updatedAt: agentCardsTable.updatedAt,
+        // JOIN nodes table for authoritative role_id and employee info
+        roleId: nodesTable.roleId,
+        employeeName: nodesTable.employeeName,
+        employeeId: nodesTable.employeeId,
+      })
       .from(agentCardsTable)
+      .leftJoin(nodesTable, eq(agentCardsTable.nodeId, nodesTable.nodeId))
       .where(whereClause)
       .orderBy(desc(agentCardsTable.lastSeenAt));
 

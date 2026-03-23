@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { apiClient } from '../../api/client';
 
@@ -71,12 +72,12 @@ function PriorityBadge({ priority }: { priority: MoSCoW }) {
   );
 }
 
-function ProgressBar({ value }: { value: number }) {
+function ProgressBar({ value, label }: { value: number; label: string }) {
   const color = value >= 80 ? '#10b981' : value >= 40 ? '#f59e0b' : '#ef4444';
   return (
     <div>
       <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: 11, marginBottom: 3, color: 'var(--color-text-muted)' }}>
-        <span>進捗</span>
+        <span>{label}</span>
         <span style={{ fontWeight: 600 }}>{value}%</span>
       </div>
       <div style={{ height: 5, background: 'var(--color-border)', borderRadius: 3, overflow: 'hidden' }}>
@@ -87,6 +88,7 @@ function ProgressBar({ value }: { value: number }) {
 }
 
 function ItemCard({ item }: { item: RoadmapItem }) {
+  const { t } = useTranslation('marketing');
   return (
     <div
       style={{
@@ -102,10 +104,10 @@ function ItemCard({ item }: { item: RoadmapItem }) {
         <span style={{ fontWeight: 600, fontSize: 13, flex: 1, marginRight: 8 }}>{item.title}</span>
         <PriorityBadge priority={item.priority} />
       </div>
-      <ProgressBar value={item.progress} />
+      <ProgressBar value={item.progress} label={t('roadmap.progress', { defaultValue: 'Progress' })} />
       {item.owner_role && (
         <div style={{ marginTop: 6, fontSize: 11, color: 'var(--color-text-muted)' }}>
-          担当: <span style={{ fontWeight: 500 }}>{item.owner_role}</span>
+          {t('roadmap.modal.ownerLabel', { defaultValue: 'Owner' })}: <span style={{ fontWeight: 500 }}>{item.owner_role}</span>
         </div>
       )}
     </div>
@@ -122,6 +124,7 @@ interface CreateModalProps {
 }
 
 function CreateModal({ open, onClose, onSubmit, loading }: CreateModalProps) {
+  const { t } = useTranslation('marketing');
   const [form, setForm] = useState<CreateItemBody>({
     title: '',
     phase: 'now',
@@ -169,7 +172,7 @@ function CreateModal({ open, onClose, onSubmit, loading }: CreateModalProps) {
         onClick={(e) => e.stopPropagation()}
       >
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 20 }}>
-          <h2 style={{ margin: 0, fontSize: 18, fontWeight: 700 }}>新規アイテム</h2>
+          <h2 style={{ margin: 0, fontSize: 18, fontWeight: 700 }}>{t('roadmap.modal.title')}</h2>
           <button
             onClick={onClose}
             style={{ background: 'none', border: 'none', fontSize: 20, cursor: 'pointer', color: 'var(--color-text-secondary)' }}
@@ -179,7 +182,7 @@ function CreateModal({ open, onClose, onSubmit, loading }: CreateModalProps) {
         </div>
         <form onSubmit={handleSubmit}>
           <div className="form-group">
-            <label className="form-label">タイトル *</label>
+            <label className="form-label">{t('roadmap.modal.titleLabel')}</label>
             <input
               className="input"
               type="text"
@@ -190,7 +193,7 @@ function CreateModal({ open, onClose, onSubmit, loading }: CreateModalProps) {
           </div>
           <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12 }}>
             <div className="form-group">
-              <label className="form-label">フェーズ *</label>
+              <label className="form-label">{t('roadmap.modal.phaseLabel')}</label>
               <select
                 className="input"
                 value={form.phase}
@@ -202,7 +205,7 @@ function CreateModal({ open, onClose, onSubmit, loading }: CreateModalProps) {
               </select>
             </div>
             <div className="form-group">
-              <label className="form-label">優先度 *</label>
+              <label className="form-label">{t('roadmap.modal.priorityLabel')}</label>
               <select
                 className="input"
                 value={form.priority}
@@ -214,7 +217,7 @@ function CreateModal({ open, onClose, onSubmit, loading }: CreateModalProps) {
               </select>
             </div>
             <div className="form-group">
-              <label className="form-label">進捗 (%)</label>
+              <label className="form-label">{t('roadmap.modal.progressLabel', { defaultValue: 'Progress (%)' })}</label>
               <input
                 className="input"
                 type="number"
@@ -225,7 +228,7 @@ function CreateModal({ open, onClose, onSubmit, loading }: CreateModalProps) {
               />
             </div>
             <div className="form-group">
-              <label className="form-label">担当ロール</label>
+              <label className="form-label">{t('roadmap.modal.ownerLabel')}</label>
               <input
                 className="input"
                 type="text"
@@ -234,7 +237,7 @@ function CreateModal({ open, onClose, onSubmit, loading }: CreateModalProps) {
               />
             </div>
             <div className="form-group">
-              <label className="form-label">開始日</label>
+              <label className="form-label">{t('roadmap.modal.startDateLabel', { defaultValue: 'Start Date' })}</label>
               <input
                 className="input"
                 type="date"
@@ -243,7 +246,7 @@ function CreateModal({ open, onClose, onSubmit, loading }: CreateModalProps) {
               />
             </div>
             <div className="form-group">
-              <label className="form-label">終了日</label>
+              <label className="form-label">{t('roadmap.modal.endDateLabel', { defaultValue: 'End Date' })}</label>
               <input
                 className="input"
                 type="date"
@@ -253,7 +256,7 @@ function CreateModal({ open, onClose, onSubmit, loading }: CreateModalProps) {
             </div>
           </div>
           <div className="form-group">
-            <label className="form-label">説明</label>
+            <label className="form-label">{t('roadmap.modal.descriptionLabel')}</label>
             <textarea
               className="textarea"
               rows={3}
@@ -263,10 +266,10 @@ function CreateModal({ open, onClose, onSubmit, loading }: CreateModalProps) {
           </div>
           <div style={{ display: 'flex', gap: 8, justifyContent: 'flex-end', marginTop: 8 }}>
             <button type="button" className="btn btn-default" onClick={onClose}>
-              キャンセル
+              {t('roadmap.modal.cancel')}
             </button>
             <button type="submit" className="btn btn-primary" disabled={loading}>
-              {loading ? '作成中...' : '作成'}
+              {loading ? t('roadmap.modal.creating') : t('roadmap.modal.create')}
             </button>
           </div>
         </form>
@@ -278,6 +281,7 @@ function CreateModal({ open, onClose, onSubmit, loading }: CreateModalProps) {
 // ── Kanban View ────────────────────────────────────────────────────────────
 
 function KanbanView({ items }: { items: RoadmapItem[] }) {
+  const { t } = useTranslation('marketing');
   return (
     <div
       style={{
@@ -344,7 +348,7 @@ function KanbanView({ items }: { items: RoadmapItem[] }) {
                   borderRadius: 6,
                 }}
               >
-                アイテムなし
+                {t('roadmap.emptyPhase')}
               </div>
             )}
             {phaseItems.map((item) => (
@@ -360,12 +364,13 @@ function KanbanView({ items }: { items: RoadmapItem[] }) {
 // ── List View ──────────────────────────────────────────────────────────────
 
 function ListView({ items }: { items: RoadmapItem[] }) {
+  const { t } = useTranslation('marketing');
   return (
     <div className="card" style={{ overflowX: 'auto' }}>
       <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: 13 }}>
         <thead>
           <tr style={{ borderBottom: '2px solid var(--color-border)' }}>
-            {['タイトル', 'フェーズ', '優先度', '進捗', '開始日', '終了日', '担当'].map((h) => (
+            {[t('roadmap.listHeaders.title'), t('roadmap.listHeaders.phase'), t('roadmap.listHeaders.priority'), t('roadmap.listHeaders.progress', { defaultValue: 'Progress' }), t('roadmap.listHeaders.startDate', { defaultValue: 'Start Date' }), t('roadmap.listHeaders.endDate', { defaultValue: 'End Date' }), t('roadmap.listHeaders.owner')].map((h) => (
               <th
                 key={h}
                 style={{
@@ -386,7 +391,7 @@ function ListView({ items }: { items: RoadmapItem[] }) {
           {items.length === 0 && (
             <tr>
               <td colSpan={7} style={{ padding: '32px', textAlign: 'center', color: 'var(--color-text-muted)' }}>
-                アイテムがありません
+                {t('roadmap.emptyPhase')}
               </td>
             </tr>
           )}
@@ -447,6 +452,7 @@ function ListView({ items }: { items: RoadmapItem[] }) {
 // ── Main Component ─────────────────────────────────────────────────────────
 
 export function Roadmap() {
+  const { t } = useTranslation('marketing');
   const [viewMode, setViewMode] = useState<'kanban' | 'list'>('kanban');
   const [showModal, setShowModal] = useState(false);
   const queryClient = useQueryClient();
@@ -472,8 +478,8 @@ export function Roadmap() {
     <div className="page">
       <div className="page-header">
         <div>
-          <h1 className="page-title">ロードマップ</h1>
-          <p className="page-subtitle">プロダクトの開発計画と優先度管理</p>
+          <h1 className="page-title">{t('roadmap.title')}</h1>
+          <p className="page-subtitle">{t('roadmap.subtitle')}</p>
         </div>
         <div className="action-group">
           {/* View toggle */}
@@ -497,7 +503,7 @@ export function Roadmap() {
                 cursor: 'pointer',
               }}
             >
-              カンバン
+              {t('roadmap.viewKanban')}
             </button>
             <button
               onClick={() => setViewMode('list')}
@@ -511,11 +517,11 @@ export function Roadmap() {
                 cursor: 'pointer',
               }}
             >
-              リスト
+              {t('roadmap.viewList')}
             </button>
           </div>
           <button className="btn btn-primary" onClick={() => setShowModal(true)}>
-            + 新規アイテム
+            {t('roadmap.newItem')}
           </button>
         </div>
       </div>
@@ -545,13 +551,13 @@ export function Roadmap() {
 
       {isLoading && (
         <div style={{ textAlign: 'center', padding: '48px', color: 'var(--color-text-muted)' }}>
-          読み込み中...
+          {t('roadmap.loading')}
         </div>
       )}
 
       {error && (
         <div style={{ textAlign: 'center', padding: '48px', color: 'var(--color-danger, #ef4444)' }}>
-          データの読み込みに失敗しました
+          {t('roadmap.loadError')}
         </div>
       )}
 

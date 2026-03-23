@@ -122,9 +122,13 @@ export async function register(app: Express, config: GrcConfig): Promise<void> {
         status: a.status,
         sse_connected: sseConnectedIds.includes(a.nodeId),
         last_seen_at: a.lastSeenAt,
-        role_id: ((a.agentCard as Record<string, unknown>)?.role_id as string) ?? null,
+        role_id: (a as Record<string, unknown>).roleId as string ?? ((a.agentCard as Record<string, unknown>)?.role_id as string) ?? null,
         display_name:
-          ((a.agentCard as Record<string, unknown>)?.display_name as string) ?? a.nodeId,
+          (a as Record<string, unknown>).employeeName as string ??
+          ((a.agentCard as Record<string, unknown>)?.display_name as string) ??
+          ((a.agentCard as Record<string, unknown>)?.name as string) ??
+          a.nodeId,
+        employee_id: (a as Record<string, unknown>).employeeId as string ?? ((a.agentCard as Record<string, unknown>)?.employee_id as string) ?? null,
       }));
 
       res.json({

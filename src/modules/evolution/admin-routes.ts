@@ -840,6 +840,20 @@ export async function registerAdmin(app: Express, config: GrcConfig) {
               ], { encoding: "utf-8" });
             } catch { /* OAuth may not exist, non-fatal */ }
             logger.info({ configPersistPath }, "Extracted config from old container for preservation");
+
+            // Strip gateway auth token from persisted config to prevent stale token reuse
+            try {
+              const winclawJsonPath = path.join(configPersistPath, "winclaw.json");
+              const rawConfig = fs.readFileSync(winclawJsonPath, "utf-8");
+              const parsed = JSON.parse(rawConfig);
+              if (parsed?.gateway?.auth?.token) {
+                delete parsed.gateway.auth.token;
+                fs.writeFileSync(winclawJsonPath, JSON.stringify(parsed, null, 2) + "\n", "utf-8");
+                logger.info("Stripped gateway.auth.token from persisted winclaw.json");
+              }
+            } catch (stripErr: any) {
+              logger.warn({ err: stripErr.message }, "Could not strip gateway auth token from config (non-fatal)");
+            }
           } catch (err: any) {
             logger.warn({ err: err.message }, "Could not extract config from old container (non-fatal)");
           }
@@ -898,8 +912,11 @@ export async function registerAdmin(app: Express, config: GrcConfig) {
           employeeEmail: node.employeeEmail,
         };
 
-        // Delete old node record — new container will auto-register with GRC
-        await db.delete(nodesTable).where(eq(nodesTable.nodeId, nodeId));
+        // DO NOT delete node record — keep it alive so data is never lost.
+        // Just clear containerId so we know it's being restarted.
+        await db.update(nodesTable)
+          .set({ containerId: null })
+          .where(eq(nodesTable.nodeId, nodeId));
 
         let newContainerId: string;
         try {
@@ -912,15 +929,20 @@ export async function registerAdmin(app: Express, config: GrcConfig) {
         let token: string | null = null;
         let newNodeId: string | null = null;
         const TOKEN_REGEX = /Token:\s+(winclaw-node-[a-f0-9]+)/;
-        for (let i = 0; i < 30; i++) {
+        // Wait up to 60 seconds (120 × 500ms) for container startup + GRC registration
+        for (let i = 0; i < 120; i++) {
           await new Promise(r => setTimeout(r, 500));
           try {
-            const logs = execFileSync("docker", ["logs", newContainerId], { encoding: "utf-8", stdio: ["pipe", "pipe", "pipe"] });
+            // Read both stdout and stderr from container logs
+            const logs = execFileSync("docker", ["logs", newContainerId], {
+              encoding: "utf-8",
+              maxBuffer: 1024 * 1024,
+            });
             if (!token) {
               const match = logs.match(TOKEN_REGEX);
               if (match) token = match[1];
             }
-            if (logs.includes("Node registered with GRC")) {
+            if (logs.includes("Node registered with GRC") || logs.includes("listening on ws://")) {
               // Find the newly registered node by employeeId
               if (node.employeeId) {
                 const newNodes = await db
@@ -933,17 +955,33 @@ export async function registerAdmin(app: Express, config: GrcConfig) {
                   newNodeId = newNodes[0].nodeId;
                 }
               }
+              // If we have both token and nodeId, we're done
+              if (token && newNodeId) break;
+              // If we have nodeId but no token, keep trying for the token
+              if (newNodeId && !token && i < 60) continue;
               break;
             }
           } catch { /* still starting */ }
         }
 
-        // Update the new node record with provisioning metadata
-        if (newNodeId) {
-          const gatewayUrl = token
-            ? `http://localhost:${node.gatewayPort}/chat?token=${token}`
-            : node.gatewayUrl;
+        // If token still not found from logs, try to extract from docker exec
+        if (!token && newContainerId) {
+          try {
+            const catResult = execFileSync("docker", [
+              "exec", newContainerId, "cat", "/tmp/winclaw-token",
+            ], { encoding: "utf-8", timeout: 5000 }).trim();
+            if (catResult.startsWith("winclaw-node-")) token = catResult;
+          } catch { /* token file may not exist */ }
+        }
 
+        // Update node record with new container info + preserved data
+        const gatewayUrl = token
+          ? `http://localhost:${node.gatewayPort}/chat?token=${token}`
+          : `http://localhost:${node.gatewayPort}/chat`;
+
+        if (newNodeId && newNodeId !== nodeId) {
+          // New node was registered via hello with a different ID.
+          // Transfer all preserved data to the new node, then delete the old stub.
           await db
             .update(nodesTable)
             .set({
@@ -952,34 +990,36 @@ export async function registerAdmin(app: Express, config: GrcConfig) {
               gatewayPort: node.gatewayPort,
               provisioningMode: "local_docker",
               workspacePath: node.workspacePath,
-              // Restore role assignment from old node
               ...(preservedData.roleId && { roleId: preservedData.roleId }),
               ...(preservedData.roleMode && { roleMode: preservedData.roleMode }),
               ...(preservedData.configRevision && { configRevision: preservedData.configRevision }),
               ...(preservedData.configAppliedRevision && { configAppliedRevision: preservedData.configAppliedRevision }),
-              // Restore key distribution from old node
               ...(preservedData.primaryKeyId && { primaryKeyId: preservedData.primaryKeyId }),
               ...(preservedData.auxiliaryKeyId && { auxiliaryKeyId: preservedData.auxiliaryKeyId }),
               ...(preservedData.keyConfigJson != null ? { keyConfigJson: preservedData.keyConfigJson } : {}),
-              // Restore employee info
               ...(preservedData.employeeName && { employeeName: preservedData.employeeName }),
               ...(preservedData.employeeId && { employeeId: preservedData.employeeId }),
               ...(preservedData.employeeEmail && { employeeEmail: preservedData.employeeEmail }),
             })
             .where(eq(nodesTable.nodeId, newNodeId));
-
-          logger.info({ oldNodeId: nodeId, newNodeId, newContainerId, gatewayUrl }, "Local Docker node restarted");
-
-          res.json({
-            data: { nodeId: newNodeId, containerId: newContainerId.slice(0, 64), gatewayUrl, restarted: true },
-          });
+          // Now safe to delete old stub since new node has all data
+          await db.delete(nodesTable).where(eq(nodesTable.nodeId, nodeId));
+          logger.info({ oldNodeId: nodeId, newNodeId, newContainerId, gatewayUrl }, "Local Docker node restarted (new identity)");
         } else {
-          // Fallback: container started but didn't register yet
-          logger.warn({ newContainerId }, "New container started but node not yet registered with GRC");
-          res.json({
-            data: { containerId: newContainerId.slice(0, 64), restarted: true, warning: "Node not yet registered — will appear after heartbeat" },
-          });
+          // Same nodeId or hello hasn't registered yet — update the existing record directly
+          await db
+            .update(nodesTable)
+            .set({
+              containerId: newContainerId.slice(0, 64),
+              gatewayUrl,
+            })
+            .where(eq(nodesTable.nodeId, nodeId));
+          logger.info({ nodeId, newContainerId, gatewayUrl }, "Local Docker node restarted (same identity)");
         }
+
+        res.json({
+          data: { nodeId: newNodeId || nodeId, containerId: newContainerId.slice(0, 64), gatewayUrl, restarted: true },
+        });
 
       } else if (node.provisioningMode === "daytona_sandbox") {
         const DAYTONA_API_KEY = process.env.DAYTONA_API_KEY || "dtn_a92ccd0521fdaf9bc2c173087e23a3a52edc2d67fbb6a3508871a614a474b023";

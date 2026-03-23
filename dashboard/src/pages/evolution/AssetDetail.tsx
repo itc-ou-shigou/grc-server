@@ -55,7 +55,21 @@ export function AssetDetail() {
     );
   }
 
-  const asset = data?.data;
+  const raw = data?.data;
+  // SQLite returns JSON columns as strings — parse them safely
+  const parseJson = (v: unknown): unknown[] => {
+    if (Array.isArray(v)) return v;
+    if (typeof v === 'string') try { const p = JSON.parse(v); if (Array.isArray(p)) return p; } catch { /* ignore */ }
+    return [];
+  };
+  const asset = raw ? {
+    ...raw,
+    signalsMatch: parseJson(raw.signalsMatch),
+    capabilities: parseJson((raw as Record<string, unknown>).capabilities),
+    strategy: typeof (raw as Record<string, unknown>).strategy === 'string'
+      ? (() => { try { return JSON.parse((raw as Record<string, unknown>).strategy as string); } catch { return (raw as Record<string, unknown>).strategy; } })()
+      : (raw as Record<string, unknown>).strategy,
+  } : null;
   if (!asset) {
     return (
       <div className="page">

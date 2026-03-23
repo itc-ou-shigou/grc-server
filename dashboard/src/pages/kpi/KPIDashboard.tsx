@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { apiClient } from '../../api/client';
 
@@ -51,6 +52,7 @@ function achievementColor(rate: number): string {
 // ── Subcomponents ──────────────────────────────────────────────────────────
 
 function KPICard({ kpi, onRecord }: { kpi: KPI; onRecord: (kpi: KPI) => void }) {
+  const { t } = useTranslation('marketing');
   const color = achievementColor(kpi.achievement_rate);
   return (
     <div
@@ -88,28 +90,28 @@ function KPICard({ kpi, onRecord }: { kpi: KPI; onRecord: (kpi: KPI) => void }) 
           onClick={() => onRecord(kpi)}
           style={{ fontSize: 11, whiteSpace: 'nowrap' }}
         >
-          実績値記録
+          {t('kpi.recordValue', { defaultValue: 'Record Value' })}
         </button>
       </div>
 
       {/* Values */}
       <div style={{ display: 'flex', gap: 24, marginBottom: 12, marginTop: 10 }}>
         <div>
-          <div style={{ fontSize: 11, color: 'var(--color-text-muted)', marginBottom: 2 }}>現在値</div>
+          <div style={{ fontSize: 11, color: 'var(--color-text-muted)', marginBottom: 2 }}>{t('kpi.current')}</div>
           <div style={{ fontSize: 20, fontWeight: 800, color }}>
             {kpi.current_value.toLocaleString()}
             <span style={{ fontSize: 12, fontWeight: 500, marginLeft: 2 }}>{kpi.unit}</span>
           </div>
         </div>
         <div>
-          <div style={{ fontSize: 11, color: 'var(--color-text-muted)', marginBottom: 2 }}>目標値</div>
+          <div style={{ fontSize: 11, color: 'var(--color-text-muted)', marginBottom: 2 }}>{t('kpi.target')}</div>
           <div style={{ fontSize: 20, fontWeight: 800, color: 'var(--color-text)' }}>
             {kpi.target_value.toLocaleString()}
             <span style={{ fontSize: 12, fontWeight: 500, marginLeft: 2 }}>{kpi.unit}</span>
           </div>
         </div>
         <div>
-          <div style={{ fontSize: 11, color: 'var(--color-text-muted)', marginBottom: 2 }}>達成率</div>
+          <div style={{ fontSize: 11, color: 'var(--color-text-muted)', marginBottom: 2 }}>{t('kpi.progress')}</div>
           <div style={{ fontSize: 20, fontWeight: 800, color }}>
             {kpi.achievement_rate.toFixed(1)}%
           </div>
@@ -134,7 +136,7 @@ function KPICard({ kpi, onRecord }: { kpi: KPI; onRecord: (kpi: KPI) => void }) 
           <span>
             {kpi.achievement_rate >= 80 ? 'On Track' : kpi.achievement_rate >= 50 ? 'At Risk' : 'Off Track'}
           </span>
-          <span>目標</span>
+          <span>{t('kpi.target')}</span>
         </div>
       </div>
     </div>
@@ -151,6 +153,7 @@ interface CreateKPIModalProps {
 }
 
 function CreateKPIModal({ open, onClose, onSubmit, loading }: CreateKPIModalProps) {
+  const { t } = useTranslation('marketing');
   const [form, setForm] = useState<CreateKPIBody>({
     name: '',
     description: '',
@@ -195,7 +198,7 @@ function CreateKPIModal({ open, onClose, onSubmit, loading }: CreateKPIModalProp
         onClick={(e) => e.stopPropagation()}
       >
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 20 }}>
-          <h2 style={{ margin: 0, fontSize: 18, fontWeight: 700 }}>KPI定義追加</h2>
+          <h2 style={{ margin: 0, fontSize: 18, fontWeight: 700 }}>{t('kpi.modal.title')}</h2>
           <button
             onClick={onClose}
             style={{ background: 'none', border: 'none', fontSize: 20, cursor: 'pointer', color: 'var(--color-text-secondary)' }}
@@ -205,7 +208,7 @@ function CreateKPIModal({ open, onClose, onSubmit, loading }: CreateKPIModalProp
         </div>
         <form onSubmit={handleSubmit}>
           <div className="form-group">
-            <label className="form-label">KPI名 *</label>
+            <label className="form-label">{t('kpi.modal.nameLabel')}</label>
             <input
               className="input"
               type="text"
@@ -215,7 +218,7 @@ function CreateKPIModal({ open, onClose, onSubmit, loading }: CreateKPIModalProp
             />
           </div>
           <div className="form-group">
-            <label className="form-label">説明</label>
+            <label className="form-label">{t('kpi.modal.descriptionLabel', { defaultValue: 'Description' })}</label>
             <textarea
               className="textarea"
               rows={2}
@@ -225,7 +228,7 @@ function CreateKPIModal({ open, onClose, onSubmit, loading }: CreateKPIModalProp
           </div>
           <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: 12 }}>
             <div className="form-group">
-              <label className="form-label">カテゴリ *</label>
+              <label className="form-label">{t('kpi.modal.categoryLabel')}</label>
               <select
                 className="input"
                 value={form.category}
@@ -237,7 +240,7 @@ function CreateKPIModal({ open, onClose, onSubmit, loading }: CreateKPIModalProp
               </select>
             </div>
             <div className="form-group">
-              <label className="form-label">目標値 *</label>
+              <label className="form-label">{t('kpi.modal.targetLabel')}</label>
               <input
                 className="input"
                 type="number"
@@ -248,23 +251,23 @@ function CreateKPIModal({ open, onClose, onSubmit, loading }: CreateKPIModalProp
               />
             </div>
             <div className="form-group">
-              <label className="form-label">単位 *</label>
+              <label className="form-label">{t('kpi.modal.unitLabel')}</label>
               <input
                 className="input"
                 type="text"
                 value={form.unit}
                 onChange={(e) => handleChange('unit', e.target.value)}
                 required
-                placeholder="件, %, ¥..."
+                placeholder={t('kpi.modal.unitPlaceholder')}
               />
             </div>
           </div>
           <div style={{ display: 'flex', gap: 8, justifyContent: 'flex-end', marginTop: 8 }}>
             <button type="button" className="btn btn-default" onClick={onClose}>
-              キャンセル
+              {t('kpi.modal.cancel')}
             </button>
             <button type="submit" className="btn btn-primary" disabled={loading}>
-              {loading ? '作成中...' : '追加'}
+              {loading ? t('kpi.modal.creating') : t('kpi.modal.create')}
             </button>
           </div>
         </form>
@@ -283,6 +286,7 @@ interface RecordValueModalProps {
 }
 
 function RecordValueModal({ kpi, onClose, onSubmit, loading }: RecordValueModalProps) {
+  const { t } = useTranslation('marketing');
   const [value, setValue] = useState('');
   const [note, setNote] = useState('');
 
@@ -319,7 +323,7 @@ function RecordValueModal({ kpi, onClose, onSubmit, loading }: RecordValueModalP
         onClick={(e) => e.stopPropagation()}
       >
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 20 }}>
-          <h2 style={{ margin: 0, fontSize: 18, fontWeight: 700 }}>実績値記録</h2>
+          <h2 style={{ margin: 0, fontSize: 18, fontWeight: 700 }}>{t('kpi.recordValue', { defaultValue: 'Record Value' })}</h2>
           <button
             onClick={onClose}
             style={{ background: 'none', border: 'none', fontSize: 20, cursor: 'pointer', color: 'var(--color-text-secondary)' }}
@@ -328,11 +332,11 @@ function RecordValueModal({ kpi, onClose, onSubmit, loading }: RecordValueModalP
           </button>
         </div>
         <p style={{ margin: '0 0 16px', fontSize: 13, color: 'var(--color-text-secondary)' }}>
-          <strong>{kpi.name}</strong> の実績値を記録します（目標: {kpi.target_value} {kpi.unit}）
+          <strong>{kpi.name}</strong> — {t('kpi.target')}: {kpi.target_value} {kpi.unit}
         </p>
         <form onSubmit={handleSubmit}>
           <div className="form-group">
-            <label className="form-label">実績値 ({kpi.unit}) *</label>
+            <label className="form-label">{t('kpi.current')} ({kpi.unit}) *</label>
             <input
               className="input"
               type="number"
@@ -343,21 +347,21 @@ function RecordValueModal({ kpi, onClose, onSubmit, loading }: RecordValueModalP
             />
           </div>
           <div className="form-group">
-            <label className="form-label">メモ</label>
+            <label className="form-label">{t('kpi.noteLabel', { defaultValue: 'Note' })}</label>
             <textarea
               className="textarea"
               rows={2}
               value={note}
               onChange={(e) => setNote(e.target.value)}
-              placeholder="補足情報..."
+              placeholder={t('kpi.notePlaceholder', { defaultValue: 'Additional info...' })}
             />
           </div>
           <div style={{ display: 'flex', gap: 8, justifyContent: 'flex-end', marginTop: 8 }}>
             <button type="button" className="btn btn-default" onClick={onClose}>
-              キャンセル
+              {t('kpi.modal.cancel')}
             </button>
             <button type="submit" className="btn btn-primary" disabled={loading || !value}>
-              {loading ? '記録中...' : '記録'}
+              {loading ? t('kpi.recording', { defaultValue: 'Recording...' }) : t('kpi.record', { defaultValue: 'Record' })}
             </button>
           </div>
         </form>
@@ -369,6 +373,7 @@ function RecordValueModal({ kpi, onClose, onSubmit, loading }: RecordValueModalP
 // ── Main Component ─────────────────────────────────────────────────────────
 
 export function KPIDashboard() {
+  const { t } = useTranslation('marketing');
   const [activeCategory, setActiveCategory] = useState('All');
   const [showCreateModal, setShowCreateModal] = useState(false);
   const [recordingKPI, setRecordingKPI] = useState<KPI | null>(null);
@@ -412,12 +417,12 @@ export function KPIDashboard() {
     <div className="page">
       <div className="page-header">
         <div>
-          <h1 className="page-title">KPIダッシュボード</h1>
-          <p className="page-subtitle">主要業績評価指標の追跡と管理</p>
+          <h1 className="page-title">{t('kpi.title')}</h1>
+          <p className="page-subtitle">{t('kpi.subtitle')}</p>
         </div>
         <div className="action-group">
           <button className="btn btn-primary" onClick={() => setShowCreateModal(true)}>
-            + KPI定義追加
+            {t('kpi.newKPI')}
           </button>
         </div>
       </div>
@@ -428,7 +433,7 @@ export function KPIDashboard() {
           { label: 'On Track', count: onTrack, color: '#10b981' },
           { label: 'At Risk', count: atRisk, color: '#f59e0b' },
           { label: 'Off Track', count: offTrack, color: '#ef4444' },
-          { label: '総KPI数', count: allKPIs.length, color: '#3b82f6' },
+          { label: t('kpi.summary.total'), count: allKPIs.length, color: '#3b82f6' },
         ].map((s) => (
           <div
             key={s.label}
@@ -488,13 +493,13 @@ export function KPIDashboard() {
 
       {isLoading && (
         <div style={{ textAlign: 'center', padding: '48px', color: 'var(--color-text-muted)' }}>
-          読み込み中...
+          {t('kpi.loading')}
         </div>
       )}
 
       {error && (
         <div style={{ textAlign: 'center', padding: '48px', color: 'var(--color-danger, #ef4444)' }}>
-          データの読み込みに失敗しました
+          {t('kpi.loadError')}
         </div>
       )}
 
@@ -508,7 +513,7 @@ export function KPIDashboard() {
         >
           {filteredKPIs.length === 0 && (
             <div style={{ gridColumn: '1 / -1', textAlign: 'center', padding: '48px', color: 'var(--color-text-muted)' }}>
-              このカテゴリにKPIがありません
+              {t('kpi.noKPI')}
             </div>
           )}
           {filteredKPIs.map((kpi) => (

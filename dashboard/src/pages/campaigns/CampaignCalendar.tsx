@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { apiClient } from '../../api/client';
 
@@ -35,15 +36,6 @@ const CHANNEL_COLORS: Record<string, string> = {
   content: '#4ade80',
   event:   '#ffbe0b',
 };
-
-const CHANNEL_LABELS: Record<string, string> = {
-  email: 'メール',
-  social: 'ソーシャル',
-  content: 'コンテンツ',
-  event: 'イベント',
-};
-
-const DAY_NAMES = ['日', '月', '火', '水', '木', '金', '土'];
 
 // ── Helpers ────────────────────────────────────────────────────────────────
 
@@ -99,6 +91,7 @@ interface CreateModalProps {
 }
 
 function CreateModal({ open, onClose, onSubmit, loading }: CreateModalProps) {
+  const { t } = useTranslation('marketing');
   const [form, setForm] = useState<CreateCampaignBody>({
     title: '',
     channel: 'email',
@@ -143,7 +136,7 @@ function CreateModal({ open, onClose, onSubmit, loading }: CreateModalProps) {
         onClick={(e) => e.stopPropagation()}
       >
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 20 }}>
-          <h2 style={{ margin: 0, fontSize: 18, fontWeight: 700 }}>新規キャンペーン</h2>
+          <h2 style={{ margin: 0, fontSize: 18, fontWeight: 700 }}>{t('campaign.modal.title')}</h2>
           <button
             onClick={onClose}
             style={{ background: 'none', border: 'none', fontSize: 20, cursor: 'pointer', color: 'var(--color-text-secondary)' }}
@@ -153,32 +146,32 @@ function CreateModal({ open, onClose, onSubmit, loading }: CreateModalProps) {
         </div>
         <form onSubmit={handleSubmit}>
           <div className="form-group">
-            <label className="form-label">タイトル *</label>
+            <label className="form-label">{t('campaign.form.title')}</label>
             <input
               className="input"
               type="text"
               value={form.title}
               onChange={(e) => handleChange('title', e.target.value)}
               required
-              placeholder="キャンペーン名を入力"
+              placeholder={t('campaign.form.titlePlaceholder')}
             />
           </div>
           <div className="form-group">
-            <label className="form-label">チャネル *</label>
+            <label className="form-label">{t('campaign.form.channel')}</label>
             <select
               className="input"
               value={form.channel}
               onChange={(e) => handleChange('channel', e.target.value)}
               required
             >
-              {Object.entries(CHANNEL_LABELS).map(([val, label]) => (
-                <option key={val} value={val}>{label}</option>
+              {(['email', 'social', 'content', 'event'] as const).map((val) => (
+                <option key={val} value={val}>{t(`campaign.channels.${val}`)}</option>
               ))}
             </select>
           </div>
           <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12 }}>
             <div className="form-group">
-              <label className="form-label">開始日 *</label>
+              <label className="form-label">{t('campaign.form.startDate')}</label>
               <input
                 className="input"
                 type="date"
@@ -188,7 +181,7 @@ function CreateModal({ open, onClose, onSubmit, loading }: CreateModalProps) {
               />
             </div>
             <div className="form-group">
-              <label className="form-label">終了日 *</label>
+              <label className="form-label">{t('campaign.form.endDate')}</label>
               <input
                 className="input"
                 type="date"
@@ -199,21 +192,21 @@ function CreateModal({ open, onClose, onSubmit, loading }: CreateModalProps) {
             </div>
           </div>
           <div className="form-group">
-            <label className="form-label">説明</label>
+            <label className="form-label">{t('campaign.form.description')}</label>
             <textarea
               className="textarea"
               rows={3}
               value={form.description}
               onChange={(e) => handleChange('description', e.target.value)}
-              placeholder="キャンペーンの詳細..."
+              placeholder={t('campaign.form.descriptionPlaceholder')}
             />
           </div>
           <div style={{ display: 'flex', gap: 8, justifyContent: 'flex-end', marginTop: 8 }}>
             <button type="button" className="btn btn-default" onClick={onClose}>
-              キャンセル
+              {t('common.cancel')}
             </button>
             <button type="submit" className="btn btn-primary" disabled={loading}>
-              {loading ? '作成中...' : '作成'}
+              {loading ? t('campaign.form.creating') : t('campaign.form.create')}
             </button>
           </div>
         </form>
@@ -225,6 +218,7 @@ function CreateModal({ open, onClose, onSubmit, loading }: CreateModalProps) {
 // ── Main Component ─────────────────────────────────────────────────────────
 
 export function CampaignCalendar() {
+  const { t } = useTranslation('marketing');
   const today = new Date();
   const [year, setYear] = useState(today.getFullYear());
   const [month, setMonth] = useState(today.getMonth() + 1); // 1-indexed
@@ -303,22 +297,22 @@ export function CampaignCalendar() {
     <div className="page">
       <div className="page-header">
         <div>
-          <h1 className="page-title">キャンペーンカレンダー</h1>
-          <p className="page-subtitle">マーケティングキャンペーンのスケジュール管理</p>
+          <h1 className="page-title">{t('campaign.title')}</h1>
+          <p className="page-subtitle">{t('campaign.subtitle')}</p>
         </div>
         <div className="action-group">
           <button className="btn btn-primary" onClick={() => setShowModal(true)}>
-            + 新規キャンペーン
+            {t('campaign.newButton')}
           </button>
         </div>
       </div>
 
       {/* Channel legend */}
       <div style={{ display: 'flex', gap: 16, marginBottom: 16, flexWrap: 'wrap' }}>
-        {Object.entries(CHANNEL_LABELS).map(([ch, label]) => (
+        {(['email', 'social', 'content', 'event'] as const).map((ch) => (
           <div key={ch} style={{ display: 'flex', alignItems: 'center', gap: 6, fontSize: 12 }}>
             <div style={{ width: 12, height: 12, borderRadius: 2, background: CHANNEL_COLORS[ch] }} />
-            <span style={{ color: 'var(--color-text-secondary)' }}>{label}</span>
+            <span style={{ color: 'var(--color-text-secondary)' }}>{t(`campaign.channels.${ch}`)}</span>
           </div>
         ))}
       </div>
@@ -329,17 +323,17 @@ export function CampaignCalendar() {
           <button
             className="btn btn-default btn-sm"
             onClick={prevMonth}
-            aria-label="前月"
+            aria-label={t('calendar.prevMonth')}
           >
             &#8592;
           </button>
           <h2 style={{ margin: 0, fontSize: 18, fontWeight: 700 }}>
-            {year}年{month}月
+            {t('calendar.monthYear', { year, month })}
           </h2>
           <button
             className="btn btn-default btn-sm"
             onClick={nextMonth}
-            aria-label="次月"
+            aria-label={t('calendar.nextMonth')}
           >
             &#8594;
           </button>
@@ -347,13 +341,13 @@ export function CampaignCalendar() {
 
         {isLoading && (
           <div style={{ textAlign: 'center', padding: '32px', color: 'var(--color-text-muted)' }}>
-            読み込み中...
+            {t('common.loading')}
           </div>
         )}
 
         {error && (
           <div style={{ textAlign: 'center', padding: '32px', color: 'var(--color-danger, #ef4444)', fontSize: 13 }}>
-            データの読み込みに失敗しました
+            {t('common.loadError')}
           </div>
         )}
 
@@ -370,7 +364,7 @@ export function CampaignCalendar() {
             }}
           >
             {/* Day headers */}
-            {DAY_NAMES.map((name, i) => (
+            {((() => { const d = t('calendar.days', { returnObjects: true }); return Array.isArray(d) ? d : ['Sun','Mon','Tue','Wed','Thu','Fri','Sat']; })()).map((name, i) => (
               <div
                 key={name}
                 style={{
@@ -463,7 +457,7 @@ export function CampaignCalendar() {
       {campaigns.length > 0 && (
         <div className="card" style={{ marginTop: 16 }}>
           <h3 style={{ margin: '0 0 12px', fontSize: 14, fontWeight: 700 }}>
-            {year}年{month}月のキャンペーン ({campaigns.length}件)
+            {t('calendar.monthYear', { year, month })} ({t('common.itemCount', { count: campaigns.length })})
           </h3>
           <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
             {campaigns.map((c) => (
@@ -495,7 +489,7 @@ export function CampaignCalendar() {
                     fontWeight: 600,
                   }}
                 >
-                  {CHANNEL_LABELS[c.channel] ?? c.channel}
+                  {t(`campaign.channels.${c.channel}`) ?? c.channel}
                 </span>
                 <span
                   style={{
