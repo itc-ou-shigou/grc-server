@@ -146,18 +146,18 @@ function CreateModal({ open, onClose, onSubmit, loading }: CreateModalProps) {
         </div>
         <form onSubmit={handleSubmit}>
           <div className="form-group">
-            <label className="form-label">{t('campaign.form.title')}</label>
+            <label className="form-label">{t('campaign.modal.titleLabel')}</label>
             <input
               className="input"
               type="text"
               value={form.title}
               onChange={(e) => handleChange('title', e.target.value)}
               required
-              placeholder={t('campaign.form.titlePlaceholder')}
+              placeholder={t('campaign.modal.titlePlaceholder')}
             />
           </div>
           <div className="form-group">
-            <label className="form-label">{t('campaign.form.channel')}</label>
+            <label className="form-label">{t('campaign.modal.channelLabel')}</label>
             <select
               className="input"
               value={form.channel}
@@ -171,7 +171,7 @@ function CreateModal({ open, onClose, onSubmit, loading }: CreateModalProps) {
           </div>
           <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12 }}>
             <div className="form-group">
-              <label className="form-label">{t('campaign.form.startDate')}</label>
+              <label className="form-label">{t('campaign.modal.startDate')}</label>
               <input
                 className="input"
                 type="date"
@@ -181,7 +181,7 @@ function CreateModal({ open, onClose, onSubmit, loading }: CreateModalProps) {
               />
             </div>
             <div className="form-group">
-              <label className="form-label">{t('campaign.form.endDate')}</label>
+              <label className="form-label">{t('campaign.modal.endDate')}</label>
               <input
                 className="input"
                 type="date"
@@ -192,21 +192,21 @@ function CreateModal({ open, onClose, onSubmit, loading }: CreateModalProps) {
             </div>
           </div>
           <div className="form-group">
-            <label className="form-label">{t('campaign.form.description')}</label>
+            <label className="form-label">{t('campaign.modal.description')}</label>
             <textarea
               className="textarea"
               rows={3}
               value={form.description}
               onChange={(e) => handleChange('description', e.target.value)}
-              placeholder={t('campaign.form.descriptionPlaceholder')}
+              placeholder={t('campaign.modal.descriptionPlaceholder')}
             />
           </div>
           <div style={{ display: 'flex', gap: 8, justifyContent: 'flex-end', marginTop: 8 }}>
             <button type="button" className="btn btn-default" onClick={onClose}>
-              {t('common.cancel')}
+              {t('campaign.modal.cancel')}
             </button>
             <button type="submit" className="btn btn-primary" disabled={loading}>
-              {loading ? t('campaign.form.creating') : t('campaign.form.create')}
+              {loading ? t('campaign.modal.creating') : t('campaign.modal.create')}
             </button>
           </div>
         </form>
@@ -302,7 +302,7 @@ export function CampaignCalendar() {
         </div>
         <div className="action-group">
           <button className="btn btn-primary" onClick={() => setShowModal(true)}>
-            {t('campaign.newButton')}
+            {t('campaign.newCampaign')}
           </button>
         </div>
       </div>
@@ -323,17 +323,17 @@ export function CampaignCalendar() {
           <button
             className="btn btn-default btn-sm"
             onClick={prevMonth}
-            aria-label={t('calendar.prevMonth')}
+            aria-label={t('campaign.prevMonth')}
           >
             &#8592;
           </button>
           <h2 style={{ margin: 0, fontSize: 18, fontWeight: 700 }}>
-            {t('calendar.monthYear', { year, month })}
+            {t('campaign.yearMonth', { year, month })}
           </h2>
           <button
             className="btn btn-default btn-sm"
             onClick={nextMonth}
-            aria-label={t('calendar.nextMonth')}
+            aria-label={t('campaign.nextMonth')}
           >
             &#8594;
           </button>
@@ -364,7 +364,7 @@ export function CampaignCalendar() {
             }}
           >
             {/* Day headers */}
-            {((() => { const d = t('calendar.days', { returnObjects: true }); return Array.isArray(d) ? d : ['Sun','Mon','Tue','Wed','Thu','Fri','Sat']; })()).map((name, i) => (
+            {((() => { const d = t('campaign.days', { returnObjects: true }); return Array.isArray(d) ? d : ['Sun','Mon','Tue','Wed','Thu','Fri','Sat']; })()).map((name, i) => (
               <div
                 key={name}
                 style={{
@@ -457,7 +457,7 @@ export function CampaignCalendar() {
       {campaigns.length > 0 && (
         <div className="card" style={{ marginTop: 16 }}>
           <h3 style={{ margin: '0 0 12px', fontSize: 14, fontWeight: 700 }}>
-            {t('calendar.monthYear', { year, month })} ({t('common.itemCount', { count: campaigns.length })})
+            {t('campaign.yearMonth', { year, month })} ({t('common.itemCount', { count: campaigns.length })})
           </h3>
           <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
             {campaigns.map((c) => (

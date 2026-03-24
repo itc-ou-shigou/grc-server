@@ -95,7 +95,20 @@ export function TaskDetail() {
 
   if (!data) return null;
 
-  const { task, comments, progress } = data;
+  const { task: rawTask, comments, progress } = data;
+  // SQLite returns JSON columns as strings — parse safely
+  const parseJsonArr = (v: unknown): unknown[] => {
+    if (Array.isArray(v)) return v;
+    if (typeof v === 'string') try { const p = JSON.parse(v); if (Array.isArray(p)) return p; } catch { /* */ }
+    return [];
+  };
+  const task = {
+    ...rawTask,
+    deliverables: parseJsonArr(rawTask.deliverables),
+    collaborators: parseJsonArr(rawTask.collaborators),
+    dependsOn: parseJsonArr(rawTask.dependsOn),
+    resultData: typeof rawTask.resultData === 'string' ? (() => { try { return JSON.parse(rawTask.resultData); } catch { return rawTask.resultData; } })() : rawTask.resultData,
+  };
   const transitions = STATUS_TRANSITIONS[task.status] ?? [];
   const needsResultSummary = pendingTransition?.toStatus === 'completed';
 
