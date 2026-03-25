@@ -149,11 +149,8 @@ export async function register(app: Express, config: GrcConfig): Promise<void> {
         .where(eq(nodesTable.nodeId, body.node_id))
         .limit(1);
 
-      if (helloNode[0]?.roleId) {
-        rolesService.propagateCompanyContext("new_node_hello").catch(err =>
-          logger.warn({ err }, "Failed to propagate context after hello")
-        );
-      }
+      // Note: company context propagation moved to role_assignment only.
+      // Running it on every hello caused an infinite SSE loop.
 
       res.json({
         ok: true,
