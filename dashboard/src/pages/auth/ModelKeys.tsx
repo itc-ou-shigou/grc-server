@@ -17,7 +17,7 @@ const PROVIDERS = ['openai', 'anthropic', 'google', 'deepseek', 'qwen', 'custom'
 const MODEL_OPTIONS: Record<string, string[]> = {
   openai: ['gpt-4o', 'gpt-4o-mini', 'gpt-4-turbo', 'o1', 'o1-mini', 'o3-mini'],
   anthropic: ['claude-sonnet-4-20250514', 'claude-3-5-sonnet-20241022', 'claude-3-5-haiku-20241022', 'claude-3-opus-20240229'],
-  google: ['gemini-2.0-flash', 'gemini-1.5-pro', 'gemini-1.5-flash'],
+  google: ['gemini-embedding-001', 'gemini-2.0-flash'],
   deepseek: ['deepseek-chat', 'deepseek-reasoner'],
   qwen: ['qwen-plus', 'qwen-turbo', 'qwen-max'],
   custom: [],

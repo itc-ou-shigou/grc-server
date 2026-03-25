@@ -75,6 +75,7 @@ export const a2aPublishSchema = z.object({
   content_hash: z.string().min(1),
   payload: z.record(z.unknown()),
   signature: z.string().optional(),
+  category: z.string().max(100).optional(),
 });
 
 export const a2aSearchSchema = z.object({

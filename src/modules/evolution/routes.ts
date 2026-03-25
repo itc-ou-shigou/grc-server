@@ -278,6 +278,7 @@ export async function register(app: Express, config: GrcConfig): Promise<void> {
         contentHash: body.content_hash,
         payload: body.payload,
         signature: body.signature,
+        category: body.category,
       });
 
       res.status(201).json({
