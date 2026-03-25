@@ -22,10 +22,10 @@ interface RateLimitEntry {
 }
 
 const TIER_LIMITS: Record<string, number> = {
-  anonymous: 100,
-  free: 500,
-  contributor: 1000,
-  pro: 5000,
+  anonymous: 1000,
+  free: 10000,
+  contributor: 20000,
+  pro: 50000,
 };
 
 const WINDOW_MS = 60 * 60 * 1000; // 1 hour
