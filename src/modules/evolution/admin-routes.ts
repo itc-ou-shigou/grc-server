@@ -791,10 +791,6 @@ export async function registerAdmin(app: Express, config: GrcConfig) {
       }
 
       if (node.provisioningMode === "local_docker") {
-        if (!node.containerId) {
-          return res.status(400).json({ error: "No container ID found for this node" });
-        }
-
         const { execFileSync } = await import("child_process");
 
         // Identity path inside workspace dir (unique per node)
@@ -803,7 +799,7 @@ export async function registerAdmin(app: Express, config: GrcConfig) {
           : null;
 
         // Extract identity from old container BEFORE removing it
-        if (identityPath) {
+        if (identityPath && node.containerId) {
           fs.mkdirSync(identityPath, { recursive: true });
           try {
             execFileSync("docker", [
@@ -821,7 +817,7 @@ export async function registerAdmin(app: Express, config: GrcConfig) {
         const configPersistPath = node.workspacePath
           ? path.join(node.workspacePath, ".config")
           : null;
-        if (configPersistPath) {
+        if (configPersistPath && node.containerId) {
           fs.mkdirSync(configPersistPath, { recursive: true });
           try {
             execFileSync("docker", ["cp",
@@ -859,32 +855,32 @@ export async function registerAdmin(app: Express, config: GrcConfig) {
           }
         }
 
-        // Stop and remove old container
-        try {
-          execFileSync("docker", ["stop", node.containerId], { encoding: "utf-8" });
-          execFileSync("docker", ["rm", node.containerId], { encoding: "utf-8" });
-        } catch (err: any) {
-          logger.warn({ err: err.message, containerId: node.containerId }, "Failed to stop/remove old container by ID, trying by port");
-          // Fallback: find container by gateway port and stop it
-          if (node.gatewayPort) {
-            try {
-              const portContainers = execFileSync("docker", ["ps", "-q", "--filter", `publish=${node.gatewayPort}`], { encoding: "utf-8" }).trim();
-              if (portContainers) {
-                for (const cid of portContainers.split("\n").filter(Boolean)) {
-                  try {
-                    execFileSync("docker", ["stop", cid], { encoding: "utf-8" });
-                    execFileSync("docker", ["rm", cid], { encoding: "utf-8" });
-                    logger.info({ containerId: cid, port: node.gatewayPort }, "Stopped container found by port fallback");
-                  } catch { /* best effort */ }
-                }
-              }
-            } catch { /* non-fatal */ }
+        // Stop and remove old container (force to avoid timeout/port conflicts)
+        if (node.containerId) {
+          try {
+            execFileSync("docker", ["rm", "-f", node.containerId], { encoding: "utf-8", timeout: 15000 });
+          } catch (err: any) {
+            logger.warn({ err: err.message, containerId: node.containerId }, "Failed to force-remove old container by ID, trying by port");
           }
+        }
+        // Always check for leftover containers on the same port
+        if (node.gatewayPort) {
+          try {
+            const portContainers = execFileSync("docker", ["ps", "-aq", "--filter", `publish=${node.gatewayPort}`], { encoding: "utf-8" }).trim();
+            if (portContainers) {
+              for (const cid of portContainers.split("\n").filter(Boolean)) {
+                try {
+                  execFileSync("docker", ["rm", "-f", cid], { encoding: "utf-8", timeout: 10000 });
+                  logger.info({ containerId: cid, port: node.gatewayPort }, "Force-removed container on port");
+                } catch { /* best effort */ }
+              }
+            }
+          } catch { /* non-fatal */ }
         }
 
         // Re-run with same config
         const grcPort = process.env.GRC_API_PORT || "3100";
-        const dockerArgs = ["run", "-d", "--pull", "always", "-p", `${node.gatewayPort}:18789`,
+        const dockerArgs = ["run", "-d", "--pull", "missing", "-p", `${node.gatewayPort}:18789`,
           "-e", `WINCLAW_GRC_URL=http://host.docker.internal:${grcPort}`];
         if (node.employeeName) dockerArgs.push("-e", `employee_name=${node.employeeName}`);
         if (node.employeeId) dockerArgs.push("-e", `employee_code=${node.employeeId}`);
@@ -1000,6 +996,8 @@ export async function registerAdmin(app: Express, config: GrcConfig) {
               ...(preservedData.employeeName && { employeeName: preservedData.employeeName }),
               ...(preservedData.employeeId && { employeeId: preservedData.employeeId }),
               ...(preservedData.employeeEmail && { employeeEmail: preservedData.employeeEmail }),
+              createdAt: new Date(),
+              updatedAt: new Date(),
             })
             .where(eq(nodesTable.nodeId, newNodeId));
           // Now safe to delete old stub since new node has all data
@@ -1012,6 +1010,8 @@ export async function registerAdmin(app: Express, config: GrcConfig) {
             .set({
               containerId: newContainerId.slice(0, 64),
               gatewayUrl,
+              createdAt: new Date(),
+              updatedAt: new Date(),
             })
             .where(eq(nodesTable.nodeId, nodeId));
           logger.info({ nodeId, newContainerId, gatewayUrl }, "Local Docker node restarted (same identity)");
