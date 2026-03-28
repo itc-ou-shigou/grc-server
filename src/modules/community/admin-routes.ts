@@ -16,7 +16,7 @@ import type { GrcConfig } from "../../config.js";
 import { createAuthMiddleware } from "../../shared/middleware/auth.js";
 import { createAdminAuthMiddleware } from "../../shared/middleware/admin-auth.js";
 import { asyncHandler, NotFoundError, BadRequestError } from "../../shared/middleware/error-handler.js";
-import { getDb } from "../../shared/db/connection.js";
+import { getDb, safeTransaction } from "../../shared/db/connection.js";
 import { uuidSchema, nodeIdSchema, paginationSchema } from "../../shared/utils/validators.js";
 import {
   communityChannelsTable,
@@ -245,7 +245,7 @@ export async function registerAdmin(app: Express, config: GrcConfig) {
       }
 
       // Cascade-delete all topics in this channel, subscriptions, then the channel
-      await db.transaction(async (tx) => {
+      await safeTransaction(db, async (tx) => {
         // Find all topics belonging to this channel
         const topicRows = await tx
           .select({ id: communityTopicsTable.id })
@@ -416,7 +416,7 @@ export async function registerAdmin(app: Express, config: GrcConfig) {
           break;
         case "delete":
           // Hard delete — cascade-delete replies, votes, and the topic in a transaction
-          await db.transaction(async (tx) => {
+          await safeTransaction(db, async (tx) => {
             await cascadeDeleteTopic(tx, id);
           });
 
@@ -464,7 +464,7 @@ export async function registerAdmin(app: Express, config: GrcConfig) {
       }
 
       // Cascade-delete replies, votes, and the topic in a transaction
-      await db.transaction(async (tx) => {
+      await safeTransaction(db, async (tx) => {
         await cascadeDeleteTopic(tx, id);
       });
 
@@ -500,7 +500,7 @@ export async function registerAdmin(app: Express, config: GrcConfig) {
       }
 
       // Delete reply votes, reply itself, and decrement replyCount
-      await db.transaction(async (tx) => {
+      await safeTransaction(db, async (tx) => {
         await tx.delete(communityVotesTable).where(
           and(
             eq(communityVotesTable.targetType, "reply"),

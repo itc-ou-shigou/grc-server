@@ -8,7 +8,7 @@
 import { v4 as uuidv4 } from "uuid";
 import { eq, desc, asc, sql, and, or, gte, inArray } from "drizzle-orm";
 import pino from "pino";
-import { getDb } from "../../shared/db/connection.js";
+import { getDb, safeTransaction } from "../../shared/db/connection.js";
 import {
   communityChannelsTable,
   communityTopicsTable,
@@ -113,7 +113,7 @@ export class CommunityService implements ICommunityService {
 
     // Wrap post insert + channel counter increment in a transaction
     // so the counter stays accurate even under concurrent creates.
-    const post = await db.transaction(async (tx) => {
+    const post = await safeTransaction(db, async (tx) => {
       await tx.insert(communityTopicsTable).values({
         id,
         authorId: params.authorUserId ?? params.authorNodeId,
@@ -366,7 +366,7 @@ export class CommunityService implements ICommunityService {
 
     // Wrap reply insert + topic counter increment in a transaction
     // so the replyCount stays accurate even under concurrent replies.
-    const created = await db.transaction(async (tx) => {
+    const created = await safeTransaction(db, async (tx) => {
       await tx.insert(communityRepliesTable).values({
         id,
         topicId: params.topicId,
@@ -490,7 +490,7 @@ export class CommunityService implements ICommunityService {
 
     // Wrap the read-modify-write in a transaction to prevent race conditions
     // where concurrent votes could double-count score deltas.
-    return await db.transaction(async (tx) => {
+    return await safeTransaction(db, async (tx) => {
       // Check for existing vote
       const existingVotes = await tx
         .select()
@@ -709,7 +709,7 @@ export class CommunityService implements ICommunityService {
 
     // Wrap check + insert + counter increment in a transaction to prevent
     // duplicate subscriptions and counter drift from concurrent requests.
-    return await db.transaction(async (tx) => {
+    return await safeTransaction(db, async (tx) => {
       // Check if already subscribed
       const existing = await tx
         .select({ id: communitySubscriptionsTable.id })
@@ -765,7 +765,7 @@ export class CommunityService implements ICommunityService {
 
     // Wrap check + delete + counter decrement in a transaction to prevent
     // counter drift from concurrent unsubscribe requests.
-    return await db.transaction(async (tx) => {
+    return await safeTransaction(db, async (tx) => {
       const existing = await tx
         .select({ id: communitySubscriptionsTable.id })
         .from(communitySubscriptionsTable)
@@ -786,6 +786,7 @@ export class CommunityService implements ICommunityService {
         .where(eq(communitySubscriptionsTable.id, existing[0]!.id));
 
       // Decrement subscriber count (floor at 0)
+      // Dialect-aware: MAX(x, 0) works in both MySQL and SQLite (replaces MySQL-only GREATEST)
       await tx
         .update(communityChannelsTable)
         .set({

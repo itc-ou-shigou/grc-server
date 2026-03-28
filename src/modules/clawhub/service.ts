@@ -13,7 +13,7 @@
 import { eq, and, desc, asc, sql, inArray, gt } from "drizzle-orm";
 import { v4 as uuidv4 } from "uuid";
 import pino from "pino";
-import { getDb } from "../../shared/db/connection.js";
+import { getDb, safeTransaction } from "../../shared/db/connection.js";
 import { getCurrentDialect } from "../../shared/db/dialect.js";
 import {
   skillsTable,
@@ -490,7 +490,7 @@ export async function publishSkill(input: PublishInput): Promise<{
   let version: SkillVersionRow;
 
   try {
-    const result = await db.transaction(async (tx) => {
+    const result = await safeTransaction(db, async (tx) => {
       // Ensure the parent skill record exists before inserting the version
       // (skill_versions.skill_id has a FK constraint referencing skills.id)
       if (isNewSkill) {
@@ -607,7 +607,7 @@ export async function rateSkill(input: RateInput): Promise<void> {
 
   // Wrap the upsert + average recalculation in a transaction to ensure
   // the rating row and the aggregated counters stay consistent.
-  const updatedSkill = await db.transaction(async (tx) => {
+  const updatedSkill = await safeTransaction(db, async (tx) => {
     // Check if user already rated this skill
     const existingRating = await tx
       .select({ id: skillRatingsTable.id })

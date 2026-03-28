@@ -15,7 +15,7 @@ import type { GrcConfig } from "../../config.js";
 import { createAuthMiddleware } from "../../shared/middleware/auth.js";
 import { createAdminAuthMiddleware } from "../../shared/middleware/admin-auth.js";
 import { asyncHandler, NotFoundError, BadRequestError } from "../../shared/middleware/error-handler.js";
-import { getDb } from "../../shared/db/connection.js";
+import { getDb, safeTransaction } from "../../shared/db/connection.js";
 import { uuidSchema, paginationSchema, slugSchema, semverSchema } from "../../shared/utils/validators.js";
 import { skillsTable, skillVersionsTable, skillDownloadsTable, skillRatingsTable } from "./schema.js";
 import { users } from "../auth/schema.js";
@@ -304,7 +304,7 @@ export async function registerAdmin(app: Express, config: GrcConfig) {
       }
 
       // Delete related records first, then the skill — all in a transaction
-      await db.transaction(async (tx) => {
+      await safeTransaction(db, async (tx) => {
         await tx.delete(skillDownloadsTable).where(eq(skillDownloadsTable.skillId, id));
         await tx.delete(skillRatingsTable).where(eq(skillRatingsTable.skillId, id));
         await tx.delete(skillVersionsTable).where(eq(skillVersionsTable.skillId, id));

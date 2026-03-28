@@ -8,7 +8,7 @@
 import { v4 as uuidv4 } from "uuid";
 import { eq, or, sql, desc, and, gte, lte, ne } from "drizzle-orm";
 import pino from "pino";
-import { getDb } from "../../shared/db/connection.js";
+import { getDb, safeTransaction } from "../../shared/db/connection.js";
 import {
   nodesTable,
   genesTable,
@@ -684,7 +684,7 @@ export class EvolutionService implements IEvolutionService {
     // Wrap counter update + promotion check + status update in a transaction
     // to prevent race conditions where concurrent reports could read stale
     // counters and skip or double-trigger promotion/quarantine.
-    const { asset, promotionResult } = await db.transaction(async (tx) => {
+    const { asset, promotionResult } = await safeTransaction(db, async (tx) => {
       // Use atomic SQL increment to prevent race conditions when
       // multiple nodes report usage concurrently.
       // failCount is incremented on failure, useCount always incremented.
