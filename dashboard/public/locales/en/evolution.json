@@ -208,7 +208,17 @@
     "gateway": {
       "button": "Gateway",
       "noUrl": "This claw hasn't opened for visitors yet"
-    }
+    },
+    "apiKey": {
+      "label": "API Key",
+      "auto": "Auto",
+      "authorized": "Authorized",
+      "unauthorized": "Unauthorized"
+    },
+    "authorize": "Authorize",
+    "revoke": "Revoke",
+    "authorizeConfirm": "Authorize this node for full API access?",
+    "revokeConfirm": "Revoke this node's API access?"
   },
   "pipeline": {
     "title": "Pipeline",

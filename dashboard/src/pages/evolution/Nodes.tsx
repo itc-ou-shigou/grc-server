@@ -9,6 +9,8 @@ import {
   useDeleteNode,
   useProvisionNode,
   useRestartNode,
+  useAuthorizeNode,
+  useRevokeNode,
   Node,
   ProvisionNodeInput,
 } from '../../api/hooks';
@@ -51,6 +53,12 @@ interface RestartTarget {
   provisioningMode: 'local_docker' | 'daytona_sandbox';
 }
 
+interface AuthorizeTarget {
+  nodeId: string;
+  displayName?: string;
+  action: 'authorize' | 'revoke';
+}
+
 const inputStyle: React.CSSProperties = {
   width: '100%',
   padding: '8px 12px',
@@ -87,6 +95,7 @@ export function Nodes() {
   // ── modal state ──
   const [deleteTarget, setDeleteTarget] = useState<DeleteTarget | null>(null);
   const [restartTarget, setRestartTarget] = useState<RestartTarget | null>(null);
+  const [authorizeTarget, setAuthorizeTarget] = useState<AuthorizeTarget | null>(null);
   const [createOpen, setCreateOpen] = useState(false);
 
   // ── create form state ──
@@ -118,6 +127,8 @@ export function Nodes() {
   const deleteNode = useDeleteNode();
   const provisionNode = useProvisionNode();
   const restartNode = useRestartNode();
+  const authorizeNode = useAuthorizeNode();
+  const revokeNode = useRevokeNode();
 
   // ── delete handlers ──
   const openDeleteModal = (row: Record<string, unknown>) => {
@@ -152,6 +163,29 @@ export function Nodes() {
     restartNode.mutate(restartTarget.nodeId, {
       onSuccess: () => setRestartTarget(null),
     });
+  };
+
+  // ── authorize/revoke handlers ──
+  const openAuthorizeModal = (row: Record<string, unknown>) => {
+    const apiKeyAuthorized = row.apiKeyAuthorized as boolean;
+    setAuthorizeTarget({
+      nodeId: row.nodeId as string,
+      displayName: row.displayName as string | undefined,
+      action: apiKeyAuthorized ? 'revoke' : 'authorize',
+    });
+  };
+
+  const confirmAuthorize = () => {
+    if (!authorizeTarget) return;
+    if (authorizeTarget.action === 'authorize') {
+      authorizeNode.mutate(authorizeTarget.nodeId, {
+        onSuccess: () => setAuthorizeTarget(null),
+      });
+    } else {
+      revokeNode.mutate(authorizeTarget.nodeId, {
+        onSuccess: () => setAuthorizeTarget(null),
+      });
+    }
   };
 
   // ── create handlers ──
@@ -296,6 +330,61 @@ export function Nodes() {
       },
     },
     {
+      key: 'apiKeyStatus',
+      label: t('nodes.apiKey.label'),
+      render: (_, row) => {
+        const mode = row.provisioningMode as 'local_docker' | 'daytona_sandbox' | null;
+        const hasProvisioning = mode !== null && mode !== undefined;
+        const apiKeyAuthorized = row.apiKeyAuthorized as boolean;
+        if (hasProvisioning) {
+          return (
+            <span style={{
+              display: 'inline-block',
+              padding: '2px 8px',
+              borderRadius: '12px',
+              fontSize: '12px',
+              fontWeight: 600,
+              background: 'rgba(34, 197, 94, 0.15)',
+              color: '#16a34a',
+              border: '1px solid rgba(34, 197, 94, 0.30)',
+            }}>
+              {t('nodes.apiKey.auto')}
+            </span>
+          );
+        }
+        if (apiKeyAuthorized) {
+          return (
+            <span style={{
+              display: 'inline-block',
+              padding: '2px 8px',
+              borderRadius: '12px',
+              fontSize: '12px',
+              fontWeight: 600,
+              background: 'rgba(34, 197, 94, 0.15)',
+              color: '#16a34a',
+              border: '1px solid rgba(34, 197, 94, 0.30)',
+            }}>
+              {t('nodes.apiKey.authorized')}
+            </span>
+          );
+        }
+        return (
+          <span style={{
+            display: 'inline-block',
+            padding: '2px 8px',
+            borderRadius: '12px',
+            fontSize: '12px',
+            fontWeight: 600,
+            background: 'rgba(239, 68, 68, 0.12)',
+            color: '#dc2626',
+            border: '1px solid rgba(239, 68, 68, 0.25)',
+          }}>
+            {t('nodes.apiKey.unauthorized')}
+          </span>
+        );
+      },
+    },
+    {
       key: 'nodeStatus',
       label: t('nodes.table.status'),
       render: (_, row) => {
@@ -314,8 +403,38 @@ export function Nodes() {
       render: (_, row) => {
         const mode = row.provisioningMode as 'local_docker' | 'daytona_sandbox' | null;
         const hasProvisioning = mode !== null && mode !== undefined;
+        const apiKeyAuthorized = row.apiKeyAuthorized as boolean;
         return (
           <div style={{ display: 'flex', gap: '6px', justifyContent: 'flex-end' }}>
+            {!hasProvisioning && !apiKeyAuthorized && (
+              <button
+                className="btn btn-sm"
+                style={{
+                  background: 'linear-gradient(135deg, #16a34a, #7c3aed)',
+                  color: '#fff',
+                  border: 'none',
+                }}
+                title={t('nodes.authorize')}
+                onClick={(e) => {
+                  e.stopPropagation();
+                  openAuthorizeModal(row as Record<string, unknown>);
+                }}
+              >
+                {t('nodes.authorize')}
+              </button>
+            )}
+            {!hasProvisioning && apiKeyAuthorized && (
+              <button
+                className="btn btn-sm btn-danger"
+                title={t('nodes.revoke')}
+                onClick={(e) => {
+                  e.stopPropagation();
+                  openAuthorizeModal(row as Record<string, unknown>);
+                }}
+              >
+                {t('nodes.revoke')}
+              </button>
+            )}
             {hasProvisioning && (
               <button
                 className="btn btn-sm btn-primary"
@@ -483,10 +602,17 @@ export function Nodes() {
                     disabled={provisionNode.isPending}
                     onClick={async () => {
                       try {
+                        // Electron desktop: use IPC to get full path via native dialog
+                        const grc = (window as any).grcDesktop;
+                        if (grc?.selectDirectory) {
+                          const fullPath = await grc.selectDirectory();
+                          if (fullPath) setWorkspacePath(fullPath);
+                          return;
+                        }
+                        // Browser fallback: showDirectoryPicker (name only)
                         // eslint-disable-next-line @typescript-eslint/no-explicit-any
                         const dirHandle = await (window as any).showDirectoryPicker({ mode: 'read' });
                         if (dirHandle?.name) {
-                          // Build full path: workspacesBase + selected folder name
                           const sep = workspacesBase.includes('/') ? '/' : '\\';
                           const base = workspacesBase || '';
                           if (base) {
@@ -650,6 +776,76 @@ export function Nodes() {
                 fontSize: '13px',
               }}>
                 {t('nodes.restart.failed', { error: (restartNode.error as Error)?.message ?? 'Unknown error' })}
+              </div>
+            )}
+          </div>
+        )}
+      </Modal>
+
+      {/* ── Authorize / Revoke Confirmation Modal ── */}
+      <Modal
+        open={!!authorizeTarget}
+        onClose={() => {
+          const isPending = authorizeNode.isPending || revokeNode.isPending;
+          if (!isPending) setAuthorizeTarget(null);
+        }}
+        title={authorizeTarget?.action === 'revoke' ? t('nodes.revoke') : t('nodes.authorize')}
+        size="sm"
+        footer={
+          <div style={{ display: 'flex', gap: '12px', justifyContent: 'flex-end' }}>
+            <button
+              className="btn btn-secondary"
+              onClick={() => setAuthorizeTarget(null)}
+              disabled={authorizeNode.isPending || revokeNode.isPending}
+            >
+              {t('nodes.delete.cancel')}
+            </button>
+            <button
+              className={authorizeTarget?.action === 'revoke' ? 'btn btn-danger' : 'btn btn-primary'}
+              style={authorizeTarget?.action === 'authorize' ? {
+                background: 'linear-gradient(135deg, #16a34a, #7c3aed)',
+                border: 'none',
+              } : undefined}
+              onClick={confirmAuthorize}
+              disabled={authorizeNode.isPending || revokeNode.isPending}
+            >
+              {(authorizeNode.isPending || revokeNode.isPending)
+                ? '...'
+                : authorizeTarget?.action === 'revoke'
+                  ? t('nodes.revoke')
+                  : t('nodes.authorize')}
+            </button>
+          </div>
+        }
+      >
+        {authorizeTarget && (
+          <div>
+            <p style={{ fontSize: '14px', marginBottom: '12px', color: 'var(--color-text)' }}>
+              {authorizeTarget.action === 'revoke'
+                ? t('nodes.revokeConfirm')
+                : t('nodes.authorizeConfirm')}
+            </p>
+            {authorizeTarget.displayName && (
+              <table style={{ width: '100%', fontSize: '14px', borderCollapse: 'collapse' }}>
+                <tbody>
+                  <tr>
+                    <td style={{ padding: '6px 12px 6px 0', color: 'var(--color-text-secondary)', whiteSpace: 'nowrap' }}>{t('nodes.delete.displayName')}</td>
+                    <td style={{ padding: '6px 0' }}>{authorizeTarget.displayName}</td>
+                  </tr>
+                </tbody>
+              </table>
+            )}
+            {(authorizeNode.isError || revokeNode.isError) && (
+              <div style={{
+                marginTop: '12px',
+                padding: '12px',
+                background: 'rgba(239, 68, 68, 0.10)',
+                border: '1px solid rgba(239, 68, 68, 0.25)',
+                borderRadius: '6px',
+                color: '#ef4444',
+                fontSize: '13px',
+              }}>
+                {((authorizeNode.error ?? revokeNode.error) as Error)?.message ?? 'Unknown error'}
               </div>
             )}
           </div>

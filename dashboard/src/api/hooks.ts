@@ -161,6 +161,8 @@ export interface Node {
   gatewayUrl: string | null;
   gatewayPort: number | null;
   workspacePath: string | null;
+  apiKeyId: string | null;
+  apiKeyAuthorized: boolean;
 }
 
 export interface EvolutionStats {
@@ -413,6 +415,24 @@ export function useRestartNode() {
   return useMutation({
     mutationFn: (nodeId: string) =>
       apiClient.post(`/api/v1/admin/evolution/nodes/${nodeId}/restart`),
+    onSuccess: () => qc.invalidateQueries({ queryKey: ['admin', 'nodes'] }),
+  });
+}
+
+export function useAuthorizeNode() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: (nodeId: string) =>
+      apiClient.post(`/api/v1/admin/evolution/nodes/${nodeId}/authorize`),
+    onSuccess: () => qc.invalidateQueries({ queryKey: ['admin', 'nodes'] }),
+  });
+}
+
+export function useRevokeNode() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: (nodeId: string) =>
+      apiClient.del(`/api/v1/admin/evolution/nodes/${nodeId}/authorize`),
     onSuccess: () => qc.invalidateQueries({ queryKey: ['admin', 'nodes'] }),
   });
 }
@@ -826,10 +846,11 @@ export function useCommunityFeed(params?: {
 export function useCommunityUnreadCount() {
   const since = getCommunityLastRead();
   return useQuery<UnreadCountResponse>({
-    queryKey: ['community', 'unread-count', since],
+    queryKey: ['community', 'unread-count'],
     queryFn: () =>
       apiClient.get<UnreadCountResponse>('/api/v1/community/unread-count', { since }),
-    staleTime: 30_000, // 30 seconds
+    staleTime: 60_000, // 60 seconds
+    refetchInterval: 120_000, // poll every 2 minutes instead of every render
     retry: false,
   });
 }

@@ -455,7 +455,7 @@ export class ModelKeysService {
         primaryKeyId: null,
         auxiliaryKeyId: null,
         keyConfigJson: null,
-        configRevision: currentRevision + 1,
+        configRevision: Math.max(currentRevision + 1, Math.floor(Date.now() / 1000)),
       })
       .where(eq(nodesTable.nodeId, nodeId));
 
@@ -586,7 +586,7 @@ export class ModelKeysService {
         .update(nodesTable)
         .set({
           keyConfigJson: hasAny ? keyConfig : null,
-          configRevision: currentRevision + 1,
+          configRevision: Math.max(currentRevision + 1, Math.floor(Date.now() / 1000)),
         })
         .where(eq(nodesTable.nodeId, node.nodeId));
 

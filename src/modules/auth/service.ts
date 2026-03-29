@@ -176,6 +176,7 @@ export class AuthService implements IAuthService {
 
     // Insert new user
     const id = uuidv4();
+    const now = new Date();
     await db.insert(users).values({
       id,
       provider: params.provider,
@@ -185,6 +186,8 @@ export class AuthService implements IAuthService {
       email: params.email ?? null,
       tier: "free",
       role: "user",
+      createdAt: now,
+      updatedAt: now,
     });
 
     logger.info(
@@ -230,6 +233,7 @@ export class AuthService implements IAuthService {
 
     // Insert new node-provider user
     const id = uuidv4();
+    const now = new Date();
     await db.insert(users).values({
       id,
       provider: "node",
@@ -238,6 +242,8 @@ export class AuthService implements IAuthService {
       email: params.email ?? null,
       tier: "free",
       role: "user",
+      createdAt: now,
+      updatedAt: now,
     });
 
     logger.info(
@@ -259,6 +265,7 @@ export class AuthService implements IAuthService {
     }
 
     const id = uuidv4();
+    const now = new Date();
     await db.insert(users).values({
       id,
       provider: "anonymous",
@@ -266,6 +273,8 @@ export class AuthService implements IAuthService {
       displayName: `node-${nodeId.slice(0, 8)}`,
       tier: "free",
       role: "user",
+      createdAt: now,
+      updatedAt: now,
     });
 
     logger.info({ userId: id, nodeId }, "Anonymous user registered");
@@ -347,6 +356,7 @@ export class AuthService implements IAuthService {
    */
   async refreshAccessToken(
     refreshToken: string,
+    expiresInOverride?: string,
   ): Promise<{ accessToken: string; refreshToken: string } | null> {
     const db = getDb();
     const tokenHash = sha256(refreshToken);
@@ -432,12 +442,12 @@ export class AuthService implements IAuthService {
       email: user.email ?? undefined,
       scopes: ["read", "write", "publish"],
     };
-    const accessToken = signToken(payload, this.config.jwt);
+    const accessToken = signToken(payload, this.config.jwt, expiresInOverride);
 
     // Issue new refresh token
     const newRefreshToken = await this.issueRefreshToken(user.id);
 
-    logger.info({ userId: user.id }, "Access token refreshed via refresh token rotation");
+    logger.info({ userId: user.id, expiresInOverride: expiresInOverride ?? "default" }, "Access token refreshed via refresh token rotation");
 
     return { accessToken, refreshToken: newRefreshToken };
   }
@@ -612,6 +622,83 @@ export class AuthService implements IAuthService {
     return true;
   }
 
+  // ── Node API Key Management ─────────────────────
+
+  /**
+   * Issue or retrieve an API Key for a node.
+   *
+   * - If an API Key with exact name `auto:node:{nodeId}` already exists,
+   *   return its metadata (keyId, keyPrefix) WITHOUT rawKey — the raw key
+   *   cannot be recovered from the stored hash.
+   * - If no key exists, create a new one and return rawKey + metadata.
+   *
+   * WinClaw persists rawKey locally on first receipt. Subsequent hellos
+   * only need the keyId to confirm the key is still valid.
+   */
+  async issueApiKeyForNode(
+    userId: string,
+    nodeId: string,
+  ): Promise<{ rawKey: string | null; keyId: string; keyPrefix: string }> {
+    const db = getDb();
+    const keyName = `auto:node:${nodeId}`;
+
+    // Check for existing key using exact match (NOT LIKE)
+    const existingKeys = await db
+      .select()
+      .from(apiKeys)
+      .where(and(eq(apiKeys.userId, userId), eq(apiKeys.name, keyName)))
+      .limit(1);
+
+    if (existingKeys.length > 0) {
+      const existing = existingKeys[0]!;
+      logger.info(
+        { keyId: existing.id, nodeId },
+        "Returning existing API key for node (rawKey not recoverable)",
+      );
+      return { rawKey: null, keyId: existing.id, keyPrefix: existing.keyPrefix };
+    }
+
+    // No existing key — create a new one (no expiry)
+    const { rawKey, apiKey } = await this.createApiKey({
+      userId,
+      name: keyName,
+      scopes: ["read", "write", "publish"],
+      expiresAt: undefined,
+    });
+
+    logger.info(
+      { keyId: apiKey.id, userId, nodeId },
+      "New API key issued for node",
+    );
+
+    return { rawKey, keyId: apiKey.id, keyPrefix: apiKey.keyPrefix };
+  }
+
+  /**
+   * Revoke the API Key for a node (admin "剔除" action).
+   * Finds and deletes the key with exact name match `auto:node:{nodeId}`.
+   * Returns true if a key was found and deleted.
+   */
+  async revokeApiKeyForNode(userId: string, nodeId: string): Promise<boolean> {
+    const db = getDb();
+    const keyName = `auto:node:${nodeId}`;
+
+    const existingKeys = await db
+      .select({ id: apiKeys.id })
+      .from(apiKeys)
+      .where(and(eq(apiKeys.userId, userId), eq(apiKeys.name, keyName)));
+
+    for (const key of existingKeys) {
+      await this.deleteApiKey(key.id, userId);
+    }
+
+    if (existingKeys.length > 0) {
+      logger.info({ userId, nodeId, count: existingKeys.length }, "Node API keys revoked");
+    }
+
+    return existingKeys.length > 0;
+  }
+
   // ── Email Auth ────────────────────────────────
 
   /**
@@ -775,6 +862,7 @@ export class AuthService implements IAuthService {
 
     // Create the user
     const id = uuidv4();
+    const now = new Date();
     await db.insert(users).values({
       id,
       provider: "email",
@@ -784,6 +872,8 @@ export class AuthService implements IAuthService {
       passwordHash,
       tier: "free",
       role: "user",
+      createdAt: now,
+      updatedAt: now,
     });
 
     logger.info({ userId: id, email: normalizedEmail }, "Email user registered");
@@ -885,6 +975,7 @@ export class AuthService implements IAuthService {
     if (!user) {
       // Create new email user (passwordless - no passwordHash)
       const id = uuidv4();
+      const now = new Date();
       await db.insert(users).values({
         id,
         provider: "email",
@@ -893,6 +984,8 @@ export class AuthService implements IAuthService {
         email: normalizedEmail,
         tier: "free",
         role: "user",
+        createdAt: now,
+        updatedAt: now,
       });
       user = (await this.getUserById(id))!;
       logger.info(
@@ -932,4 +1025,5 @@ export class AuthService implements IAuthService {
 
     return { user, token, refreshToken };
   }
+
 }

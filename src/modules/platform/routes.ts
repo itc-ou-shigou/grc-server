@@ -19,14 +19,15 @@ export async function register(app: Express, config: GrcConfig) {
   const router = Router();
   const platformService = new PlatformService();
   const requireAuth = createAuthMiddleware(config);
+  const authOptional = createAuthMiddleware(config, false);
 
-  // ── GET /values — Fetch platform values (authenticated) ──
+  // ── GET /values — Fetch platform values (auth optional for sync clients) ──
   // WinClaw clients use this endpoint with ETag support.
   // If-None-Match header with contentHash → 304 when unchanged.
 
   router.get(
     "/values",
-    requireAuth,
+    authOptional,
     asyncHandler(async (req: Request, res: Response) => {
       const values = await platformService.getValues();
 

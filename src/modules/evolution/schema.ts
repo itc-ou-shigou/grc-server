@@ -9,6 +9,7 @@ import {
   mysqlTable,
   mysqlEnum,
   mediumtext,
+  boolean,
   char,
   varchar,
   int,
@@ -61,6 +62,9 @@ export const nodesTable = mysqlTable(
     primaryKeyId: char("primary_key_id", { length: 36 }),
     auxiliaryKeyId: char("auxiliary_key_id", { length: 36 }),
     keyConfigJson: json("key_config_json"),
+    // ── API Key authorization fields (032_node_api_key.sql) ──
+    apiKeyId: char("api_key_id", { length: 36 }),
+    apiKeyAuthorized: boolean("api_key_authorized").notNull().default(false),
     // ── Node provisioning fields (014_node_provisioning.sql) ──
     provisioningMode: mysqlEnum("provisioning_mode", ["local_docker", "daytona_sandbox"]),
     containerId: varchar("container_id", { length: 255 }),

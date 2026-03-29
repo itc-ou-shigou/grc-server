@@ -208,7 +208,17 @@
     "gateway": {
       "button": "网关",
       "noUrl": "这只龙虾还没开门迎客"
-    }
+    },
+    "apiKey": {
+      "label": "API Key",
+      "auto": "自动",
+      "authorized": "已认证",
+      "unauthorized": "未认证"
+    },
+    "authorize": "授权",
+    "revoke": "剔除",
+    "authorizeConfirm": "确定授权此节点完全API访问？",
+    "revokeConfirm": "确定撤销此节点的API访问？"
   },
   "pipeline": {
     "title": "流水线",

@@ -494,9 +494,9 @@ export class RolesService {
       }
     }
 
-    // Get current config_revision from dedicated column, increment it
+    // Use timestamp-based revision to guarantee it's always larger than any stale container state
     const currentRevision = node.configRevision ?? 0;
-    const newRevision = currentRevision + 1;
+    const newRevision = Math.max(currentRevision + 1, Math.floor(Date.now() / 1000));
 
     // Update node with role assignment using dedicated columns
     await db
@@ -599,6 +599,9 @@ export class RolesService {
 
     const node = nodeRows[0]!;
     const currentRevision = node.configRevision ?? 0;
+    // Use timestamp-based revision to guarantee it exceeds any stale container revision
+    // (MySQL→SQLite migration left some containers with revision 3000+ while GRC DB reset to ~20)
+    const nextRevision = Math.max(currentRevision + 1, Math.floor(Date.now() / 1000));
 
     // Clear role-related dedicated columns, increment revision
     await db
@@ -606,7 +609,7 @@ export class RolesService {
       .set({
         roleId: null,
         roleMode: null,
-        configRevision: currentRevision + 1,
+        configRevision: nextRevision,
         assignmentVariables: null,
         configOverrides: null,
         resolvedAgentsMd: null,
@@ -625,7 +628,7 @@ export class RolesService {
     // Push config update to node via SSE (if connected)
     if (nodeConfigSSE.isNodeConnected(nodeId)) {
       nodeConfigSSE.pushToNode(nodeId, {
-        revision: currentRevision + 1,
+        revision: nextRevision,
         reason: "role_unassignment",
         config: {
           role_id: null,
@@ -917,7 +920,7 @@ export class RolesService {
         .update(nodesTable)
         .set({
           resolvedAgentsMd: resolvedAgentsMd,
-          configRevision: sql`config_revision + 1`,
+          configRevision: sql`CASE WHEN config_revision + 1 > ${Math.floor(Date.now() / 1000)} THEN config_revision + 1 ELSE ${Math.floor(Date.now() / 1000)} END`,
         })
         .where(eq(nodesTable.nodeId, node.nodeId));
 

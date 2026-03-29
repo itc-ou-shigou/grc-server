@@ -20,10 +20,11 @@ export interface JwtPayload {
 export function signToken(
   payload: JwtPayload,
   config: GrcConfig["jwt"],
+  expiresInOverride?: string,
 ): string {
   const options: SignOptions = {
     issuer: config.issuer,
-    expiresIn: config.expiresIn as unknown as number,
+    expiresIn: (expiresInOverride ?? config.expiresIn) as unknown as number,
     algorithm: "RS256",
   };
   return jwt.sign(payload as object, config.privateKey, options);

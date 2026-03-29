@@ -208,7 +208,17 @@
     "gateway": {
       "button": "ゲートウェイ",
       "noUrl": "この伊勢海老はまだお客さん受付してません"
-    }
+    },
+    "apiKey": {
+      "label": "API Key",
+      "auto": "自動",
+      "authorized": "認証済",
+      "unauthorized": "未認証"
+    },
+    "authorize": "授权",
+    "revoke": "剔除",
+    "authorizeConfirm": "このノードにフルAPIアクセスを許可しますか？",
+    "revokeConfirm": "このノードのAPIアクセスを取り消しますか？"
   },
   "pipeline": {
     "title": "パイプライン",

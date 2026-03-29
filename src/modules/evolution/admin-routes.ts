@@ -382,6 +382,92 @@ export async function registerAdmin(app: Express, config: GrcConfig) {
     }),
   );
 
+  // ── POST /nodes/:nodeId/authorize — Issue API Key for a node (授权) ──
+
+  router.post(
+    "/nodes/:nodeId/authorize",
+    requireAuth, requireAdmin,
+    asyncHandler(async (req: Request, res: Response) => {
+      const nodeId = req.params.nodeId as string;
+      const db = getDb();
+
+      const nodeRows = await db
+        .select()
+        .from(nodesTable)
+        .where(eq(nodesTable.nodeId, nodeId))
+        .limit(1);
+
+      if (!nodeRows[0]) {
+        throw new NotFoundError("Node");
+      }
+
+      const node = nodeRows[0];
+      if (!node.userId) {
+        return res.status(400).json({ error: "Node has no linked user — it must hello at least once before authorization" });
+      }
+
+      // Issue API Key (revokes any existing one first)
+      const { rawKey, keyId } = await authService.issueApiKeyForNode(node.userId, nodeId);
+
+      await db
+        .update(nodesTable)
+        .set({ apiKeyId: keyId, apiKeyAuthorized: true })
+        .where(eq(nodesTable.nodeId, nodeId));
+
+      logger.info(
+        { nodeId, keyId, admin: req.auth?.sub },
+        "Node authorized by admin — API Key issued",
+      );
+
+      // SSE notification: push api_key_authorized event to the node
+      // so WinClaw knows to re-hello and pick up the key
+      nodeConfigSSE.pushToNode(nodeId, {
+        revision: 0,
+        reason: "api_key_authorized",
+      });
+
+      res.json({ ok: true, message: "Node authorized", api_key_id: keyId, ...(rawKey ? { api_key: rawKey } : {}) });
+    }),
+  );
+
+  // ── DELETE /nodes/:nodeId/authorize — Revoke API Key for a node (剔除) ──
+
+  router.delete(
+    "/nodes/:nodeId/authorize",
+    requireAuth, requireAdmin,
+    asyncHandler(async (req: Request, res: Response) => {
+      const nodeId = req.params.nodeId as string;
+      const db = getDb();
+
+      const nodeRows = await db
+        .select()
+        .from(nodesTable)
+        .where(eq(nodesTable.nodeId, nodeId))
+        .limit(1);
+
+      if (!nodeRows[0]) {
+        throw new NotFoundError("Node");
+      }
+
+      const node = nodeRows[0];
+      if (node.userId) {
+        await authService.revokeApiKeyForNode(node.userId, nodeId);
+      }
+
+      await db
+        .update(nodesTable)
+        .set({ apiKeyId: null, apiKeyAuthorized: false })
+        .where(eq(nodesTable.nodeId, nodeId));
+
+      logger.info(
+        { nodeId, admin: req.auth?.sub },
+        "Node authorization revoked by admin — API Key deleted",
+      );
+
+      res.json({ ok: true, message: "Authorization revoked" });
+    }),
+  );
+
   // ── GET /nodes/provision-defaults — Return host workspace base path ──
 
   router.get(
@@ -530,6 +616,18 @@ export async function registerAdmin(app: Express, config: GrcConfig) {
             .update(nodesTable)
             .set({ userId: nodeUser.id })
             .where(eq(nodesTable.nodeId, nodeId));
+
+          // Auto-issue API Key for Docker node (authorized automatically)
+          try {
+            const { keyId } = await authService.issueApiKeyForNode(nodeUser.id, nodeId);
+            await db
+              .update(nodesTable)
+              .set({ apiKeyId: keyId, apiKeyAuthorized: true })
+              .where(eq(nodesTable.nodeId, nodeId));
+            logger.info({ nodeId, keyId }, "API key auto-issued for provisioned Docker node");
+          } catch (apiKeyErr: any) {
+            logger.warn({ nodeId, err: apiKeyErr.message }, "Failed to auto-issue API key during provision (non-fatal)");
+          }
         }
 
         logger.info({ containerId, nodeId, gatewayUrl }, "Local Docker node provisioned");
@@ -689,6 +787,18 @@ export async function registerAdmin(app: Express, config: GrcConfig) {
             .update(nodesTable)
             .set({ userId: nodeUser.id })
             .where(eq(nodesTable.nodeId, nodeId));
+
+          // Auto-issue API Key for Daytona node (authorized automatically)
+          try {
+            const { keyId } = await authService.issueApiKeyForNode(nodeUser.id, nodeId);
+            await db
+              .update(nodesTable)
+              .set({ apiKeyId: keyId, apiKeyAuthorized: true })
+              .where(eq(nodesTable.nodeId, nodeId));
+            logger.info({ nodeId, keyId }, "API key auto-issued for provisioned Daytona node");
+          } catch (apiKeyErr: any) {
+            logger.warn({ nodeId, err: apiKeyErr.message }, "Failed to auto-issue API key during Daytona provision (non-fatal)");
+          }
 
           logger.info({ sandboxId, nodeId, gatewayUrl }, "Daytona sandbox node provisioned and linked");
         } else {
@@ -1017,8 +1127,23 @@ export async function registerAdmin(app: Express, config: GrcConfig) {
           logger.info({ nodeId, newContainerId, gatewayUrl }, "Local Docker node restarted (same identity)");
         }
 
+        // Ensure API Key exists for restarted node (same as new provision)
+        const finalNodeId = newNodeId || nodeId;
+        const finalNode = await db.select().from(nodesTable).where(eq(nodesTable.nodeId, finalNodeId)).limit(1);
+        if (finalNode[0] && !finalNode[0].apiKeyId && finalNode[0].userId) {
+          try {
+            const { keyId } = await authService.issueApiKeyForNode(finalNode[0].userId, finalNodeId);
+            await db.update(nodesTable)
+              .set({ apiKeyId: keyId, apiKeyAuthorized: true })
+              .where(eq(nodesTable.nodeId, finalNodeId));
+            logger.info({ finalNodeId, keyId }, "Auto-issued API Key on restart");
+          } catch (err: unknown) {
+            logger.warn({ err: (err as Error).message }, "Failed to auto-issue API Key on restart (non-fatal)");
+          }
+        }
+
         res.json({
-          data: { nodeId: newNodeId || nodeId, containerId: newContainerId.slice(0, 64), gatewayUrl, restarted: true },
+          data: { nodeId: finalNodeId, containerId: newContainerId.slice(0, 64), gatewayUrl, restarted: true },
         });
 
       } else if (node.provisioningMode === "daytona_sandbox") {
