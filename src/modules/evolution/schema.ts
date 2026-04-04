@@ -65,6 +65,7 @@ export const nodesTable = mysqlTable(
     // ── API Key authorization fields (032_node_api_key.sql) ──
     apiKeyId: char("api_key_id", { length: 36 }),
     apiKeyAuthorized: boolean("api_key_authorized").notNull().default(false),
+    githubToken: text("github_token"),
     // ── Node provisioning fields (014_node_provisioning.sql) ──
     provisioningMode: mysqlEnum("provisioning_mode", ["local_docker", "daytona_sandbox"]),
     containerId: varchar("container_id", { length: 255 }),

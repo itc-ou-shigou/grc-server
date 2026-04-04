@@ -189,6 +189,8 @@
       "employeeCodePlaceholder": "예: 0853242",
       "employeeEmail": "사육사 이메일",
       "employeeEmailPlaceholder": "예: hong@company.com",
+      "githubToken": "GitHub Token",
+      "githubTokenPlaceholder": "ghp_... or github_pat_...",
       "submit": "부화!",
       "creating": "부화 중...",
       "success": "축하해요, 새 바닷가재가 수조에 들어왔어요!",

@@ -105,6 +105,7 @@ export function Nodes() {
   const [employeeName, setEmployeeName] = useState('');
   const [employeeCode, setEmployeeCode] = useState('');
   const [employeeEmail, setEmployeeEmail] = useState('');
+  const [githubToken, setGithubToken] = useState('');
   const [createFormErrors, setCreateFormErrors] = useState<Record<string, string>>({});
   const [createSuccess, setCreateSuccess] = useState<string | null>(null);
   const [workspacesBase, setWorkspacesBase] = useState('');
@@ -195,6 +196,7 @@ export function Nodes() {
     setEmployeeName('');
     setEmployeeCode('');
     setEmployeeEmail('');
+    setGithubToken('');
     setCreateFormErrors({});
     setCreateSuccess(null);
   };
@@ -221,6 +223,7 @@ export function Nodes() {
       ...(employeeName.trim() && { employeeName: employeeName.trim() }),
       ...(employeeCode.trim() && { employeeCode: employeeCode.trim() }),
       ...(employeeEmail.trim() && { employeeEmail: employeeEmail.trim() }),
+      ...(githubToken.trim() && { githubToken: githubToken.trim() }),
     };
 
     provisionNode.mutate(input, {
@@ -662,7 +665,7 @@ export function Nodes() {
               disabled={provisionNode.isPending}
             />
           </div>
-          <div style={{ ...fieldStyle, marginBottom: 0 }}>
+          <div style={fieldStyle}>
             <label style={labelStyle}>{t('nodes.create.employeeEmail')}</label>
             <input
               type="email"
@@ -670,6 +673,17 @@ export function Nodes() {
               placeholder={t('nodes.create.employeeEmailPlaceholder')}
               value={employeeEmail}
               onChange={(e) => setEmployeeEmail(e.target.value)}
+              disabled={provisionNode.isPending}
+            />
+          </div>
+          <div style={{ ...fieldStyle, marginBottom: 0 }}>
+            <label style={labelStyle}>{t('nodes.create.githubToken')}</label>
+            <input
+              type="password"
+              style={inputStyle}
+              placeholder={t('nodes.create.githubTokenPlaceholder')}
+              value={githubToken}
+              onChange={(e) => setGithubToken(e.target.value)}
               disabled={provisionNode.isPending}
             />
           </div>

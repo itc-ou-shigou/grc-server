@@ -349,6 +349,7 @@ export async function registerAdmin(app: Express, config: GrcConfig) {
     employee_id: z.string().max(100).optional(),
     employee_name: z.string().max(255).optional(),
     employee_email: z.string().max(255).optional(),
+    github_token: z.string().max(500).optional(),
   });
 
   router.patch(
@@ -365,6 +366,7 @@ export async function registerAdmin(app: Express, config: GrcConfig) {
           ...(body.employee_id !== undefined && { employeeId: body.employee_id }),
           ...(body.employee_name !== undefined && { employeeName: body.employee_name }),
           ...(body.employee_email !== undefined && { employeeEmail: body.employee_email }),
+          ...(body.github_token !== undefined && { githubToken: body.github_token }),
         })
         .where(eq(nodesTable.nodeId, nodeId));
 
@@ -411,7 +413,7 @@ export async function registerAdmin(app: Express, config: GrcConfig) {
 
       await db
         .update(nodesTable)
-        .set({ apiKeyId: keyId, apiKeyAuthorized: true })
+        .set({ apiKeyId: keyId, apiKeyAuthorized: 1 as unknown as boolean })
         .where(eq(nodesTable.nodeId, nodeId));
 
       logger.info(
@@ -456,7 +458,7 @@ export async function registerAdmin(app: Express, config: GrcConfig) {
 
       await db
         .update(nodesTable)
-        .set({ apiKeyId: null, apiKeyAuthorized: false })
+        .set({ apiKeyId: null, apiKeyAuthorized: 0 as unknown as boolean })
         .where(eq(nodesTable.nodeId, nodeId));
 
       logger.info(
@@ -493,6 +495,7 @@ export async function registerAdmin(app: Express, config: GrcConfig) {
     employeeName: z.string().optional(),
     employeeCode: z.string().optional(),
     employeeEmail: z.string().optional(),
+    githubToken: z.string().optional(),
   });
 
   router.post(
@@ -529,6 +532,7 @@ export async function registerAdmin(app: Express, config: GrcConfig) {
         if (body.employeeName) dockerArgs.push("-e", `employee_name=${body.employeeName}`);
         if (body.employeeCode) dockerArgs.push("-e", `employee_code=${body.employeeCode}`);
         if (body.employeeEmail) dockerArgs.push("-e", `employee_email=${body.employeeEmail}`);
+        if (body.githubToken) dockerArgs.push("-e", `GITHUB_TOKEN=${body.githubToken}`);
         dockerArgs.push("-v", `${body.workspacePath}:/home/winclaw/.winclaw/workspace`);
         // Persist device identity inside workspace dir so each node has unique identity
         const identityPath = path.join(body.workspacePath, ".identity");
@@ -622,7 +626,7 @@ export async function registerAdmin(app: Express, config: GrcConfig) {
             const { keyId } = await authService.issueApiKeyForNode(nodeUser.id, nodeId);
             await db
               .update(nodesTable)
-              .set({ apiKeyId: keyId, apiKeyAuthorized: true })
+              .set({ apiKeyId: keyId, apiKeyAuthorized: 1 as unknown as boolean })
               .where(eq(nodesTable.nodeId, nodeId));
             logger.info({ nodeId, keyId }, "API key auto-issued for provisioned Docker node");
           } catch (apiKeyErr: any) {
@@ -793,7 +797,7 @@ export async function registerAdmin(app: Express, config: GrcConfig) {
             const { keyId } = await authService.issueApiKeyForNode(nodeUser.id, nodeId);
             await db
               .update(nodesTable)
-              .set({ apiKeyId: keyId, apiKeyAuthorized: true })
+              .set({ apiKeyId: keyId, apiKeyAuthorized: 1 as unknown as boolean })
               .where(eq(nodesTable.nodeId, nodeId));
             logger.info({ nodeId, keyId }, "API key auto-issued for provisioned Daytona node");
           } catch (apiKeyErr: any) {
@@ -990,11 +994,12 @@ export async function registerAdmin(app: Express, config: GrcConfig) {
 
         // Re-run with same config
         const grcPort = process.env.GRC_API_PORT || "3100";
-        const dockerArgs = ["run", "-d", "--pull", "missing", "-p", `${node.gatewayPort}:18789`,
+        const dockerArgs = ["run", "-d", "--pull", "always", "-p", `${node.gatewayPort}:18789`,
           "-e", `WINCLAW_GRC_URL=http://host.docker.internal:${grcPort}`];
         if (node.employeeName) dockerArgs.push("-e", `employee_name=${node.employeeName}`);
         if (node.employeeId) dockerArgs.push("-e", `employee_code=${node.employeeId}`);
         if (node.employeeEmail) dockerArgs.push("-e", `employee_email=${node.employeeEmail}`);
+        if (node.githubToken) dockerArgs.push("-e", `GITHUB_TOKEN=${node.githubToken}`);
         if (node.workspacePath) {
           dockerArgs.push("-v", `${node.workspacePath}:/home/winclaw/.winclaw/workspace`);
           dockerArgs.push("-v", `${identityPath}:/home/winclaw/.winclaw/identity`);
@@ -1016,6 +1021,7 @@ export async function registerAdmin(app: Express, config: GrcConfig) {
           employeeName: node.employeeName,
           employeeId: node.employeeId,
           employeeEmail: node.employeeEmail,
+          githubToken: node.githubToken,
         };
 
         // DO NOT delete node record — keep it alive so data is never lost.
@@ -1106,6 +1112,7 @@ export async function registerAdmin(app: Express, config: GrcConfig) {
               ...(preservedData.employeeName && { employeeName: preservedData.employeeName }),
               ...(preservedData.employeeId && { employeeId: preservedData.employeeId }),
               ...(preservedData.employeeEmail && { employeeEmail: preservedData.employeeEmail }),
+              ...(preservedData.githubToken && { githubToken: preservedData.githubToken }),
               createdAt: new Date(),
               updatedAt: new Date(),
             })
@@ -1134,7 +1141,7 @@ export async function registerAdmin(app: Express, config: GrcConfig) {
           try {
             const { keyId } = await authService.issueApiKeyForNode(finalNode[0].userId, finalNodeId);
             await db.update(nodesTable)
-              .set({ apiKeyId: keyId, apiKeyAuthorized: true })
+              .set({ apiKeyId: keyId, apiKeyAuthorized: 1 as unknown as boolean })
               .where(eq(nodesTable.nodeId, finalNodeId));
             logger.info({ finalNodeId, keyId }, "Auto-issued API Key on restart");
           } catch (err: unknown) {

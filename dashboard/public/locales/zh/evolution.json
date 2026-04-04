@@ -189,6 +189,8 @@
       "employeeCodePlaceholder": "例如 0853242",
       "employeeEmail": "饲养员邮箱",
       "employeeEmailPlaceholder": "例如 zhangsan@company.com",
+      "githubToken": "GitHub Token",
+      "githubTokenPlaceholder": "ghp_... or github_pat_...",
       "submit": "开养！",
       "creating": "孵化中...",
       "success": "恭喜，新龙虾已入池！",

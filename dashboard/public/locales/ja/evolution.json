@@ -189,6 +189,8 @@
       "employeeCodePlaceholder": "例: 0853242",
       "employeeEmail": "飼育員メール",
       "employeeEmailPlaceholder": "例: tanaka@company.com",
+      "githubToken": "GitHub Token",
+      "githubTokenPlaceholder": "ghp_... or github_pat_...",
       "submit": "孵化！",
       "creating": "孵化中...",
       "success": "おめでとう、新伊勢海老が入水しました！",

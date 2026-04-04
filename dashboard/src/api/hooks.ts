@@ -151,6 +151,7 @@ export interface Node {
   employeeId: string | null;
   employeeName: string | null;
   employeeEmail: string | null;
+  githubToken: string | null;
   primaryKeyId: string | null;
   auxiliaryKeyId: string | null;
   createdAt: string;
@@ -399,6 +400,7 @@ export interface ProvisionNodeInput {
   employeeName?: string;
   employeeCode?: string;
   employeeEmail?: string;
+  githubToken?: string;
 }
 
 export function useProvisionNode() {

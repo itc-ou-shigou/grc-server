@@ -189,6 +189,8 @@
       "employeeCodePlaceholder": "e.g. 0853242",
       "employeeEmail": "Keeper Email",
       "employeeEmailPlaceholder": "e.g. tanaka@company.com",
+      "githubToken": "GitHub Token",
+      "githubTokenPlaceholder": "ghp_... or github_pat_...",
       "submit": "Hatch!",
       "creating": "Hatching...",
       "success": "Congrats, new claw has joined the tank!",
