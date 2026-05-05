@@ -1121,17 +1121,19 @@ export async function registerAdmin(app: Express, config: GrcConfig) {
           await db.delete(nodesTable).where(eq(nodesTable.nodeId, nodeId));
           logger.info({ oldNodeId: nodeId, newNodeId, newContainerId, gatewayUrl }, "Local Docker node restarted (new identity)");
         } else {
-          // Same nodeId or hello hasn't registered yet — update the existing record directly
+          // Same nodeId or hello hasn't registered yet — update the existing record directly.
+          // IMPORTANT: include gatewayPort to keep DB in sync with actual docker port mapping.
           await db
             .update(nodesTable)
             .set({
               containerId: newContainerId.slice(0, 64),
+              gatewayPort: node.gatewayPort,
               gatewayUrl,
               createdAt: new Date(),
               updatedAt: new Date(),
             })
             .where(eq(nodesTable.nodeId, nodeId));
-          logger.info({ nodeId, newContainerId, gatewayUrl }, "Local Docker node restarted (same identity)");
+          logger.info({ nodeId, newContainerId, gatewayPort: node.gatewayPort, gatewayUrl }, "Local Docker node restarted (same identity)");
         }
 
         // Ensure API Key exists for restarted node (same as new provision)
